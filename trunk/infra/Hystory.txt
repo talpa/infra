@@ -1,0 +1,114 @@
+17:39 4/2/2007  v60
+- Reflection: Corrigida iteração em TClassInfo.GetPropertyInfo, estava faltando o iterator.next;
+- Reflection: TTypeService.CreateInstance(ClassInfo) agora testa se o classinfo está definido;
+- Reflection: TClassInfo.SetSuperClass nao estava definindo corretamente o ancestral da classe;
+- Reflection: Corrigido problema em AddPropertyInfo, nao estava adicionando os métodos na lista de membros;
+- Reflection: corrigido métodos de TPropertyInfo GetValue para retornar nil caso obj nao implemente infrainstance;
+- ValueType: TInfraObject.AddProperty corrigido para verificar se o tipo de propriedade está registrado na reflexão;  
++ Reflection: adicionado método GetTypeInfo em IPropertyInfo para saber o tipo da propriedade;
++ Reflection: implementado o Invoke em TMethodInfo;
++ ReflectionTests: Adicionado Addres ao Model e melhorado para poder fazer testes pro Address tambem;
++ Persistence: Adicionada alguma novas interfaces;
+
+22:55 31/1/2007
+- Inicio dos Testes unitários para reflexão. Testando Typeservice (incompleto);
+
+14:38 9/12/2006
+- Adição do esquema de Annotations no Infra;
+
+  Annotations é um recurso muito utilizado atualmente no java e no .net, agora trazemos este recurso para o Infra, graças a reflexão. Annotations no Infra funciona assim:
+  1) A partir de classes/interfaces registradas na reflexão. Ex:
+
+     ICommand = Interface
+       property Enabled;
+     end;
+    
+     RegisterNewType(ICommand, TCommand);
+
+  2) Anotamos um typeinfo passando uma interface já reflexionada. Isso vai injetar uma instância de ICommand no
+     Bo.SomeMethod.TypeInfo, fazendo com que o método de um Bussinss objeto possa ser tratado como um command da
+     MVP (camada de Apresentação). Posso então setar a propriedade do command. ex:
+
+     Cmd := ReflectService.Annotate(Bo.SomeMethod.TypeInfo, ICommand) as ICommand;
+     Cmd.Enabled := True;
+
+  3) Agora, na camada de apresentação posso setar qualquer propriedade do command.
+
+ tenho acesso a propriedade Enabled como se Bo.SomeMethod tivesse esta propriedade;
+     
+
+  Veja que esse sistema não polui o método original com questões que
+não tem à ver com a implementação. Um sistema semelhante poderia ser
+usado para armazenar outras questões visuais ref. a propriedades dos
+objetos (ex: a questão da máscara dos membros da outra thread,
+informações da persistência sobre os BO's (tabela, colunas, etc)).
+Comentários? 
+
+
+----------------------------
+
+
+??? Remover servicos de Appcontext e fazer com que os servicos sejam injetados no Appcontext ou então remover 
+    totalmetne o applicationcontext
+
+v 1.139
++ MVP: Removido todos os prefixos infra das classes do MVP;
++ Notify: Adicionado um Subscribe sobrecarregado onde pode-se passar métodos callback para notificação de determinados evento, isso permite que cada evento possa ser tratato por um método separado da classe que está ouvindo determinado evento;
++ Notify: Removida toda a parte de eventos tipo Veto, achamos que é um processamento adicional para pouco uso no momento. Quando for possível ter aspectos para primitivos os métodos poderão ser interceptados e assim poderemos ter mais facilmente eventos Vetoable;
++ ValueType: Removida notificação de eventos veto dos setters;
++ ValueType: Criado método Change no valuetype base para simplificar a leitura nos setters dos descendentes;
++ Reflect: criado método GetTypeInfoByClass para auxiliar na configuração automatica da propriedade Typeinfo de um Element;
++ Reflect: GetTypeInfoByName colocado no TypeRegisterService e procura o nome nos membros do TypeInfo e em suas superclasses caso nao encontre;
+- Reflect: Corrigido bug quando procurando um feature pelo nome. Nao estava tratando direito situações como 'Model.Value';
+- Reflect: Removida geração da exceção no GetTypeInfoByName da lista de membros do typeinfo;
++ Refeito todos as chamadas a EventService.Subscribe para utilizar o novo esquema de subscrições;
+
+
+v 1.138
++ Now Aspects are using TInfraList to Advice's Params instead TList;
++ Added navigation on TInfraTypeInfoList.GetTypeInfoByName so we can for sample get the typeinfo of 'Model.Value';
++ Params added to InterceptedItem;
++ Removed parameters from Proceed, user could pass some other infralist and BOOOOOMMMMMM;
+
+v 1.137
+- Fixed Defines to use gxdebug on core and demos;
+- Fixed problems with functions on InvokeRealMethod;
++ Created AspectVMTUtil to group functions low level;
++ Splited AspectImpl in 2 units (low level and medium level);
++ Create AspectPointCutEval to treat PointCut Expressions;
+
+v 1.136
++ Put Params of Advices to TList for while because we have some leaks that cannot be fixed on this moment.
+
+v 1.134
+- Fixed PackParams parametes order;
+
+v 1.133
+- Fixed call of advices (beforeadvices, afteradvices)
++ Created a inverse iterator to intercepted methods using templates;
++ Created TInfraJointPoint;
+
+v 1.132
++ Create Aspect, MethodInfo, JointPoint, Instance to intercepted method in Stack;
+
+v 1.131
+- turned Around method as virtual;
+- fixed CallAdvices  to return IInfraType;
++ Created a Iterator to Stacks
++ Created a Stack to Intercepted Methods;
+
+v 1.130
+- Fixed Proceed parameters;
++ Created GetNextJointPoint and fixed call of Advices;
++ Created a stack to treat jointpoints between aspects;
++ Put IndexOf method into IInfraJointPoints;
+
+v 1.129
+- Fixed CallAdvices to receive object and infralist;
+
+v 1.128
++ Created PackParams and UnpackParams and InvokeRealMethod passing TInfraList;
++ Created Pack and Unpack Params
+
+v 1.120
++ Started InfraAspect
