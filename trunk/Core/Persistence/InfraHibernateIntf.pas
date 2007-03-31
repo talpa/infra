@@ -55,9 +55,9 @@ type
     function GetConnection: IConnection;
     function GetIsDirty: Boolean;
     function GetSessionFactory: ISessionFactory;
-    procedure SetConnection(const Value: IConnection);
     procedure Load(const pObject, pOID: IInfraType);
     procedure Save(const pObject: IInfraType);
+    procedure SetConnection(const Value: IConnection);
     procedure SetIsDirty(Value: Boolean);
     property Connection: IConnection read GetConnection write SetConnection;
     property IsDirty: Boolean read GetIsDirty write SetIsDirty;
@@ -92,6 +92,10 @@ type
     property IsClosed: Boolean read GetIsClosed;
     property TransactionIsolation: TTransactionIsolation read
         GetTransactionIsolation write SetTransactionIsolation;
+  end;
+
+  IDriver = interface(IElement)
+    ['{BE19650F-3451-469B-BF7B-98B63FC02753}']
   end;
 
   IResultSet = interface(IElement)

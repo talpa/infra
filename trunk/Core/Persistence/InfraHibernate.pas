@@ -14,11 +14,11 @@ type
     function GetPropertyItem(const pName: String): string;
     procedure SetPropertyItem(const pName: String; const Value: string);
   public
+    constructor Create;
+    destructor Destroy; override;
     property Properties: TStrings read GetProperties;
     property PropertyItem[const pName: String]: string read GetPropertyItem
         write SetPropertyItem;
-    destructor Destroy; override;
-    constructor Create;
   end;
 
   TPersistenceService = class(TElement, IPersistenceService)
@@ -34,17 +34,17 @@ type
 
   TSessionFactory = class(TElement, ISessionFactory)
   private
-    FDialect: IDialect;
-    FConnectionProvider: IConnectionProvider;
     FConfiguration: IConfiguration;
+    FConnectionProvider: IConnectionProvider;
+    FDialect: IDialect;
     function GetConnectionProvider: IConnectionProvider;
     function GetDialect: IDialect;
     function OpenSession: ISession; overload;
     function OpenSession(const pConnection: IConnection): ISession; overload;
   public
+    constructor Create(pConfig: IConfiguration);
     property ConnectionProvider: IConnectionProvider read GetConnectionProvider;
     property Dialect: IDialect read GetDialect;
-    constructor Create(pConfig: IConfiguration);
   end;
 
   TSession = class(TElement, ISession)
@@ -61,8 +61,8 @@ type
     function GetSessionFactory: ISessionFactory;
     procedure Load(const pObject, pOID: IInfraType);
     procedure Save(const pObject: IInfraType);
-    procedure SetIsDirty(Value: Boolean);
     procedure SetConnection(const Value: IConnection);
+    procedure SetIsDirty(Value: Boolean);
   public
     property Connection: IConnection read GetConnection write SetConnection;
     property IsDirty: Boolean read GetIsDirty write SetIsDirty;
@@ -71,12 +71,15 @@ type
 
   TConnectionProvider = class(TElement, IConnectionProvider)
   private
-    // *** FConnectionList: IConnectionList;
+    FDriver: IDriver;
     procedure Close;
     procedure CloseConnection(const pConnection: IConnection);
+    procedure ConfigureDriver;
     function GetConnection: IConnection;
+    function GetDriver: IDriver;
   public
     constructor Create(const pConfig: IConfiguration);
+    property Driver: IDriver read GetDriver;
   end;
 
 implementation
@@ -109,7 +112,7 @@ begin
 end;
 
 procedure TConfiguration.SetPropertyItem(const pName: String; const Value:
-  string);
+    string);
 begin
   FProperties.Values[pName] := Value;
 end;
@@ -160,13 +163,6 @@ begin
   Result := FDialect;
 end;
 
-function TSessionFactory.OpenSession(
-  const pConnection: IConnection): ISession;
-begin
-  Result := TSession.Create;
-  Result.Connection := pConnection;
-end;
-
 function TSessionFactory.OpenSession: ISession;
 var
   vConnection: IConnection;
@@ -175,21 +171,27 @@ begin
   Result := OpenSession(vConnection);
 end;
 
+function TSessionFactory.OpenSession(const pConnection: IConnection): ISession;
+begin
+  Result := TSession.Create;
+  Result.Connection := pConnection;
+end;
+
 { TSession }
 
 function TSession.BeginTransaction: ITransaction;
 begin
-  // incia uma transação para este session 
+  // incia uma transação para este session
 end;
 
 procedure TSession.Clear;
 begin
-  // ???? 
+  // ????
 end;
 
 procedure TSession.Close;
 begin
-  // fecha o session limpando tudo 
+  // fecha o session limpando tudo
 end;
 
 procedure TSession.Delete(const pObject: IInfraType);
@@ -234,26 +236,40 @@ end;
 
 { TConnectionProvider }
 
+constructor TConnectionProvider.Create(const pConfig: IConfiguration);
+begin
+  // - cria o pool de conexões;
+  // - guarda o classinfo de connection a ser instanciada quando chamar
+  //   GetConnection. com base no ConnectionString e ConnectionStringName;
+  ConfigureDriver;
+end;
+
 procedure TConnectionProvider.Close;
 begin
   // remove todas as conexões do pool
 end;
 
-procedure TConnectionProvider.CloseConnection(
-  const pConnection: IConnection);
+procedure TConnectionProvider.CloseConnection(const pConnection: IConnection);
 begin
   // procura a conexão na lista e remove o mesmo
 end;
 
-constructor TConnectionProvider.Create(const pConfig: IConfiguration);
+procedure TConnectionProvider.ConfigureDriver;
 begin
-  // cria o pool de conexões
+  // Guarda em IDriver uma instância do driver a ser usado pelo Connection
+  // Este driver é criado com base na reflexão pela string definida na chave
+  // Environment.ConnectionDriver
 end;
 
 function TConnectionProvider.GetConnection: IConnection;
 begin
   // verifica se há alguma conexão livre na lista trava e retorna esta conexão
-  // senao cria uma e a retorna. 
+  // senao cria uma e a retorna.
+end;
+
+function TConnectionProvider.GetDriver: IDriver;
+begin
+  Result := FDriver;
 end;
 
 end.

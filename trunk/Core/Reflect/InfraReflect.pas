@@ -214,8 +214,8 @@ type
     FReturnType: IClassInfo;
     FCallingConvention: TCallingConvention;
     FIsConstructor: boolean;
-    function InvokeRealMethod(pInstance: TObject; pMethod: Pointer;
-      pParamCount: integer; pArrayParams: Pointer): IInterface;
+    function InvokeRealMethod(pInstance: TObject;
+      pArrayParams: Pointer): IInterface;
     function GetParamPointer(const Index: integer;
       const Param: IInterface): Pointer;
     procedure ParamsToDword(const pParams: IInterfaceList;
@@ -874,13 +874,13 @@ begin
   Result := FTypeInfo;
 end;
 
-// *** ver com solerman
 function TPropertyInfo.GetValue(const pObject: IInterface): IInterface;
 var
   Obj: IInfraInstance;
 begin
-  if Supports(pObject, IInfraInstance, Obj) then
-    Result := GetGetterInfo.Invoke(Obj, nil)
+  if Supports(pObject, IInfraInstance, Obj)
+    and Assigned(FGetterInfo) then
+    Result := FGetterInfo.Invoke(Obj, nil)
   else
     Result := nil;
 end;
@@ -891,7 +891,8 @@ var
   pParameters: IInterfaceList;
   Obj: IInfraInstance;
 begin
-  if Supports(pObject, IInfraInstance, Obj) then
+  if Supports(pObject, IInfraInstance, Obj)
+    and Assigned(FSetterInfo) then
   begin
     pParameters := TInterfaceList.Create;
     pParameters.Add(pValue);
@@ -965,13 +966,11 @@ var
   vStackParams: TParams;
 begin
   Obj := pObj.GetInstance;
-  // *** fix
-  if Assigned(Obj) and
-    (not Assigned(pParameters) or Supports(pParameters, IInterfaceList)) then
+  if Assigned(Obj) then
   begin
     FillChar(vStackParams, SizeOf(TParams), 0);
     ParamsToDword(pParameters, vStackParams);
-    Result := InvokeRealMethod(Obj, FMethod, Parameters.Count, @vStackParams);
+    Result := InvokeRealMethod(Obj, @vStackParams);
   end else
     Result := nil;
 end;
@@ -996,20 +995,26 @@ var
   pType: IInfraType;
 begin
   if Parameters.Count <= Index then
-    raise exception.Create('MethodMember index out of bounds');
-  if Supports(Param, (Parameters[Index] as IClassInfo).TypeId, pType) then
+    raise exception.Create('Parameter index out of bounds');
+  if Supports(Param, Parameters[Index].ParameterType.TypeID, pType) then
     Result := Pointer(pType)
   else
     raise exception.Create('Cannot unpack param. Incompatible types');
 end;
 
 // Invoke the real method passing to it the parameters.
-function TMethodInfo.InvokeRealMethod(pInstance: TObject; pMethod: Pointer;
-  pParamCount: integer; pArrayParams: Pointer): IInterface;
+function TMethodInfo.InvokeRealMethod(pInstance: TObject;
+  pArrayParams: Pointer): IInterface;
+var
+  pParamCount: integer;
+  pMethod: Pointer;
 begin
+  pParamCount := Parameters.Count;
+  pMethod := FMethod;
   // Is need extra param when returning interface, string or record type.
-  // In our case we will have return always a interface for while, then....
-  TParams(pArrayParams^)[pParamCount-1] := Dword(@Result);
+  // At moment, we just will return always a interface, then....
+  if Assigned(ReturnType) then
+    TParams(pArrayParams^)[pParamCount-1] := Dword(@Result);
   asm
     push esp                        // store ESP
     push ebx                        // store EBX

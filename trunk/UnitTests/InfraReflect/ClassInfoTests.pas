@@ -263,8 +263,17 @@ procedure TClassInfoTests.TestPropertyInfo;
 var
   FProperty: IPropertyInfo;
 begin
-  FProperty := FPersonInfo.GetPropertyInfo('Email',true);
+  FProperty := FPersonInfo.GetPropertyInfo('Email');
   CheckNotNull(FProperty, 'Email property should be in Person');
+
+  FProperty := FStudentInfo.GetPropertyInfo('Email');
+  CheckNotNull(FProperty, 'Email property should be in Student');
+
+  FProperty := FPersonInfo.GetPropertyInfo('Address.City');
+  CheckNotNull(FProperty, 'Address.City property should be in Person');
+
+  FProperty := FStudentInfo.GetPropertyInfo('Address.City');
+  CheckNotNull(FProperty, 'Address.City property should be in Student');
 end;
 
 procedure TClassInfoTests.TestSetRelation;
