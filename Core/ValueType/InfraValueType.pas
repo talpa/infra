@@ -978,7 +978,9 @@ begin
     end else
       raise Exception.Create('Cannot Instanciate '+PropertyName+
         '. ClassInfo not registred!');
-  end;
+  end else
+    raise Exception.Create('Property '+PropertyName+
+      ' exist already!');
 end;
 
 procedure TInfraObject.Assign(const Source: IInfraType);
