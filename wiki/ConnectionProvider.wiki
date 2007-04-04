@@ -2,19 +2,18 @@
 
 = ConnectionProvider =
 
-Esta classe é responsável por retornar uma instância de uma conexão (*Connection*).
-O connectionProvider é criado internamente pela fábrica de sessions (*SessionFactory*), recebendo um *Configuration* como 
+Esta classe é responsável por retornar uma instância de um Connection.
 
-parâmetro.
-O connectionProvider usa as seguintes chaves do *Configuration*:
-  * ??? mostrar as chaves aqui. acho que ConnectionString e ConnectionStringName e outras referentes ao pool ???
-Como não se deve manter uma conexão aberta indefinidamente nem ficar abrindo e fechando-as sempre, o ConnectionProvider deve 
+O ConnectionProvider é criado internamente pela SessionFactory, recebendo um Configuration como parâmetro.
 
-manter um pool de conexões para melhorar o desempenho do sistema.
+O ConnectionProvider usa as seguintes chaves do Configuration:
+  ??? mostrar as chaves aqui. acho que ConnectionString e ConnectionStringName e outras referentes ao pool ???
 
-= Tarefas =
-  * Ver quais as chaves de configuração o ConnectionProvider utiliza para configurar o connection;
-  * Criar a classe Connection e pelo menos um descendente dele para DBXFirebird por exemplo;
-  * Fazer o ConnectionProvider retornar um novo connection a cada GetConnection;
-  * Ver quais as chaves de configuração o ConnectionProvider utiliza para configurar o Pool;
-  * Fazer o ConnectionProvider pegar o connection deste pool;
+Como não se deve manter uma conexão aberta indefinidamente nem ficar abrindo e fechando-as sempre, o ConnectionProvider deve manter um pool de conexões para melhorar o desempenho do sistema.
+
+== Tarefas ==
+  # Ver quais as chaves de configuração o ConnectionProvider utiliza para configurar o connection;
+  # Criar a classe Connection e pelo menos um descendente dele para DBXFirebird por exemplo;
+  # Fazer o ConnectionProvider retornar um novo connection a cada GetConnection;
+  # Ver quais as chaves de configuração o ConnectionProvider utiliza para configurar o Pool;
+  # Fazer o ConnectionProvider pegar o connection deste pool;
