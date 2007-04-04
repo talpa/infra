@@ -6,7 +6,7 @@ Esta classe é responsável por executar as operação diretamente para o armaze
 
 O Connection é criado e retornado pelo ConnectionProvider sempre que necessário.
 
-O ConnectionProvider usa as seguintes chaves do *Configuration*:
+O Connection usa as seguintes chaves do *Configuration*:
   * ??? mostrar as chaves aqui. acho que ConnectionString e ConnectionStringName ???
 
 == Tarefas ==
