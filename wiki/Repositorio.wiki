@@ -9,7 +9,7 @@
   # Abra o Windows Explorer, crie uma pasta ou vá até o diretório onde o Infra deverá ser baixado.
   # Clique com o botão direito do mouse, e escolha a opção SVN Checkout. O tortoise abrirá uma janela
   # No campo URL of repository, informe o caminho do repositório do Infra, http://infra.googlecode.com/svn/trunk/
-  # No campo Checkout directory, informe o diretório onde o Jazz será baixado.
+  # No campo Checkout directory, informe o diretório onde o Infra será baixado.
   # No grupo Revison, escolha a opção HEAD revision.
   # Clique em Ok. Caso o diretório escolhido no campo Checkout directory não exista, o Tortoise pergutará se você deseja criá-lo. Basta clicar em Yes.
 
