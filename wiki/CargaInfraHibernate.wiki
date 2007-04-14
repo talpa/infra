@@ -1,0 +1,54 @@
+#summary Classes envolvidas na carga de um objeto a partir do OID e suas responsabilidades.
+
+=== TPersistenceService - O serviço do Infra responsável pela persistencia ===
+  * Faz referencia a um objeto TConfiguration e a um TSessionFatory;
+  * O usuário final terá acesso apenas a este servico e a partir dele poderá fazer todo o resto;
+
+=== TConfiguration - Responsável pelas configurações da persistencia ===
+  * Bem parecida com um map (chave - valor);
+  * Guarda as chaves e valores que serão usados por várias classes do InfraHibernate para configurar determinandas propriedades ou criar determinadas classes (ex: Dialect, ConnectionString, UserName, Password, PoolSize, etc...)
+
+=== TSessionFactory - Uma fábrica de obejtos Sessions ===
+  * Possui um método chamado OpenSession que retorna um novo objeto Session;
+  * Antes de criar um Session ele pega um Connection do ConnectionProvider;
+  * Cria um novo Session e configura ele com o Connection adiquirido;
+
+=== TSession - classe responsável pela operação de carga de um objeto ===
+  * Possui um método Load onde passamos o tipo de objeto e o oid e é retornado um infratype
+  * Internamente o Session.Load faz:
+  * cria um Loader;
+  * Passa o Connection e o ClassInfo para este Loader;
+  * retorna o objeto vindo do Loader;
+
+=== TLoader - Responsável por transformar um objeto a partir do dados do ResultSet ===
+  * Cria um objeto a partir do ClassInfo;
+  * Inicialmente terá um método para gerar a sql de carga a partir do ClassInfo;
+  * Chama o método connection.ExecuteQuery(sQL: string, Params: IInfraList): IResultSet para poder preparar a SQL. Isso retorna rá um Resultset já com os dados encontrados;
+  * Chama um método que Varre os PropertyInfo do ClassInfo fazendo cast para a annotation Collumn;
+  * Quando o ClassInfo nao suportar collumn pega o nome do atributo
+  * Chama o PropertyInfo.GetValue para pegar o atributo do objeto criado e faz Assign passando o ResultSet.GetValue(CollumnName);
+  * Retorna o objeto já com os dados em seus atributos;
+
+=== TConnectionProvider - Repsonsável por criar objeto Connection ===
+  * Uma fábrica de objetos Connection;
+  * Usa um Pool para manter as conexões;
+  * Faz uso do Configuration para criar e configurar o Connection antes de retorná-lo;
+
+=== TDBXConnection - Representa Uma conexão com o banco de dados através da biblioteca DBX ===
+  * Implementa a interface Connection;
+  * Empacota um TSQLConnection;
+  * Possui um método ExecuteQuery(sQL: string, Params: IInfraList): IResultSet;
+  * Quando o ExecuteQuery é chamado:
+    * Cria seus descendente de ResultSet DBSResultSet, passando o TSQLConnection, o SQL e os parametros como parâmetro;
+  * Retorna o ResultSet criado;
+
+=== TDBXResultSet - Classe que controla a navegação no dataset ===
+  * Implementa interface ResultSet;
+  * Empacota um dataset tipo TSQLQuery;
+  * Tem os métodos para navegar no dataset Next e EOF;
+  * Possui o método GetValue(const CollumName: string): IInfraType; para pegar o valor de um campo
+  * Tem um método Open(pSQL: string; pParams: IInfraList) que abre o dataset interno;
+  * Usa o TSQLConnection passado no create para configurar o dataset interno interna;
+
+
+
