@@ -20,8 +20,8 @@ type
     property Source: IElement read GetSource write SetSource;
   public
     procedure InfraInitInstance; override;
-    constructor Create(const Src: IElement); overload;
-    constructor Create(const Sender: IElement; Guid: TGUID); overload;
+    constructor Create(const Src: IElement); reintroduce; overload;
+    constructor Create(const Sender: IElement; Guid: TGUID); reintroduce; overload;
   end;
 
   TInfraEventServiceItem = class(TMemoryManagedObject,
@@ -34,7 +34,7 @@ type
     function GetPublishers: IInfraPublisherList;
     function GetSubscriptions: ISubscriptionList;
   public
-    constructor Create(const EventType: TGUID);
+    constructor Create(const EventType: TGUID); reintroduce;
     property EventType: TGUID read GetEventType;
     property Publishers: IInfraPublisherList read GetPublishers;
     property Subscriptions: ISubscriptionList read GetSubscriptions;
@@ -69,7 +69,7 @@ type
     function HasSubscribers(const EventType: TGUID): Boolean;
     procedure Publish(const Event: IInfraEvent);
   public
-    constructor Create(const Controller: IElement);
+    constructor Create(const Controller: IElement); reintroduce;
   end;
 
   TSubscription = class(TMemoryManagedObject, ISubscription)
@@ -78,7 +78,7 @@ type
     function GetSubscriber: ISubscriber;
     procedure Publish(const Event: IInfraEvent); virtual; abstract;
   public
-    constructor Create(const pSubscriber: ISubscriber);
+    constructor Create(const pSubscriber: ISubscriber); reintroduce;
     property Subscriber: ISubscriber read GetSubscriber;
   end;
 
@@ -221,8 +221,6 @@ end;
 constructor TInfraEvent.Create(const Sender: IElement; Guid: TGUID);
 begin
   Create(Sender);
-  // *** solerman: se isto aqui está correto? 
-  // *** antes era: InjectedList.Add(Guid, Self);
   Inject(Guid, Self);
 end;
 

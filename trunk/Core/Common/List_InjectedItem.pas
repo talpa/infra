@@ -6,76 +6,112 @@ interface
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
-  InfraBasicList,
-  InfraCommonIntf,
-  InfraCommon;
+  Classes, InfraCommon, InfraCommonIntf;
 
 type
-  _ITERABLELIST_BASE_ = TMemoryManagedObject;
-  _ITERABLELIST_INTF_ = IInjectedList;
-  _ITEM_INTF_ = IInjectedItem;
-  _ITERATOR_INTF_ = IInfraIterator;
-  {$I ..\Templates\InfraTempl_IntfList.inc}
+  TInjectedList = class(TMemoryManagedObject, IInjectedList)
+  private
+    FItems: IInterfaceList;
+    FOwner: IMemoryManagedObject;
+    function Add(const ID: TGUID; const pObject: IInterface): Integer;
+    function GetCount: Integer;
+    function GetItem(Index: integer): IInjectedItem;
     function IndexByGUID(const Item: TGUID): Integer;
+    procedure Clear;
+  public
+    property Count: Integer read GetCount;
+    property Item[Index: integer]: IInjectedItem read GetItem; default;
+    constructor Create(const AOwner: IMemoryManagedObject); reintroduce;
+    destructor Destroy; override;
   end;
 
   TAnnotationsIterator = class(TInterfacedObject, IAnnotationsIterator)
   private
     FCurrentIndex: integer;
-    FList: _ITERABLELIST_INTF_;
+    FList: IInjectedList;
   protected
-    function CurrentItem: _ITEM_INTF_;
+    function CurrentItem: IInjectedItem;
     procedure First; virtual;
     function IsDone: Boolean; virtual;
     procedure Next; virtual;
   public
-    constructor Create(const List: _ITERABLELIST_INTF_);
+    constructor Create(const List: IInjectedList);
   end;
-
-  TInjectedList = class(_ITERABLELIST_);
 
 implementation
 
 uses
-  SysUtils;
+  SysUtils, InfraInjected;
 
-{ _ITERABLELIST_ }
+{ TInjectedList }
 
-{$I ..\Templates\InfraTempl_IntfList.inc}
+constructor TInjectedList.Create(const AOwner: IMemoryManagedObject);
+begin
+  inherited Create;
+  FItems := TInterfaceList.Create;
+  SetReference(IInterface(FOwner), AOwner);
+end;
 
-function _ITERABLELIST_.IndexByGUID(const Item: TGUID): Integer;
+destructor TInjectedList.Destroy;
+begin
+  FItems.Clear;
+  inherited;
+end;
+
+function TInjectedList.Add(const ID: TGUID; const pObject: IInterface): Integer;
+begin
+  if not Supports(FOwner, ID) then
+    Result := FItems.Add(TInjectedItem.Create(ID, pObject,
+      IElement(FOwner) = pObject))
+  else
+    Result := IndexByGUID(ID);
+end;
+
+function TInjectedList.GetCount: Integer;
+begin
+  Result := FItems.Count;
+end;
+
+function TInjectedList.GetItem(Index: integer): IInjectedItem;
+begin
+  if Assigned(FItems[index]) then
+    Result := (FItems[index] as IInjectedItem)
+  else
+    Result := nil;
+end;
+
+function TInjectedList.IndexByGUID(const Item: TGUID): Integer;
 var
   i: integer;
 begin
   Result := -1;
   for i := 0 to FItems.Count-1 do
-    if IsEqualGUID((FItems[i] as _ITEM_INTF_).ID, Item) then
+    if IsEqualGUID((FItems[i] as IInjectedItem).ID, Item) then
     begin
       Result := i;
       Break;
     end;
 end;
 
-destructor _ITERABLELIST_.Destroy;
+procedure TInjectedList.Clear;
 begin
-  FreeAndNil(FItems);
-  inherited;
+  FItems.Clear;
 end;
 
 { TAnnotationsIterator }
 
-constructor TAnnotationsIterator.Create(const List: _ITERABLELIST_INTF_);
+constructor TAnnotationsIterator.Create(const List: IInjectedList);
 begin
   inherited Create;
   FList := List;
   First;
 end;
 
-function TAnnotationsIterator.CurrentItem: _ITEM_INTF_;
+function TAnnotationsIterator.CurrentItem: IInjectedItem;
 begin
   if Assigned(FList) and (fCurrentIndex <> -1)
     and (fCurrentIndex < FList.Count) then
-    Result := FList[fCurrentIndex] as _ITEM_INTF_
+    Result := FList[fCurrentIndex] as IInjectedItem
   else
     Result := nil;
 end;
@@ -88,7 +124,7 @@ begin
   if FList.Count > 0 then
     for i := 0 to Pred(FList.Count) do
     begin
-      if (FList[i] as _ITEM_INTF_).IsAnnotation then
+      if (FList[i] as IInjectedItem).IsAnnotation then
       begin
         fCurrentIndex := i;
         Break;
@@ -105,7 +141,7 @@ procedure TAnnotationsIterator.Next;
 begin
   if (FList.Count > 0) then
     while (FCurrentIndex < FList.Count) and
-      not (FList[fCurrentIndex+1] as _ITEM_INTF_).IsAnnotation do
+      not (FList[fCurrentIndex+1] as IInjectedItem).IsAnnotation do
       Inc(fCurrentIndex);
 end;
 

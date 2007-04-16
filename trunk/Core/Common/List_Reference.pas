@@ -6,6 +6,7 @@ interface
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
+  InfraBase,
   Contnrs;
 
 type
@@ -13,7 +14,7 @@ type
   {$DEFINE EQUAL_VALUE_DEFAULT}
   {$DEFINE INVALID_INDEX_DEFAULT}
   {$DEFINE INVALID_VALUE_DEFAULT}
-  _ITERABLELIST_BASE_ = TInterfacedObject;        // List's Class Base
+  _ITERABLELIST_BASE_ = TInfraBaseObject;         // List's Class Base
   _ITERABLELIST_INTF_ = IInterface;               // List's Interface Implementing
   _ITERATOR_INTF_ = IInterface;                   // List's Interface Implementing
   _INDEX_ = Pointer;                              // List's Item Index

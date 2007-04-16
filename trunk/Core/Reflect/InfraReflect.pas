@@ -10,6 +10,7 @@ uses
   SysUtils,
   Types,
   InfraConsts,
+  InfraBase,
   InfraCommonIntf,
   InfraCommon;
 
@@ -50,7 +51,7 @@ type
     property OtherEnd: IRelationEndInfo read GetOtherEnd;
     property Owner: IRelationInfo read GetOwner write SetOwner;
   public
-    constructor Create(const Relation: IRelationInfo);
+    constructor Create(const Relation: IRelationInfo); reintroduce;
   end;
 
   TRelationInfo = class(TElement, IRelationInfo)
@@ -82,7 +83,7 @@ type
     function CreateInstance(ClassID: TGUID): IElement; overload;
     function CreateInstance(const ClassInfo: IClassInfo): IElement; overload;
     function AddType(const pTypeID: TGUID; const pTypeName: string;
-      pClassImplementing: TClass; const pFamilyID: TGUID;
+      pClassImplementing: TInfraBaseObjectClass; const pFamilyID: TGUID;
       const pSuperClassInfo: IClassInfo = nil): IClassInfo;
     function GetRelations: IRelationInfoList;
     function NewRelationsIterator(
@@ -92,7 +93,7 @@ type
     function GetTypes: IClassInfoList;
     function GetType(TypeID: TGUID;
       ThrowException: Boolean = False): IClassInfo; overload;
-    function GetType(pClass: TClass;
+    function GetType(pClass: TInfraBaseObjectClass;
       ThrowException: Boolean = False): IClassInfo; overload;
     function GetType(const TypeName: String;
       ThrowException: Boolean = False): IClassInfo; overload;
@@ -111,7 +112,7 @@ type
     FClassFamily: TGUID;
     FTypeID: TGUID;
     FName: string;
-    FImplClass: TClass;
+    FImplClass: TInfraBaseObjectClass;
     FSuperClass: IClassInfo;
     FMembers: IMemberInfoList;
     FOwner: IClassInfo;
@@ -129,7 +130,7 @@ type
     function GetConstructors: IMethodInfoIterator; overload;
     function GetFullName: string;
     function GetTypeID: TGUID;
-    function GetImplClass: TClass;
+    function GetImplClass: TInfraBaseObjectClass;
     function GetMemberInfo(const pName: String): IMemberInfo;
     function GetMembers: IMemberInfoIterator;
     function GetMethodInfo(const pName: String): IMethodInfo;
@@ -144,7 +145,7 @@ type
     function IsSubClassOf(const Value: IClassInfo): Boolean;
     procedure SetClassFamily(const Family: TGUID);
     procedure SetTypeID(const Value: TGUID);
-    procedure SetImplClass(Value: TClass);
+    procedure SetImplClass(Value: TInfraBaseObjectClass);
     procedure SetName(const Value: string);
     procedure SetOwner(const Value: IClassInfo);
     procedure SetRelation(const pPropertyName: string;
@@ -161,11 +162,12 @@ type
     function GetAllMethods: IMethodInfoIterator;
     function FindPropertyInfo(const pName: string): IPropertyInfo;
   public
-    constructor create;
+    constructor create; override;
     property ClassFamily: TGUID read GetClassFamily write SetClassFamily;
     property FullName: string read GetFullName;
     property TypeID: TGUID read GetTypeID write SetTypeID;
-    property ImplClass: TClass read GetImplClass write SetImplClass;
+    property ImplClass: TInfraBaseObjectClass read GetImplClass
+      write SetImplClass;
     property Name: string read GetName write SetName;
     property Owner: IClassInfo read GetOwner write SetOwner;
     property SuperClass: IClassInfo read GetSuperClass write SetSuperClass;
@@ -204,7 +206,7 @@ type
   public
     constructor Create(const pName: string;
       const pType, pDeclaringType: IClassInfo;
-      const pGetterInfo, pSetterInfo: IMethodInfo);
+      const pGetterInfo, pSetterInfo: IMethodInfo); reintroduce;
   end;
 
   TMethodInfo = class(TMemberInfo, IMethodInfo)
@@ -238,7 +240,7 @@ type
       const pParameters: IParameterInfoList = nil;
       const pReturnType: IClassInfo = nil;
       pIsConstructor: boolean = False;
-      pCallingConvention: TCallingConvention = ccRegister);
+      pCallingConvention: TCallingConvention = ccRegister); reintroduce;
     property MethodPointer: Pointer read GetMethodPointer;
     property IsConstructor: Boolean read GetIsConstructor;
     property Parameters: IParameterInfoList read GetParameters;
@@ -265,7 +267,7 @@ type
     constructor Create(const pName: string;
       pParameterType: IClassInfo; pPosition: Integer;
       pOptions: TParameterOptions;
-      const pDefaultValue: IInterface);
+      const pDefaultValue: IInterface); reintroduce;
     property DefaultValue: IInterface read GetDefaultValue;
     property IsConst: boolean read GetIsConst;
     property IsOptional: boolean read GetIsOptional;
@@ -450,7 +452,7 @@ begin
 end;
 
 function TTypeService.AddType(const pTypeID: TGUID; const pTypeName: string;
-  pClassImplementing: TClass; const pFamilyID: TGUID;
+  pClassImplementing: TInfraBaseObjectClass; const pFamilyID: TGUID;
   const pSuperClassInfo: IClassInfo = nil): IClassInfo;
 begin
   if Assigned(GetType(pTypeID)) then
@@ -484,10 +486,8 @@ end;
 function TTypeService.CreateInstance(
   const ClassInfo: IClassInfo): IElement;
 begin
-  if Assigned(ClassInfo) and
-    Supports(ClassInfo.ImplClass.Create, IElement, Result) then
-    Result.TypeInfo := ClassInfo
-  else
+  if not Assigned(ClassInfo)
+    or not Supports(ClassInfo.ImplClass.Create, IElement, Result) then
     raise Exception.Create('Cannot Instanciate. ClassInfo not registred!');
 end;
 
@@ -513,7 +513,7 @@ begin
     raise Exception.Create('ClassInfo not registred to '+ TypeName);
 end;
 
-function TTypeService.GetType(pClass: TClass;
+function TTypeService.GetType(pClass: TInfraBaseObjectClass;
   ThrowException: Boolean): IClassInfo;
 begin
   Result := FTypes.ByClass(pClass);
@@ -545,6 +545,7 @@ end;
 
 constructor TClassInfo.create;
 begin
+  inherited Create;
   FMembers := TMemberInfoList.Create;
 end;
 
@@ -612,7 +613,7 @@ begin
     Result := Name;
 end;
 
-function TClassInfo.GetImplClass: TClass;
+function TClassInfo.GetImplClass: TInfraBaseObjectClass;
 begin
   Result := FImplClass;
 end;
@@ -761,7 +762,7 @@ begin
     FClassFamily := Family;
 end;
 
-procedure TClassInfo.SetImplClass(Value: TClass);
+procedure TClassInfo.SetImplClass(Value: TInfraBaseObjectClass);
 begin
   FImplClass := Value;
 end;

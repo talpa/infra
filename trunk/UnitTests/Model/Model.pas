@@ -3,7 +3,7 @@ unit Model;
 interface
 
 uses
-  InfraValueTypeIntf, InfraValueType, InfraCommonIntf,
+  InfraValueTypeIntf, InfraValueType, InfraCommonIntf, InfraCommon,
   ModelIntf;
 
 type
@@ -18,6 +18,7 @@ type
     class procedure RegisterPersonAddressRelation(
       const Source: IClassInfo);
     class function RegisterMockMethod: IClassInfo;
+    class function RegisterVersion: IClassInfo;
     class procedure RemoveTypeInfo(ID: TGUID);
   end;
 
@@ -106,7 +107,7 @@ type
     FMessage: IInfraString;
     function GetMessage: IInfraString;
   public
-    Constructor Create; overload;
+    Constructor Create; overload; override;
     property Message: IInfraString read GetMessage;
     constructor Constructor0;
     constructor Constructor1(p1: IInfraString);
@@ -130,6 +131,16 @@ type
     procedure MethodProc5(const p1: IInfraString; const p2:IInfraInteger;
       const p3: IInfraDateTime; const p4: IInfraBoolean; const p5: IInfraDouble);
     procedure InfraInitInstance; override;
+  end;
+
+  TVersion = class(TElement, IVersion)
+  private
+    FVersionNumber: IInfraString;
+    function GetVersionNumber: IInfraString;
+    procedure SetVersionNumber(const Value: IInfraString);
+  public
+    constructor Create; override;
+    property VersionNumber: IInfraString read GetVersionNumber write SetVersionNumber;
   end;
 
 const
@@ -349,6 +360,13 @@ begin
   end;
 end;
 
+class function TSetupModel.RegisterVersion: IClassInfo;
+begin
+  with TypeService do
+    Result := AddType(IVersion, 'Version', TVersion, IElement,
+      GetType(IElement));
+end;
+
 { TPerson }
 
 procedure TPerson.InfraInitInstance;
@@ -479,7 +497,7 @@ end;
 
 constructor TMockMethod.Create;
 begin
-  inherited;
+  inherited Create;
 end;
 
 constructor TMockMethod.Constructor0;
@@ -596,6 +614,25 @@ begin
   FMessage := TInfraString.NewFrom(
     Format(cMessageProc5, [p1.AsString, p2.AsInteger,
       DateTimeToStr(p3.AsDateTime), BoolToStr(p4.AsBoolean), p5.AsDouble]));
+end;
+
+{ TVersion }
+
+constructor TVersion.Create;
+begin
+  inherited;
+  FVersionNumber := TInfraString.Create;
+  FVersionNumber.AsString := '1.0';
+end;
+
+function TVersion.GetVersionNumber: IInfraString;
+begin
+  Result := FVersionNumber;
+end;
+
+procedure TVersion.SetVersionNumber(const Value: IInfraString);
+begin
+  FVersionNumber := Value;
 end;
 
 end.

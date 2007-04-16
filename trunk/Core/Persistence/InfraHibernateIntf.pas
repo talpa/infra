@@ -94,16 +94,11 @@ type
         GetTransactionIsolation write SetTransactionIsolation;
   end;
 
-  IDriver = interface(IElement)
-    ['{BE19650F-3451-469B-BF7B-98B63FC02753}']
-  end;
-
   IResultSet = interface(IElement)
     ['{A4061B4D-420C-4954-B627-AD8CD699CA7A}']
     function EOF: Boolean;
     procedure First;
-    function GetFieldValue(Index: Integer): IInfraType; overload;
-    function GetFieldValue(const FieldName: String): IInfraType; overload;
+    function GetValue(const FieldName: String): IInfraType; overload;
     procedure Next;
   end;
 

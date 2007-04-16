@@ -8,6 +8,7 @@ uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
   InfraBasicList,
   InfraCommonIntf,
+  InfraBase,
   InfraCommon;
 
 type
@@ -16,7 +17,7 @@ type
   _ITEM_INTF_ = IClassInfo;
   _ITERATOR_INTF_ = IInfraIterator;
   {$I ..\Templates\InfraTempl_IntfList.inc}
-    function ByClass(pClass: TClass): IClassInfo;
+    function ByClass(pClass: TInfraBaseObjectClass): IClassInfo;
     function ByGUID(DataType: TGUID): IClassInfo;
     function ByName(const pName: string): IClassInfo;
   end;
@@ -32,7 +33,7 @@ uses
 
 {$I ..\Templates\InfraTempl_IntfList.inc}
 
-function _ITERABLELIST_.ByClass(pClass: TClass): _ITEM_INTF_;
+function _ITERABLELIST_.ByClass(pClass: TInfraBaseObjectClass): _ITEM_INTF_;
 var
   i: Integer;
   vClassInfo: _ITEM_INTF_;

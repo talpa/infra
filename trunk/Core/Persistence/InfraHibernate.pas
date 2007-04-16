@@ -3,8 +3,9 @@ unit InfraHibernate;
 interface
 
 uses
-  Classes, InfraCommon, InfraCommonIntf, InfraHibernateIntf,
-  InfraValueTypeIntf;
+  Classes, {TStrings}
+  InfraCommon, InfraCommonIntf, InfraHibernateIntf, InfraValueTypeIntf, {Infra}
+  SqlExpr, DBXpress; {DBX}
 
 type
   TConfiguration = class(TElement, IConfiguration)
@@ -14,7 +15,7 @@ type
     function GetPropertyItem(const pName: String): string;
     procedure SetPropertyItem(const pName: String; const Value: string);
   public
-    constructor Create;
+    constructor Create; override;
     destructor Destroy; override;
     property Properties: TStrings read GetProperties;
     property PropertyItem[const pName: String]: string read GetPropertyItem
@@ -42,7 +43,7 @@ type
     function OpenSession: ISession; overload;
     function OpenSession(const pConnection: IConnection): ISession; overload;
   public
-    constructor Create(pConfig: IConfiguration);
+    constructor Create(pConfig: IConfiguration); reintroduce;
     property ConnectionProvider: IConnectionProvider read GetConnectionProvider;
     property Dialect: IDialect read GetDialect;
   end;
@@ -71,15 +72,32 @@ type
 
   TConnectionProvider = class(TElement, IConnectionProvider)
   private
-    FDriver: IDriver;
     procedure Close;
     procedure CloseConnection(const pConnection: IConnection);
-    procedure ConfigureDriver;
+    procedure Configure;
     function GetConnection: IConnection;
-    function GetDriver: IDriver;
   public
-    constructor Create(const pConfig: IConfiguration);
-    property Driver: IDriver read GetDriver;
+    constructor Create(const pConfig: IConfiguration); reintroduce;
+  end;
+
+  TDBXConnection = class(TElement, IConnection)
+  private
+    FConnection: TSQLConnection;
+    FTransactionIsolation: TTransactionIsolation;
+    procedure Close;
+    procedure Commit;
+    function ExecuteQuery(const pSQL: String): IResultSet;
+    function ExecuteUpdate(const pSQL: String): Integer;
+    function GetIsClosed: Boolean;
+    function GetTransactionIsolation: TTransactionIsolation;
+    procedure Rollback;
+    procedure SetTransactionIsolation(Value: TTransactionIsolation);
+  public
+    constructor Create; override;
+    destructor Destroy; override;
+    property IsClosed: Boolean read GetIsClosed;
+    property TransactionIsolation: TTransactionIsolation read
+        GetTransactionIsolation write SetTransactionIsolation;
   end;
 
 implementation
@@ -91,7 +109,7 @@ uses
 
 constructor TConfiguration.Create;
 begin
-  inherited;
+  inherited Create;
   FProperties := TStringList.Create;
 end;
 
@@ -156,8 +174,8 @@ begin
   vTypeInfo := nil;
   if not Assigned(FDialect) then
   begin
-    vTypeInfo := TypeService.GetType(
-      FConfiguration.PropertyItem['Dialect'], True);
+    vTypeInfo :=
+      TypeService.GetType(FConfiguration.PropertyItem['Dialect'], True);
     FDialect := TypeService.CreateInstance(vTypeInfo) as IDialect;
   end;
   Result := FDialect;
@@ -238,10 +256,11 @@ end;
 
 constructor TConnectionProvider.Create(const pConfig: IConfiguration);
 begin
+  inherited Create;
+  Configure;
   // - cria o pool de conexões;
   // - guarda o classinfo de connection a ser instanciada quando chamar
   //   GetConnection. com base no ConnectionString e ConnectionStringName;
-  ConfigureDriver;
 end;
 
 procedure TConnectionProvider.Close;
@@ -254,7 +273,7 @@ begin
   // procura a conexão na lista e remove o mesmo
 end;
 
-procedure TConnectionProvider.ConfigureDriver;
+procedure TConnectionProvider.Configure;
 begin
   // Guarda em IDriver uma instância do driver a ser usado pelo Connection
   // Este driver é criado com base na reflexão pela string definida na chave
@@ -267,9 +286,78 @@ begin
   // senao cria uma e a retorna.
 end;
 
-function TConnectionProvider.GetDriver: IDriver;
+{ TDBXConnection }
+
+constructor TDBXConnection.Create;
 begin
-  Result := FDriver;
+  inherited Create;
+  FConnection := TSQLConnection.Create(nil);
+end;
+
+destructor TDBXConnection.Destroy;
+begin
+  FreeAndNil(FConnection);
+  inherited;
+end;
+
+procedure TDBXConnection.Close;
+begin
+  FConnection.Close;
+end;
+
+procedure TDBXConnection.Commit;
+begin
+  // *** nao mecher com transaçao agora
+end;
+
+function TDBXConnection.ExecuteQuery(const pSQL: String): IResultSet;
+begin
+{
+  FConnection.Execute(pSQL, nil);
+var
+  SQLstmt: String;
+  stmtParams: TParams;
+begin
+  stmtParams := TParams.Create;
+  try
+    SQLConnection1.Connected := True;
+    stmtParams.CreateParam(ftString, 'StateParam', ptInput);
+    stmtParams.ParamByName('StateParam').AsString := 'CA';
+    SQLstmt := 'INSERT INTO "Custom" '+
+      '(CustNo, Company, State) ' +
+      'VALUES (7777, "Robin Dabank Consulting", :StateParam)';
+    SQLConnection1.Execute(SQLstmt, stmtParams);
+  finally
+    stmtParams.Free;
+  end;
+}
+end;
+
+function TDBXConnection.ExecuteUpdate(const pSQL: String): Integer;
+begin
+  Result := 0;
+end;
+
+function TDBXConnection.GetIsClosed: Boolean;
+begin
+  Result := not FConnection.Connected;
+end;
+
+function TDBXConnection.GetTransactionIsolation: TTransactionIsolation;
+begin
+  // *** nao mecher com transaçao agora
+  Result := tiNone;
+end;
+
+procedure TDBXConnection.Rollback;
+begin
+  // *** nao mecher com transaçao agora
+end;
+
+procedure TDBXConnection.SetTransactionIsolation(
+  Value: TTransactionIsolation);
+begin
+  FTransactionIsolation := Value;
 end;
 
 end.

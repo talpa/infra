@@ -6,7 +6,7 @@ program InfraTests;
 {$I Infra.Inc}
 
 uses
-  {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}
+  FastMM4,
   ApplicationContext,
   TestFramework {$IFDEF LINUX},
   QForms,
@@ -15,11 +15,12 @@ uses
   GUITestRunner {$ENDIF},
   TextTestRunner,
   ClassInfoTests in 'InfraReflect\ClassInfoTests.pas',
-  Model in 'InfraReflect\Model.pas',
-  ModelIntf in 'InfraReflect\ModelIntf.pas',
+  Model in 'Model\Model.pas',
+  ModelIntf in 'Model\ModelIntf.pas',
   TypeServiceTests in 'InfraReflect\TypeServiceTests.pas',
   PropertyInfoTests in 'InfraReflect\PropertyInfoTests.pas',
-  MethodInfoTests in 'InfraReflect\MethodInfoTests.pas';
+  MethodInfoTests in 'InfraReflect\MethodInfoTests.pas',
+  AnnotationsTests in 'InfraAnnotation\AnnotationsTests.pas';
 
 {$R *.RES}
 

@@ -154,7 +154,6 @@ end;
 procedure TPropertyInfoTests.TestGetValue;
 var
   FPropertyInfo: IPropertyInfo;
-  FMethodInfo: IMethodInfo;
   Street: string;
 begin
   FPropertyInfo := FPersonInfo.GetPropertyInfo('Email');
@@ -183,7 +182,6 @@ end;
 procedure TPropertyInfoTests.TestSetValue;
 var
   FPropertyInfo: IPropertyInfo;
-  FMethodInfo: IMethodInfo;
 begin
   FPropertyInfo := FPersonInfo.GetPropertyInfo('Email');
   FPropertyInfo.SetValue(FPerson, TInfraString.NewFrom('NewFiliph@Mail'));

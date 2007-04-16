@@ -80,7 +80,7 @@
     function PositionOf(Index: _INDEX_; Value: _VALUE_): integer;
     function ValueOfPosition(Index: Integer): _VALUE_;
     function IndexOfPosition(Index: Integer): _INDEX_;
-    constructor Create; overload;
+    constructor Create; overload; override; 
     destructor Destroy; override;
     property Count: Integer read GetCount;
     property Items[Index: _INDEX_]: _VALUE_ read GetItem write SetItem; default;
@@ -344,7 +344,7 @@ end;
 
 constructor _ITERABLELIST_.Create;
 begin
-  inherited;
+  inherited Create;
   FItems := TObjectList.Create;
   FItems.OwnsObjects := True;
 end;
