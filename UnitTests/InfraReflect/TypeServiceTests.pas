@@ -110,10 +110,19 @@ end;
 procedure TTypeServiceTests.TestCreateInstanceByGUID;
 var
   Person: IPerson;
+  R: IInterface;
 begin
   with Typeservice do
   begin
     Person := CreateInstance(IPerson) as IPerson;
+    CheckNotNull(Person, 'CreateInstance By GUID Fail, instance not created');
+    Person.Name.AsString := 'InfraTeam''''s someone';
+    CheckEquals(Person.Name.AsString, 'InfraTeam''''s someone',
+      'Cannot fill property of Instance created by GUID');
+  end;
+  with Typeservice do
+  begin
+    R := CreateInstance(IPerson) as IPerson;
     CheckNotNull(Person, 'CreateInstance By GUID Fail, instance not created');
     Person.Name.AsString := 'InfraTeam''''s someone';
     CheckEquals(Person.Name.AsString, 'InfraTeam''''s someone',

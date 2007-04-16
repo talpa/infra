@@ -24,7 +24,7 @@ type
     function IsDone: Boolean;
     procedure Next;
   public
-    constructor Create(const List: IInterfaceList);
+    constructor Create(const List: IInterfaceList); reintroduce;
   end;
 
 implementation

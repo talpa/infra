@@ -6,10 +6,10 @@ interface
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
-  InfraCommonIntf;
+  InfraBase, InfraCommonIntf;
 
 type
-  TMemoryManagedObject = class(TInterfacedObject, IInterface,
+  TMemoryManagedObject = class(TInfraBaseObject, IInterface,
     IMemoryManagedObject, IInfraReferenceKeeper,
     IInfraInstance)
   private
@@ -18,9 +18,11 @@ type
     function GetInjectedList: IInjectedList;
     function GetInstance: TObject;
     procedure InfraInitInstance; virtual;
-    function Inject(const pID: TGUID; const pItem: IInterface): IInjectedItem;
+    function Inject(const pID: TGUID; const pItem: IInterface;
+      pIsAnnotation: boolean = False): IInjectedItem;
     function Annotate(const pID: TGUID): IInterface;
     function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
+    function IsAnnotedWith(const pID: TGUID): Boolean;
     property InjectedList: IInjectedList read GetInjectedList;
     {$IFDEF SEE_REFCOUNT}
     function GetRefCount: integer;
@@ -35,6 +37,8 @@ type
     procedure BeforeDestruction; override;
     destructor Destroy; override;
   end;
+
+  TMemoryManagedObjectClass = class of TMemoryManagedObject;
 
   TElement = class(TMemoryManagedObject, IElement,
     IInfraPublisher, ISubscriber, IInfraFilter)
@@ -55,6 +59,8 @@ type
     property Publisher: IInfraPublisher read GetPublisher
       implements IInfraPublisher;
   end;
+
+  TElementClass = Class of TElement;
 
 {$IFDEF INFRA_LEAKOBJECTS}
 var
@@ -140,7 +146,7 @@ end;
 function TMemoryManagedObject.GetInjectedList: IInjectedList;
 begin
   if not Assigned(FInjectedList) then
-    FInjectedList := TInjectedList.Create;
+    FInjectedList := TInjectedList.Create(Self);
   Result := FInjectedList;
 end;
 
@@ -156,7 +162,7 @@ begin
     i := FInjectedList.IndexByGUID(IID);
     if i <> -1 then
     begin
-      IInterface(Obj) := FInjectedList.Items[i];
+      IInterface(Obj) := FInjectedList.Item[i].InjectedInterface;
       Result := 0;
     end else
       Result := inherited Queryinterface(IID, Obj);
@@ -182,33 +188,32 @@ end;
 {$ENDIF}
 
 function TMemoryManagedObject.Inject(const pID: TGUID;
-  const pItem: IInterface): IInjectedItem;
+  const pItem: IInterface; pIsAnnotation: boolean = False): IInjectedItem;
+var
+  Index: integer;
 begin
-  if not Supports(Self, pID) then
-  begin
-    Result := TInjectedItem.Create(pID, pItem,
-      IInterface(Self) = pItem, False);
-    InjectedList.Add(Result);
-  end else
-    Result := InjectedList.Items[InjectedList.IndexByGUID(pID)];
+  Index := InjectedList.Add(pID, pItem);
+  Result := FInjectedList.Item[Index];
+  Result.IsAnnotation := pIsAnnotation;
 end;
 
 function TMemoryManagedObject.Annotate(const pID: TGUID): IInterface;
 var
-  pInjectedItem: IInjectedItem;
-  lAnnotationInfo: IClassInfo;
+  pAnnotationClassInfo: IClassInfo;
 begin
-  if not Supports(Self, pID, Result) then
+  if not Supports(Self, pID) then
   begin
-    lAnnotationInfo := TypeService.GetType(pID, True);
-    Supports(lAnnotationInfo.ImplClass.Create, pID, Result);
-    if Assigned(Result) then
-    begin
-      pInjectedItem := TInjectedItem.Create(pID, Result,
-        IInterface(Self) = Result, True);
-      InjectedList.Add(pInjectedItem)
-    end;
-  end;
+    pAnnotationClassInfo := TypeService.GetType(pID, True);
+    if Supports(TypeService.CreateInstance(pAnnotationClassInfo),
+      pID, Result) then
+      Inject(pID, Result, True);
+  end else
+    Result := Self as IInterface;
+end;
+
+function TMemoryManagedObject.IsAnnotedWith(const pID: TGUID): Boolean;
+begin
+  Result := FInjectedList.IndexByGUID(pID) <> -1;
 end;
 
 { TElement }
@@ -250,7 +255,7 @@ end;
 
 procedure TElement.InitTypeInfo;
 begin
-  FTypeInfo := TypeService.GetType(Self.ClassType);
+  FTypeInfo := TypeService.GetType(TInfraBaseObjectClass(Self.ClassType));
 end;
 
 procedure TElement.SetTypeInfo(const Value: IClassInfo);

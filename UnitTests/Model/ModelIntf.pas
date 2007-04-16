@@ -76,6 +76,13 @@ type
     property Message: IInfraString read GetMessage;
   end;
 
+  IVersion = Interface
+    ['{E0853981-6E95-4D98-9AD8-F363BB345F90}']
+    function GetVersionNumber: IInfraString;
+    procedure SetVersionNumber(const Value: IInfraString);
+    property VersionNumber: IInfraString read GetVersionNumber write SetVersionNumber;
+  end;
+
 implementation
 
 end.

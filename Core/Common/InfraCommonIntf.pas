@@ -6,6 +6,7 @@ interface
 
 uses
   Classes,
+  InfraBase,
   InfraConsts;
 
 type
@@ -61,16 +62,13 @@ type
 
   IInjectedList = interface(IInterface)
     ['{489622C1-09B1-4138-BBCF-E7428604ADEC}']
-    function Add(const Item: IInjectedItem): Integer;
-    function First: IInjectedItem;
+    function Add(const ID: TGUID; const pObject: IInterface): integer;
     function GetCount: Integer;
     function GetItem(Index: Integer): IInjectedItem;
     function IndexByGUID(const Item: TGUID): Integer;
-    function Last: IInjectedItem;
-    procedure SetItem(Index: Integer; const Value: IInjectedItem);
+    procedure Clear;
     property Count: Integer read GetCount;
-    property Items[Index: Integer]: IInjectedItem read GetItem
-      write SetItem; default;
+    property Item[Index: Integer]: IInjectedItem read GetItem; default;
   end;
 
   // Base Classes
@@ -80,10 +78,10 @@ type
     {$IFDEF SEE_REFCOUNT}
     function GetRefCount: integer;
     {$ENDIF}
-    function Inject(const pID: TGUID; const pItem: IInterface): IInjectedItem;
+    function Inject(const pID: TGUID; const pItem: IInterface;
+      pIsAnnotation: boolean = False): IInjectedItem;
     function Annotate(const pID: TGUID): IInterface;
-    // *** acho que esta função deveria ficar aqui
-    // *** function IsAnnotedWith(const value: IClassInfo; Inherit: Boolean): Boolean;
+    function IsAnnotedWith(const pID: TGUID): Boolean;
     function GetInjectedList: IInjectedList;
     property InjectedList: IInjectedList read GetInjectedList;
   end;
@@ -279,7 +277,7 @@ type
     function IndexOf(const Item: IClassInfo): Integer;
     function Last: IClassInfo;
     function ByGUID(DataType: TGUID): IClassInfo;
-    function ByClass(ClassType: TClass): IClassInfo;
+    function ByClass(ClassType: TInfraBaseObjectClass): IClassInfo;
     function ByName(const pName: string): IClassInfo;
     procedure Clear;
     procedure Delete(Index: Integer);
@@ -419,7 +417,7 @@ type
     function GetConstructors: IMethodInfoIterator; overload;
     function GetFullName: string;
     function GetTypeID: TGUID;
-    function GetImplClass: TClass;
+    function GetImplClass: TInfraBaseObjectClass;
     function GetMemberInfo(const pName: String): IMemberInfo;
     function GetMembers: IMemberInfoIterator;
     function GetMethodInfo(const pName: String): IMethodInfo;
@@ -435,7 +433,7 @@ type
     function IsSubClassOf(const Value: IClassInfo): Boolean;
     procedure SetClassFamily(const Family: TGUID);
     procedure SetTypeID(const Value: TGUID);
-    procedure SetImplClass(Value: TClass);
+    procedure SetImplClass(Value: TInfraBaseObjectClass);
     procedure SetName(const Value: string);
     procedure SetOwner(const Value: IClassInfo);
     procedure SetRelation(const pPropertyName: string;
@@ -452,7 +450,8 @@ type
     property FamilyID: TGUID read GetClassFamily write SetClassFamily;
     property FullName: string read GetFullName;
     property TypeID: TGUID read GetTypeID write SetTypeID;
-    property ImplClass: TClass read GetImplClass write SetImplClass;
+    property ImplClass: TInfraBaseObjectClass read GetImplClass
+      write SetImplClass;
     property Name: string read GetName write SetName;
     property Owner: IClassInfo read GetOwner write SetOwner;
     property SuperClass: IClassInfo read GetSuperClass write SetSuperClass;
@@ -574,7 +573,7 @@ type
     function CreateInstance(ClassID: TGUID): IElement; overload;
     function CreateInstance(const ClassInfo: IClassInfo): IElement; overload;
     function AddType(const pTypeID: TGUID; const pTypeName: string;
-      pClassImplementing: TClass; const pFamilyID: TGUID;
+      pClassImplementing: TInfraBaseObjectClass; const pFamilyID: TGUID;
       const pSuperClassInfo: IClassInfo = nil): IClassInfo;
     function GetRelations: IRelationInfoList;
     function NewRelationsIterator(
@@ -584,7 +583,7 @@ type
     function GetTypes: IClassInfoList;
     function GetType(TypeID: TGUID;
       ThrowException: Boolean = False): IClassInfo; overload;
-    function GetType(pClass: TClass;
+    function GetType(pClass: TInfraBaseObjectClass;
       ThrowException: Boolean = False): IClassInfo; overload;
     function GetType(const TypeName: String;
       ThrowException: Boolean = False): IClassInfo; overload;

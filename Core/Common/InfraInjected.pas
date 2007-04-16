@@ -17,20 +17,19 @@ type
     FID: TGUID;
     FInjectedInterface: IInterface;
     FIsAnnotation: boolean;
-  protected
     function GetID: TGUID;
     function GetInjectedInterface: IInterface;
     function GetIsAnnotation: boolean;
     procedure SetID(const Value: TGUID);
     procedure SetInjectedInterface(const Value: IInterface);
     procedure SetIsAnnotation(Value: boolean);
+  public
     property ID: TGUID read GetID write SetID;
     property InjectedInterface: IInterface read GetInjectedInterface
       write SetInjectedInterface;
     property IsAnnotation: boolean read GetIsAnnotation write SetIsAnnotation;
-  public
-    constructor Create(ID: TGUID; const InjectedInterface: IInterface;
-      WeakReference: boolean; pIsAnnotation: boolean = False);
+    constructor Create(ID: TGUID; {***const }InjectedInterface: IInterface;
+      WeakReference: boolean; pIsAnnotation: boolean = False); reintroduce;
   end;
 
 implementation
@@ -41,7 +40,7 @@ uses
 { TInjectedItem }
 
 constructor TInjectedItem.Create(ID: TGUID;
-  const InjectedInterface: IInterface; WeakReference: boolean;
+  InjectedInterface: IInterface; WeakReference: boolean;
   pIsAnnotation: boolean = False);
 begin
   inherited Create;
