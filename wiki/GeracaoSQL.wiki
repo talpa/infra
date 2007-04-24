@@ -51,5 +51,4 @@ public static IEntityPersister CreateClassPersister(PersistentClass model, ICach
   else
     return Create(persisterClass, model, cache, factory, cfg);
 }}}
-*... tem que ver agora a partir de SingleTableEntityPersister e colocar os passos aqui mais ou menos como eu fiz acima ...*
 == SingleTableEntityPersister.cs ==
