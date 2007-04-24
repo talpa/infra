@@ -52,3 +52,8 @@ public static IEntityPersister CreateClassPersister(PersistentClass model, ICach
     return Create(persisterClass, model, cache, factory, cfg);
 }}}
 == SingleTableEntityPersister.cs ==
+{{{
+// Cria um Persister do tipo Uma Tabela Por Classe com base no Model passado como parametro (PersistentClass model).
+
+public SingleTableEntityPersister(PersistentClass model, ICacheConcurrencyStrategy cache, ISessionFactoryImplementor factory, IMapping mapping)
+}}}
