@@ -57,3 +57,7 @@ public static IEntityPersister CreateClassPersister(PersistentClass model, ICach
 
 public SingleTableEntityPersister(PersistentClass model, ICacheConcurrencyStrategy cache, ISessionFactoryImplementor factory, IMapping mapping)
 }}}
+== AbstractEntityPersister.cs ==
+{{{
+AbstractEntityPersister é a classe base para qualquer Persister 
+}}}
