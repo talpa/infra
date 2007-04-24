@@ -1,0 +1,54 @@
+#summary Passos do Session.Load aos Geradores de SQL.
+
+= Introdução =
+
+Abaixo estão os arquivos e a parte do código responsável por carregar um objeto pelo oid, com isso queremos chegar a geração da SQL e separar no infra ela do TLoader (que acho que nao se chamará mais assim).
+
+== SessionImpl.cs ==
+{{{
+// Método chamado pelo programador
+public object Load(System.Type clazz, object id)
+  object result = DoLoadByClass(clazz, id, true, true); 
+
+// Faz a carga pelo metadata da class a partir do oid
+private object DoLoadByClass(System.Type clazz, object id, bool checkDeleted, bool allowProxyCreation)
+  return DoLoad(clazz, id, null, LockMode.None, checkDeleted);
+
+// Crie um persister e chama o load deste persister para poder carregar o objeto com o oid passado
+private object DoLoad(System.Type theClass, object id, object optionalObject, LockMode lockMode, bool checkDeleted)
+  IEntityPersister persister = GetClassPersister(theClass); 
+    object result = persister.Load(id, optionalObject, lockMode, this);
+    return result;
+
+// pega na Sessionfactory qual o persister correto a ser criado para a classe em questão
+private IEntityPersister GetClassPersister(System.Type theClass)
+  return factory.GetEntityPersister(theClass);
+}}}
+== SessionFactoryImpl.cs ==
+{{{
+// no construtor varre cada classe mapeadas, pega a classe de persister correto a ser criada para cada classe e poe em várias listas de persisters (por class, por nome, etc...)
+public SessionFactoryImpl(Configuration cfg, IMapping mapping, Settings settings)
+  foreach (PersistentClass model in cfg.ClassMappings)
+    IEntityPersister cp = PersisterFactory.CreateClassPersister(model, cache, this, mapping);
+    classPersisters[model.MappedClass] = cp;
+    classPersistersByName[model.Name] = cp;
+    classPersistersByName[model.MappedClass.AssemblyQualifiedName] = cp;
+    classMeta[model.MappedClass] = cp.ClassMetadata;
+
+// pega na lista de Persisters por classe o persister correto a ser utilizado.
+public IEntityPersister GetEntityPersister(System.Type theClass)
+  IEntityPersister result = classPersisters[theClass] as IEntityPersister;
+}}}
+== PersisterFactory.cs ==
+{{{
+// Cria o Persister correto com base nas informações da classe persistente do modelo.
+public static IEntityPersister CreateClassPersister(PersistentClass model, ICacheConcurrencyStrategy cache, ISessionFactoryImplementor factory, IMapping cfg)
+  System.Type persisterClass = model.ClassPersisterClass;
+  if (persisterClass == null || persisterClass == typeof(SingleTableEntityPersister))
+    return new SingleTableEntityPersister(model, cache, factory, cfg);
+  else if (persisterClass == typeof(JoinedSubclassEntityPersister))
+    return new JoinedSubclassEntityPersister(model, cache, factory, cfg);
+  else
+    return Create(persisterClass, model, cache, factory, cfg);
+}}}
+*... tem que ver agora a partir de SingleTableEntityPersister e colocar os passos aqui mais ou menos como eu fiz acima ...*
