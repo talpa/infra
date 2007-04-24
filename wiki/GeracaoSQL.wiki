@@ -23,6 +23,8 @@ private object DoLoad(System.Type theClass, object id, object optionalObject, Lo
 // pega na Sessionfactory qual o persister correto a ser criado para a classe em questão
 private IEntityPersister GetClassPersister(System.Type theClass)
   return factory.GetEntityPersister(theClass);
+
+*Obs: Importante aqui a chamada ao Persister.Load que na verdade está chamando no AbstractEntityPersister.*
 }}}
 == SessionFactoryImpl.cs ==
 {{{
@@ -50,14 +52,16 @@ public static IEntityPersister CreateClassPersister(PersistentClass model, ICach
     return new JoinedSubclassEntityPersister(model, cache, factory, cfg);
   else
     return Create(persisterClass, model, cache, factory, cfg);
-}}}
-== SingleTableEntityPersister.cs ==
-{{{
-// Cria um Persister do tipo Uma Tabela Por Classe com base no Model passado como parametro (PersistentClass model). SingleTableEntityPersister herda de AbstractEntityPersister.
-
-public SingleTableEntityPersister(PersistentClass model, ICacheConcurrencyStrategy cache, ISessionFactoryImplementor factory, IMapping mapping)
+*Obs: como a carga inicialmente é de uma simples classe por tabela o Persister criado será o SingleTableEntityPersister.*
 }}}
 == AbstractEntityPersister.cs ==
 {{{
-AbstractEntityPersister é a classe base para qualquer Persister 
+  // método para criar um loader e chamar o método loader do mesmo
+  public object Load(object id, object optionalObject, LockMode lockMode, ISessionImplementor session)
+    IUniqueEntityLoader loader = GetAppropriateLoader(lockMode, session);
+    return loader.Load(id, optionalObject, session);
+
+  // pega o loader na lista de loaders
+  private IUniqueEntityLoader GetAppropriateLoader(LockMode lockMode, ISessionImplementor session)
+  ...
 }}}
