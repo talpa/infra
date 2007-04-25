@@ -47,12 +47,15 @@ public IEntityPersister GetEntityPersister(System.Type theClass)
 public static IEntityPersister CreateClassPersister(PersistentClass model, ICacheConcurrencyStrategy cache, ISessionFactoryImplementor factory, IMapping cfg)
   System.Type persisterClass = model.ClassPersisterClass;
   if (persisterClass == null || persisterClass == typeof(SingleTableEntityPersister))
+    // parece que usado quando persite uma hierarquia em uma unica tabela
     return new SingleTableEntityPersister(model, cache, factory, cfg);
   else if (persisterClass == typeof(JoinedSubclassEntityPersister))
+    // parece que usado quando persite cada subclasse em uma tabela
     return new JoinedSubclassEntityPersister(model, cache, factory, cfg);
   else
+    // parece que usado quando persite cada classe em uma tabela
     return Create(persisterClass, model, cache, factory, cfg);
-*Obs: como a carga inicialmente é de uma simples classe por tabela o Persister criado será o SingleTableEntityPersister.*
+*Obs: como a carga inicialmente é de uma simples classe por tabela o Persister criado será o ultimo.*
 }}}
 == AbstractEntityPersister.cs ==
 {{{
