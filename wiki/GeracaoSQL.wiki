@@ -4,15 +4,27 @@
 
 Abaixo estão os arquivos e a parte do código responsável por carregar um objeto pelo oid, com isso queremos chegar a geração da SQL e separar no infra ela do TLoader (que acho que nao se chamará mais assim).
 
+Quando fazemos AlgumSession.Load(TypeOf(Classe), AlgumOID) o NHibernate faz:
+
+Um grande amigo teve o gentil trabalhão de montar este vídeo de depuraçao. Imensamente agradeço a ele isto nos ajudará bastante nesta fase, como o vídeo é grande levaremos o final de semana assistindo o mesmo para ver tudo certinho. Obrigado Marcos!
+
+http://rapidshare.com/files/28247138/NHIBERNATE-_XviD_MPEG-4_Codec.zip
+http://rapidshare.com/files/28227788/NHIBERNATE-_XviD_MPEG-4_Codec.z01
+
 == SessionImpl.cs ==
 {{{
 // Método chamado pelo programador
-public object Load(System.Type clazz, object id)
-  object result = DoLoadByClass(clazz, id, true, true); 
+public object Load(System.Type clazz, object id) // 1
+  object result = DoLoadByClass(clazz, id, true, true); // 2
 
 // Faz a carga pelo metadata da class a partir do oid
-private object DoLoadByClass(System.Type clazz, object id, bool checkDeleted, bool allowProxyCreation)
-  return DoLoad(clazz, id, null, LockMode.None, checkDeleted);
+private object DoLoadByClass(System.Type clazz, object id, bool checkDeleted, bool allowProxyCreation) // 3
+  IEntityPersister persister = GetClassPersister(clazz); // 4
+  if (!persister.HasProxy) 
+  {
+    // this class has no proxies (so do a shortcut)
+    return DoLoad(clazz, id, null, LockMode.None, checkDeleted);
+  }
 
 // Crie um persister e chama o load deste persister para poder carregar o objeto com o oid passado
 private object DoLoad(System.Type theClass, object id, object optionalObject, LockMode lockMode, bool checkDeleted)
@@ -21,7 +33,7 @@ private object DoLoad(System.Type theClass, object id, object optionalObject, Lo
     return result;
 
 // pega na Sessionfactory qual o persister correto a ser criado para a classe em questão
-private IEntityPersister GetClassPersister(System.Type theClass)
+private IEntityPersister GetClassPersister(System.Type theClass) // 5
   return factory.GetEntityPersister(theClass);
 
 *Obs: Importante aqui a chamada ao Persister.Load que na verdade está chamando no AbstractEntityPersister.*
