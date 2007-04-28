@@ -8,8 +8,9 @@ Quando fazemos AlgumSession.Load(TypeOf(Classe), AlgumOID) o NHibernate faz:
 
 Um grande amigo teve o gentil trabalhão de montar este vídeo de depuraçao. Imensamente agradeço a ele isto nos ajudará bastante nesta fase, como o vídeo é grande levaremos o final de semana assistindo o mesmo para ver tudo certinho. Obrigado Marcos!
 
-http://rapidshare.com/files/28247138/NHIBERNATE-_XviD_MPEG-4_Codec.zip
-http://rapidshare.com/files/28227788/NHIBERNATE-_XviD_MPEG-4_Codec.z01
+  * http://rapidshare.com/files/28247138/NHIBERNATE-_XviD_MPEG-4_Codec.zip
+  * http://rapidshare.com/files/28227788/NHIBERNATE-_XviD_MPEG-4_Codec.z01
+  * Codec: http://download.divxmovies.com/XviD-1.1.2-01112006.exe
 
 == SessionImpl.cs ==
 {{{
