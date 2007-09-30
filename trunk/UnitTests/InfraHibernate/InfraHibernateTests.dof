@@ -88,14 +88,14 @@ RemoteSymbols=0
 MinStackSize=16384
 MaxStackSize=1048576
 ImageBase=4194304
-ExeDescription=Infra - Integrated Framework
+ExeDescription=
 [Directories]
-OutputDir=
+OutputDir=..\bin
 UnitOutputDir=..\bin
 PackageDLLOutputDir=..\bin
 PackageDCPOutputDir=..\bin
 SearchPath=$(DELPHI)\Lib\Debug;..\bin
-Packages=
+Packages=vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;visualclx;visualdbclx;vclactnband;vclshlctrls;IntrawebDB_50_70;Intraweb_50_70;dclOfficeXP;RemObjects_WebBroker_D7;RemObjects_Indy_D7;RemObjects_RODX_D7;RemObjects_BPDX_D7;EPCOTAUtils70;dss
 Conditionals=
 DebugSourceDirs=..\bin
 UsePackages=0
@@ -108,14 +108,14 @@ DebugCWD=
 [Language]
 ActiveLang=
 ProjectLang=
-RootDir=
+RootDir=C:\Infra\UnitTests\
 [Version Info]
-IncludeVerInfo=1
+IncludeVerInfo=0
 AutoIncBuild=0
 MajorVer=1
 MinorVer=0
 Release=0
-Build=14
+Build=0
 Debug=0
 PreRelease=0
 Special=0
@@ -126,7 +126,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=
 FileDescription=
-FileVersion=1.0.0.14
+FileVersion=1.0.0.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=

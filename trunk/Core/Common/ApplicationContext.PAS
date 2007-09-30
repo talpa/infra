@@ -33,13 +33,15 @@ type
 
 implementation
 
+// Ps: It is important put all services on use clause.
 uses
   InfraReflect,
   InfraCommon,
   InfraNotify,
   InfraReference,
   InfraCommonRegister,
-  InfraValueTypeRegister;
+  InfraValueTypeRegister,
+  InfraHibernateRegister;
   // *** InfraMVPRegister;
 
 { TApplicationContext }
@@ -95,6 +97,7 @@ procedure RegisterAllOnReflection;
 begin
   InfraCommonRegister.RegisterOnReflection;
   InfraValueTypeRegister.RegisterOnReflection;
+  InfraHibernateRegister.RegisterOnReflection;
   // *** Marcos: voltar quando encaixar o MVP
   // *** InfraMVPRegister.RegisterOnReflection;
 end;

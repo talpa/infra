@@ -18,7 +18,7 @@ type
   ITransaction = interface;
   IDialect = interface;
 
-  IPersistenceService = interface(IMemoryManagedObject)
+  IPersistenceService = interface(IInterface)
     ['{0DC6F960-B66E-437E-88BD-BD0BAF6CFFE3}']
     function GetConfiguration: IConfiguration;
     function GetSessionFactory: ISessionFactory;
@@ -48,19 +48,11 @@ type
 
   ISession = interface(IElement)
     ['{244258B8-5A25-48D1-B4BC-804A76D5920D}']
-    function BeginTransaction: ITransaction;
-    procedure Clear;
-    procedure Close;
-    procedure Delete(const pObject: IInfraType);
     function GetConnection: IConnection;
-    function GetIsDirty: Boolean;
     function GetSessionFactory: ISessionFactory;
-    procedure Load(const pObject, pOID: IInfraType);
-    procedure Save(const pObject: IInfraType);
+    function Load(const pTypeID: TGUID; const pOID: IInfraType): IInfraType;
     procedure SetConnection(const Value: IConnection);
-    procedure SetIsDirty(Value: Boolean);
     property Connection: IConnection read GetConnection write SetConnection;
-    property IsDirty: Boolean read GetIsDirty write SetIsDirty;
     property SessionFactory: ISessionFactory read GetSessionFactory;
   end;
 
@@ -79,29 +71,46 @@ type
     ['{0325E2B1-72CA-46A9-87F5-385E6FBC7AD7}']
   end;
 
+  ILoader = interface(IElement)
+    ['{DF928002-27B9-4854-A983-D6558BB9A7B0}']
+    function Load(const pTypeID: TGUID; const pSession: ISession;
+      const pOID: IInfraType): IInfraType;
+  end;
+
   IConnection = interface(IElement)
     ['{FA23555A-3724-474D-A318-D37CBC3390D3}']
     procedure Close;
-    procedure Commit;
     function ExecuteQuery(const pSQL: String): IResultSet;
     function ExecuteUpdate(const pSQL: String): Integer;
     function GetIsClosed: Boolean;
-    function GetTransactionIsolation: TTransactionIsolation;
-    procedure Rollback;
-    procedure SetTransactionIsolation(Value: TTransactionIsolation);
     property IsClosed: Boolean read GetIsClosed;
-    property TransactionIsolation: TTransactionIsolation read
-        GetTransactionIsolation write SetTransactionIsolation;
   end;
 
   IResultSet = interface(IElement)
     ['{A4061B4D-420C-4954-B627-AD8CD699CA7A}']
+    procedure Close;
     function EOF: Boolean;
     procedure First;
-    function GetValue(const FieldName: String): IInfraType; overload;
+    function GetValue(const FieldName: String): IInfraType;
+    procedure Open(const pSQL: string);
     procedure Next;
   end;
 
+  IDBXConnection = interface(IConnection)
+    ['{63DCA0BF-0224-4335-B905-2593E5C89460}']
+  end;
+
+  IDBXResultSet = interface(IResultSet)
+    ['{F2A3128A-F9C0-4B07-952D-003CAA5C7AB5}']
+  end;
+
+function PersistenceService: IPersistenceService;
+
 implementation
+
+function PersistenceService: IPersistenceService;
+begin
+  Result := ApplicationContext as IPersistenceService;
+end;
 
 end.

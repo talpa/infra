@@ -40,7 +40,7 @@ implementation
 uses
   SysUtils, InfraConsts,
   InfraValueTypeIntf,
-  Model, ModelIntf;
+  ReflectModel, ReflectModelIntf;
 
 { TClassInfoTests }
 
