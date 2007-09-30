@@ -134,6 +134,13 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
+[Excluded Packages]
+c:\arquivos de programas\borland\delphi7\Projects\Bpl\dclfqb70.bpl=FastQueryBuilder 1.03
+c:\arquivos de programas\borland\delphi7\Projects\Bpl\dclfqbADO70.bpl=FastQueryBuilder ADO Engine
+c:\arquivos de programas\borland\delphi7\Projects\Bpl\dclfqbBDE70.bpl=FastQueryBuilder BDE Engine
+c:\arquivos de programas\borland\delphi7\Projects\Bpl\dclfqbDBX70.bpl=FastQueryBuilder DBX Engine
+c:\arquivos de programas\borland\delphi7\Projects\Bpl\dclIndyCore70.bpl=Indy 10 Core Design Time
+c:\arquivos de programas\borland\delphi7\Projects\Bpl\dclIndyProtocols70.bpl=Indy 10 Protocols Design Time
 [HistoryLists\hlDebugSourcePath]
 Count=2
 Item0=..\bin
