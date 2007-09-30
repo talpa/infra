@@ -5,7 +5,7 @@ interface
 uses
   TestFrameWork,
   InfraCommonIntf,
-  ModelIntf;
+  ReflectModelIntf;
 
 type
   TMethodInfoTests = class(TTestCase)
@@ -33,7 +33,7 @@ uses
   InfraValueTypeIntf,
   InfraValueType,
   Classes,
-  Model,
+  ReflectModel,
   InfraReflect;
 
 { TMethodInfoTests }

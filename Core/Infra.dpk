@@ -1,7 +1,6 @@
 package Infra;
 
 {$R *.res}
-{$R 'LayoutManager\LayoutManager.dcr'}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
@@ -34,11 +33,11 @@ requires
   dbexpress,
   vclx,
   designide,
-  vclactnband,
   bdertl,
   adortl,
   vcldb,
-  dsnap;
+  dsnap,
+  dttreeviewd7d;
 
 contains
   ApplicationContext in 'Common\ApplicationContext.PAS',
@@ -69,10 +68,12 @@ contains
   List_Literal in 'ValueType\List_Literal.pas',
   InfraValueTypeConvert in 'ValueType\InfraValueTypeConvert.pas',
   InfraHibernateIntf in 'Persistence\InfraHibernateIntf.pas',
-  InfraHibernate in 'Persistence\InfraHibernate.pas',
+  InfraDBXConnection in 'Persistence\InfraDBXConnection.pas',
   InfraBase in 'Common\InfraBase.pas',
-  InfraGUIBuilder in 'GUIBuilder\InfraGUIBuilder.pas',
-  LayoutManager in 'LayoutManager\LayoutManager.pas',
-  LayoutManagerIntf in 'LayoutManager\LayoutManagerIntf.pas';
+  List_MapperCollumn in 'Persistence\List_MapperCollumn.pas',
+  MapperAnnotation in 'Persistence\MapperAnnotation.pas',
+  MapperAnnotationIntf in 'Persistence\MapperAnnotationIntf.pas',
+  InfraHibernate in 'Persistence\InfraHibernate.pas',
+  InfraHibernateRegister in 'Persistence\InfraHibernateRegister.pas';
 
 end.

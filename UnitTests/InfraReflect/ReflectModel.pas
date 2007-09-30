@@ -1,10 +1,10 @@
-unit Model;
+unit ReflectModel;
 
 interface
 
 uses
   InfraValueTypeIntf, InfraValueType, InfraCommonIntf, InfraCommon,
-  ModelIntf;
+  ReflectModelIntf;
 
 type
   // Esta classe serve apenas para propósito de teste. Nossas classes poderiam
@@ -18,7 +18,6 @@ type
     class procedure RegisterPersonAddressRelation(
       const Source: IClassInfo);
     class function RegisterMockMethod: IClassInfo;
-    class function RegisterVersion: IClassInfo;
     class procedure RemoveTypeInfo(ID: TGUID);
   end;
 
@@ -79,29 +78,6 @@ type
       write SetSchoolNumber;
   end;
 
-  {
-  TTeacher = class(TPerson, ITeacher)
-  public
-    procedure InfraInitInstance; override;
-    property Title: IInfraString read GetTitle
-      write SetTitle;
-  end;
-
-  TGroup = class(TInfraObject, ITeacher)
-  public
-    procedure InfraInitInstance; override;
-    property Name: IInfraString read GetName write SetName;
-  end;
-
-  TDiscipline = class(TInfraObject, ITeacher)
-  public
-    procedure InfraInitInstance; override;
-    property Name: IInfraString read GetName write SetName;
-    property Summary: IInfraString read GetSummary write SetSummary;
-    property Summary: IInfraString read GetSummary write SetSummary;
-  end;
-  }
-
   TMockMethod = class(TInfraObject, IMockMethod)
   private
     FMessage: IInfraString;
@@ -131,16 +107,6 @@ type
     procedure MethodProc5(const p1: IInfraString; const p2:IInfraInteger;
       const p3: IInfraDateTime; const p4: IInfraBoolean; const p5: IInfraDouble);
     procedure InfraInitInstance; override;
-  end;
-
-  TVersion = class(TElement, IVersion)
-  private
-    FVersionNumber: IInfraString;
-    function GetVersionNumber: IInfraString;
-    procedure SetVersionNumber(const Value: IInfraString);
-  public
-    constructor Create; override;
-    property VersionNumber: IInfraString read GetVersionNumber write SetVersionNumber;
   end;
 
 const
@@ -358,13 +324,6 @@ begin
 
     end;
   end;
-end;
-
-class function TSetupModel.RegisterVersion: IClassInfo;
-begin
-  with TypeService do
-    Result := AddType(IVersion, 'Version', TVersion, IElement,
-      GetType(IElement));
 end;
 
 { TPerson }
@@ -614,25 +573,6 @@ begin
   FMessage := TInfraString.NewFrom(
     Format(cMessageProc5, [p1.AsString, p2.AsInteger,
       DateTimeToStr(p3.AsDateTime), BoolToStr(p4.AsBoolean), p5.AsDouble]));
-end;
-
-{ TVersion }
-
-constructor TVersion.Create;
-begin
-  inherited;
-  FVersionNumber := TInfraString.Create;
-  FVersionNumber.AsString := '1.0';
-end;
-
-function TVersion.GetVersionNumber: IInfraString;
-begin
-  Result := FVersionNumber;
-end;
-
-procedure TVersion.SetVersionNumber(const Value: IInfraString);
-begin
-  FVersionNumber := Value;
 end;
 
 end.

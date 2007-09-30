@@ -32,7 +32,7 @@ implementation
 uses
   SysUtils,
   InfraReflect, InfraValueTypeIntf, InfraValueType,
-  Model, ModelIntf;
+  ReflectModel, ReflectModelIntf;
 
 { TTypeServiceTests }
 

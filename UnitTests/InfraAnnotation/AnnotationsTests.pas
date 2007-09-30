@@ -6,8 +6,8 @@ uses
   TestFrameWork,
   SysUtils,
   InfraCommonIntf,InfraValueTypeIntf,
-  Model,
-  ModelIntf;
+  AnnotationsModel,
+  AnnotationsModelIntf;
 
 type
   TAnnotationsTests = class(TTestCase)
@@ -24,6 +24,28 @@ type
 implementation
 
 { TAnnotationsTests }
+
+procedure TAnnotationsTests.SetUp;
+begin
+  inherited;
+  TSetupModel.RegisterAddress;
+  TSetupModel.RegisterVersion;
+  FAddress:= TAddress.Create;
+  with FAddress do
+  begin
+    Street.AsString := 'Filiph Street';
+    City.AsString := 'Filiph City';
+    Quarter.AsString := 'Filiph Quarter';
+    Number.AsInteger := 100;
+  end;
+end;
+
+procedure TAnnotationsTests.TearDown;
+begin
+  TSetupModel.RemoveTypeInfo(IVersion);
+  TSetupModel.RemoveTypeInfo(IAddress);
+  inherited;
+end;
 
 procedure TAnnotationsTests.TestAnnotatedWith;
 var
@@ -52,28 +74,6 @@ begin
 
   CheckEquals('1.1.0', (vClassInfo as IVersion).VersionNumber.AsString,
     'IAddress metadata Version should be 1.1.0');
-end;
-
-procedure TAnnotationsTests.SetUp;
-begin
-  inherited;
-  TSetupModel.RegisterAddress;
-  TSetupModel.RegisterVersion;
-  FAddress:= TAddress.Create;
-  with FAddress do
-  begin
-    Street.AsString := 'Filiph Street';
-    City.AsString := 'Filiph City';
-    Quarter.AsString := 'Filiph Quarter';
-    Number.AsInteger := 100;
-  end;
-end;
-
-procedure TAnnotationsTests.TearDown;
-begin
-  TSetupModel.RemoveTypeInfo(IVersion);
-  TSetupModel.RemoveTypeInfo(IAddress);
-  inherited;
 end;
 
 initialization

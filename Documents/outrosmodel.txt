@@ -1,0 +1,23 @@
+  {
+  TTeacher = class(TPerson, ITeacher)
+  public
+    procedure InfraInitInstance; override;
+    property Title: IInfraString read GetTitle
+      write SetTitle;
+  end;
+
+  TGroup = class(TInfraObject, ITeacher)
+  public
+    procedure InfraInitInstance; override;
+    property Name: IInfraString read GetName write SetName;
+  end;
+
+  TDiscipline = class(TInfraObject, ITeacher)
+  public
+    procedure InfraInitInstance; override;
+    property Name: IInfraString read GetName write SetName;
+    property Summary: IInfraString read GetSummary write SetSummary;
+    property Summary: IInfraString read GetSummary write SetSummary;
+  end;
+  }
+

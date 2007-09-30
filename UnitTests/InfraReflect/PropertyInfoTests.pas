@@ -5,8 +5,8 @@ interface
 uses
   InfraCommonIntf,
   TestFrameWork,
-  Model,
-  ModelIntf;
+  ReflectModel,
+  ReflectModelIntf;
 
 type
   TPropertyInfoTests = class(TTestCase)

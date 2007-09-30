@@ -2,12 +2,28 @@ unit InfraHibernate;
 
 interface
 
+{$I Infra.Inc}
+
 uses
-  Classes, {TStrings}
-  InfraCommon, InfraCommonIntf, InfraHibernateIntf, InfraValueTypeIntf, {Infra}
-  SqlExpr, DBXpress; {DBX}
+  {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
+  {TStrings}
+  Classes,
+  {Infra}
+  InfraCommon, InfraCommonIntf, InfraValueTypeIntf,
+  InfraHibernateIntf;
 
 type
+  TPersistenceService = class(TInterfacedObject, IPersistenceService)
+  private
+    FConfiguration: IConfiguration;
+    FSessionFactory: ISessionFactory;
+    function GetConfiguration: IConfiguration;
+    function GetSessionFactory: ISessionFactory;
+  public
+    property Configuration: IConfiguration read GetConfiguration;
+    property SessionFactory: ISessionFactory read GetSessionFactory;
+  end;
+
   TConfiguration = class(TElement, IConfiguration)
   private
     FProperties: TStrings;
@@ -19,18 +35,18 @@ type
     destructor Destroy; override;
     property Properties: TStrings read GetProperties;
     property PropertyItem[const pName: String]: string read GetPropertyItem
-        write SetPropertyItem;
+      write SetPropertyItem;
   end;
 
-  TPersistenceService = class(TElement, IPersistenceService)
+  TConnectionProvider = class(TElement, IConnectionProvider)
   private
     FConfiguration: IConfiguration;
-    FSessionFactory: ISessionFactory;
-    function GetConfiguration: IConfiguration;
-    function GetSessionFactory: ISessionFactory;
+    procedure Close;
+    procedure CloseConnection(const pConnection: IConnection);
+    procedure Configure;
+    function GetConnection: IConnection;
   public
-    property Configuration: IConfiguration read GetConfiguration;
-    property SessionFactory: ISessionFactory read GetSessionFactory;
+    constructor Create(const pConfig: IConfiguration); reintroduce;
   end;
 
   TSessionFactory = class(TElement, ISessionFactory)
@@ -51,59 +67,52 @@ type
   TSession = class(TElement, ISession)
   private
     FConnection: IConnection;
-    FIsDirty: Boolean;
     FSessionFactory: ISessionFactory;
-    function BeginTransaction: ITransaction;
-    procedure Clear;
-    procedure Close;
-    procedure Delete(const pObject: IInfraType);
     function GetConnection: IConnection;
-    function GetIsDirty: Boolean;
     function GetSessionFactory: ISessionFactory;
-    procedure Load(const pObject, pOID: IInfraType);
-    procedure Save(const pObject: IInfraType);
+    function Load(const pTypeID: TGUID; const pOID: IInfraType): IInfraType;
     procedure SetConnection(const Value: IConnection);
-    procedure SetIsDirty(Value: Boolean);
   public
+    constructor Create(pSessionFactory: ISessionFactory); reintroduce;
     property Connection: IConnection read GetConnection write SetConnection;
-    property IsDirty: Boolean read GetIsDirty write SetIsDirty;
     property SessionFactory: ISessionFactory read GetSessionFactory;
   end;
 
-  TConnectionProvider = class(TElement, IConnectionProvider)
+  TLoader = class(TElement, ILoader)
   private
-    procedure Close;
-    procedure CloseConnection(const pConnection: IConnection);
-    procedure Configure;
-    function GetConnection: IConnection;
-  public
-    constructor Create(const pConfig: IConfiguration); reintroduce;
-  end;
-
-  TDBXConnection = class(TElement, IConnection)
-  private
-    FConnection: TSQLConnection;
-    FTransactionIsolation: TTransactionIsolation;
-    procedure Close;
-    procedure Commit;
-    function ExecuteQuery(const pSQL: String): IResultSet;
-    function ExecuteUpdate(const pSQL: String): Integer;
-    function GetIsClosed: Boolean;
-    function GetTransactionIsolation: TTransactionIsolation;
-    procedure Rollback;
-    procedure SetTransactionIsolation(Value: TTransactionIsolation);
-  public
-    constructor Create; override;
-    destructor Destroy; override;
-    property IsClosed: Boolean read GetIsClosed;
-    property TransactionIsolation: TTransactionIsolation read
-        GetTransactionIsolation write SetTransactionIsolation;
+    function FillObject(const pObject: IInfraType;
+      const vResultSet: IResultSet): string;
+    function GetEntityName(const pClassInfo: IClassInfo): string;
+    function GetOIDColumnName(const pClassInfo: IClassInfo): string;
+    function GetColumnName(const pPropertyInfo: IPropertyInfo): string;
+    function GetSelectClause(const pClassInfo: IClassInfo;
+      const pOID: IInfraType): string;
+    function Load(const pTypeID: TGUID; const pSession: ISession;
+      const pOID: IInfraType): IInfraType;
   end;
 
 implementation
 
 uses
-  SysUtils;
+  SysUtils, MapperAnnotationIntf;
+
+{ TPersistenceService }
+
+function TPersistenceService.GetConfiguration: IConfiguration;
+begin
+  if not Assigned(FConfiguration) then
+    FConfiguration := TConfiguration.Create;
+  Result := FConfiguration;
+end;
+
+function TPersistenceService.GetSessionFactory: ISessionFactory;
+begin
+  if not Assigned(FConfiguration) then
+    raise Exception.Create('Configuration is empty');
+  if not Assigned(FSessionFactory) then
+    FSessionFactory := TSessionFactory.Create(Configuration);
+  Result := FSessionFactory;
+end;
 
 { TConfiguration }
 
@@ -130,27 +139,58 @@ begin
 end;
 
 procedure TConfiguration.SetPropertyItem(const pName: String; const Value:
-    string);
+  string);
 begin
   FProperties.Values[pName] := Value;
 end;
 
-{ TPersistenceService }
+{ TConnectionProvider }
 
-function TPersistenceService.GetConfiguration: IConfiguration;
+constructor TConnectionProvider.Create(const pConfig: IConfiguration);
 begin
-  if not Assigned(FConfiguration) then
-    FConfiguration := TConfiguration.Create;
-  Result := FConfiguration;
+  inherited Create;
+  FConfiguration := pConfig;
+  Configure;
+  // quando tiver pool:
+  // - cria o pool de conexões;
+  // - guarda o classinfo de connection a ser instanciada quando chamar
+  //   GetConnection. com base no ConnectionString e ConnectionStringName;
 end;
 
-function TPersistenceService.GetSessionFactory: ISessionFactory;
+procedure TConnectionProvider.Close;
 begin
-  // *** I Thing that configuration cannot be empty here.
-  // *** Acho que configuração nao deveria está limpo aqui.
-  if not Assigned(FSessionFactory) then
-    FSessionFactory := TSessionFactory.Create(Configuration);
-  Result := FSessionFactory;
+  // quando tiver pool:
+  // - remove todas as conexões do pool
+end;
+
+procedure TConnectionProvider.CloseConnection(const pConnection: IConnection);
+begin
+  // quando tiver pool:
+  // - procura a conexão na lista e remove o mesmo
+  pConnection.Close;
+end;
+
+procedure TConnectionProvider.Configure;
+begin
+  // quando tiver pool:
+  // - Guarda em IDriver uma instância do driver a ser usado pelo Connection
+  // - Este driver é criado com base na reflexão pela string definida na chave
+  //   Environment.ConnectionDriver
+end;
+
+function TConnectionProvider.GetConnection: IConnection;
+var
+  vClassInfo: IClassInfo;
+begin
+  // quando tiver pool:
+  // - verifica se há alguma conexão livre na lista trava e retorna esta conexão
+  //   senao cria uma e a retorna.
+  with TypeService do
+  begin
+    vClassInfo := GetType(
+      FConfiguration.PropertyItem['ConnectionClass'], True);
+    Result := CreateInstance(vClassInfo) as IConnection;
+  end;
 end;
 
 { TSessionFactory }
@@ -173,11 +213,11 @@ var
 begin
   vTypeInfo := nil;
   if not Assigned(FDialect) then
-  begin
-    vTypeInfo :=
-      TypeService.GetType(FConfiguration.PropertyItem['Dialect'], True);
-    FDialect := TypeService.CreateInstance(vTypeInfo) as IDialect;
-  end;
+    with TypeService do
+    begin
+      vTypeInfo := GetType(FConfiguration.PropertyItem['Dialect'], True);
+      FDialect := CreateInstance(vTypeInfo) as IDialect;
+    end;
   Result := FDialect;
 end;
 
@@ -191,30 +231,16 @@ end;
 
 function TSessionFactory.OpenSession(const pConnection: IConnection): ISession;
 begin
-  Result := TSession.Create;
+  Result := TSession.Create(Self);
   Result.Connection := pConnection;
 end;
 
 { TSession }
 
-function TSession.BeginTransaction: ITransaction;
+constructor TSession.Create(pSessionFactory: ISessionFactory);
 begin
-  // incia uma transação para este session
-end;
+  inherited Create;
 
-procedure TSession.Clear;
-begin
-  // ????
-end;
-
-procedure TSession.Close;
-begin
-  // fecha o session limpando tudo
-end;
-
-procedure TSession.Delete(const pObject: IInfraType);
-begin
-  // remove um objeto do banco
 end;
 
 function TSession.GetConnection: IConnection;
@@ -222,24 +248,17 @@ begin
   Result := FConnection;
 end;
 
-function TSession.GetIsDirty: Boolean;
-begin
-  Result := FIsDirty;
-end;
-
 function TSession.GetSessionFactory: ISessionFactory;
 begin
   Result := FSessionFactory;
 end;
 
-procedure TSession.Load(const pObject, pOID: IInfraType);
+function TSession.Load(const pTypeID: TGUID; const pOID: IInfraType): IInfraType;
+var
+  vLoader: ILoader;
 begin
-  // carrega um objeto do banco
-end;
-
-procedure TSession.Save(const pObject: IInfraType);
-begin
-  // salva um objeto no banco
+  vLoader := TLoader.Create;
+  Result := vLoader.Load(pTypeID, Self, pOID);
 end;
 
 procedure TSession.SetConnection(const Value: IConnection);
@@ -247,117 +266,103 @@ begin
   FConnection := Value;
 end;
 
-procedure TSession.SetIsDirty(Value: Boolean);
-begin
-  FIsDirty := Value;
-end;
+{ TLoader }
 
-{ TConnectionProvider }
-
-constructor TConnectionProvider.Create(const pConfig: IConfiguration);
-begin
-  inherited Create;
-  Configure;
-  // - cria o pool de conexões;
-  // - guarda o classinfo de connection a ser instanciada quando chamar
-  //   GetConnection. com base no ConnectionString e ConnectionStringName;
-end;
-
-procedure TConnectionProvider.Close;
-begin
-  // remove todas as conexões do pool
-end;
-
-procedure TConnectionProvider.CloseConnection(const pConnection: IConnection);
-begin
-  // procura a conexão na lista e remove o mesmo
-end;
-
-procedure TConnectionProvider.Configure;
-begin
-  // Guarda em IDriver uma instância do driver a ser usado pelo Connection
-  // Este driver é criado com base na reflexão pela string definida na chave
-  // Environment.ConnectionDriver
-end;
-
-function TConnectionProvider.GetConnection: IConnection;
-begin
-  // verifica se há alguma conexão livre na lista trava e retorna esta conexão
-  // senao cria uma e a retorna.
-end;
-
-{ TDBXConnection }
-
-constructor TDBXConnection.Create;
-begin
-  inherited Create;
-  FConnection := TSQLConnection.Create(nil);
-end;
-
-destructor TDBXConnection.Destroy;
-begin
-  FreeAndNil(FConnection);
-  inherited;
-end;
-
-procedure TDBXConnection.Close;
-begin
-  FConnection.Close;
-end;
-
-procedure TDBXConnection.Commit;
-begin
-  // *** nao mecher com transaçao agora
-end;
-
-function TDBXConnection.ExecuteQuery(const pSQL: String): IResultSet;
-begin
-{
-  FConnection.Execute(pSQL, nil);
+function TLoader.Load(const pTypeID: TGUID; const pSession: ISession;
+  const pOID: IInfraType): IInfraType;
 var
-  SQLstmt: String;
-  stmtParams: TParams;
+  vClassInfo: IClassInfo;
+  sSelectClause: string;
+  vResultSet: IResultSet;
 begin
-  stmtParams := TParams.Create;
-  try
-    SQLConnection1.Connected := True;
-    stmtParams.CreateParam(ftString, 'StateParam', ptInput);
-    stmtParams.ParamByName('StateParam').AsString := 'CA';
-    SQLstmt := 'INSERT INTO "Custom" '+
-      '(CustNo, Company, State) ' +
-      'VALUES (7777, "Robin Dabank Consulting", :StateParam)';
-    SQLConnection1.Execute(SQLstmt, stmtParams);
-  finally
-    stmtParams.Free;
+  with TypeService do
+  begin
+    vClassInfo := GetType(pTypeID, True);
+    Result := CreateInstance(vClassInfo) as IInfraType;
   end;
-}
+  sSelectClause := GetSelectClause(vClassInfo, pOID);
+  vResultSet := pSession.Connection.ExecuteQuery(sSelectClause);
+  FillObject(Result, vResultSet);
 end;
 
-function TDBXConnection.ExecuteUpdate(const pSQL: String): Integer;
+function TLoader.GetEntityName(const pClassInfo: IClassInfo): string;
+var
+  vEntity: IEntity;
 begin
-  Result := 0;
+  if Supports(pClassInfo, IEntity, vEntity) then
+    Result := vEntity.Name
+  else
+    Result := pClassInfo.Name;
 end;
 
-function TDBXConnection.GetIsClosed: Boolean;
+function TLoader.GetColumnName(const pPropertyInfo: IPropertyInfo): string;
+var
+  vColumn: IColumn;
 begin
-  Result := not FConnection.Connected;
+  if Supports(pPropertyInfo, IColumn, vColumn) then
+    Result := vColumn.Name
+  else
+    Result := pPropertyInfo.Name;
 end;
 
-function TDBXConnection.GetTransactionIsolation: TTransactionIsolation;
+function TLoader.GetOIDColumnName(const pClassInfo: IClassInfo): string;
+var
+  vPropIterator: IPropertyInfoIterator;
+  vPropertyInfo: IPropertyInfo;
 begin
-  // *** nao mecher com transaçao agora
-  Result := tiNone;
+  vPropIterator := pClassInfo.GetProperties;
+  while not vPropIterator.IsDone do
+  begin
+    vPropertyInfo := vPropIterator.CurrentItem;
+    if Supports(vPropertyInfo, IID) then
+    begin
+      Result := GetColumnName(vPropertyInfo);
+      Break;
+    end;
+    vPropIterator.Next;
+  end;
 end;
 
-procedure TDBXConnection.Rollback;
+function TLoader.GetSelectClause(const pClassInfo: IClassInfo;
+  const pOID: IInfraType): string;
 begin
-  // *** nao mecher com transaçao agora
+  Result :=
+    ' SELECT *' +
+    ' FROM ' + GetEntityName(pClassInfo) +
+    ' WHERE ' +
+      GetOIDColumnName(pClassInfo) + ' = ' +
+      IntToStr((pOID as IInfraInteger).AsInteger);
 end;
 
-procedure TDBXConnection.SetTransactionIsolation(
-  Value: TTransactionIsolation);
+function TLoader.FillObject(const pObject: IInfraType;
+  const vResultSet: IResultSet): string;
+var
+  vPropIterator: IPropertyInfoIterator;
+  vPropertyInfo: IPropertyInfo;
+  vObj: IInfraObject;
+  vAttribute: IInfraType;
 begin
-  FTransactionIsolation := Value;
+  if Supports(pObject, IInfraObject, vObj) then
+  begin
+    vPropIterator := vObj.TypeInfo.GetProperties;
+    while not vPropIterator.IsDone do
+    begin
+      vPropertyInfo := vPropIterator.CurrentItem;
+      vAttribute := vPropertyInfo.GetValue(pObject) as IInfraType;
+      vAttribute.Assign(
+        vResultSet.GetValue( GetColumnName(vPropertyInfo) ) );
+      vPropIterator.Next;
+    end;
+  end;
 end;
+
+procedure InjectPersitenceService;
+begin
+  (ApplicationContext as IMemoryManagedObject).Inject(
+    IPersistenceService, TPersistenceService.Create as IPersistenceService);
+end;
+
+initialization
+  InjectPersitenceService;
 
 end.
