@@ -17,10 +17,10 @@ package Infra;
 {$RANGECHECKS OFF}
 {$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES ON}
+{$STACKFRAMES OFF}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
-{$WRITEABLECONST ON}
+{$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
 {$DESCRIPTION 'Infra - Integrated Framework'}
@@ -31,7 +31,11 @@ requires
   vcl,
   dbrtl,
   DbxCommonDriver,
-  dbexpress;
+  dbexpress,
+  designide,
+  xmlrtl,
+  vclactnband,
+  vclx;
 
 contains
   ApplicationContext in 'Common\ApplicationContext.PAS',
@@ -70,6 +74,19 @@ contains
   InfraHibernate in 'Persistence\InfraHibernate.pas',
   InfraHibernateRegister in 'Persistence\InfraHibernateRegister.pas',
   InfraGUIBuilder in 'GUIBuilder\InfraGUIBuilder.pas',
-  LayoutManager in 'LayoutManager\LayoutManager.pas';
+  LayoutManager in 'LayoutManager\LayoutManager.pas',
+  InfraGUIBuilderIntf in 'GUIBuilder\InfraGUIBuilderIntf.pas',
+  InfraGUIBuilderForm in 'GUIBuilder\InfraGUIBuilderForm.pas',
+  List_GUIMapping in 'GUIBuilder\List_GUIMapping.pas',
+  GUIAnnotation in 'GUIBuilder\GUIAnnotation.pas',
+  GUIAnnotationIntf in 'GUIBuilder\GUIAnnotationIntf.pas',
+  InfraGUIBuilderRegister in 'GUIBuilder\InfraGUIBuilderRegister.pas',
+  List_Screen in 'GUIBuilder\List_Screen.pas',
+  List_ScreenItem in 'GUIBuilder\List_ScreenItem.pas',
+  List_GUIControl in 'GUIBuilder\List_GUIControl.pas',
+  TabOrderForm in 'LayoutManager\TabOrderForm.pas',
+  LayoutManagerReg in 'LayoutManager\LayoutManagerReg.pas',
+  CustomizeForm in 'GUIBuilder\CustomizeForm.pas',
+  CustomizeFormControl in 'GUIBuilder\CustomizeFormControl.pas';
 
 end.

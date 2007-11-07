@@ -138,7 +138,8 @@ type
     function GetName: string;
     function GetOwner: IClassInfo;
     function GetProperties: IPropertyInfoIterator;
-    function GetProperty(const Obj: IElement; const pName: String): IInterface;
+    function GetProperty(const Obj: IElement; const pName: String;
+      const pClassInfo: IClassInfo = nil): IInterface;
     function GetPropertyInfo(const pName: String;
       ThrowException: Boolean = False): IPropertyInfo;
     function GetSuperClass: IClassInfo;
@@ -718,8 +719,8 @@ begin
       'PropertyInfo to "%s.%s" not found', [Self.FullName, pName]));
 end;
 
-function TClassInfo.GetProperty(const Obj: IElement;
-  const pName: String): IInterface;
+function TClassInfo.GetProperty(const Obj: IElement; const pName: String;
+  const pClassInfo: IClassInfo = nil): IInterface;
 var
   CommaPosition: Integer;
   PropertyToSearch: string;
@@ -733,11 +734,16 @@ begin
     PropertyToSearch := pName
   else
     PropertyToSearch := Copy(pName, 0, CommaPosition-1);
-  PropertyInfo := GetPropertyInfo(PropertyToSearch, True);
+
+  if Assigned(pClassInfo) then
+    PropertyInfo := pClassInfo.GetPropertyInfo(PropertyToSearch, True)
+  else
+    PropertyInfo := GetPropertyInfo(PropertyToSearch, True);
+
   Result := PropertyInfo.GetValue(Obj);
   if (PropertyInfo.Name <> pName) and Assigned(Result) then
     Result := GetProperty(Result as IElement,
-      Copy(pName, CommaPosition+1, Length(pName)));
+      Copy(pName, CommaPosition+1, Length(pName)), PropertyInfo.TypeInfo);
 end;
 
 function TClassInfo.GetSuperClass: IClassInfo;
