@@ -213,7 +213,8 @@ end;
 
 function TMemoryManagedObject.IsAnnotedWith(const pID: TGUID): Boolean;
 begin
-  Result := FInjectedList.IndexByGUID(pID) <> -1;
+  Result := Assigned(FInjectedList)
+    and (FInjectedList.IndexByGUID(pID) <> -1);
 end;
 
 { TElement }

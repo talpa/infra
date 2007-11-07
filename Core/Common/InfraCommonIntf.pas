@@ -426,7 +426,8 @@ type
     function GetName: string;
     function GetOwner: IClassInfo;
     function GetProperties: IPropertyInfoIterator;
-    function GetProperty(const Obj: IElement; const pName: String): IInterface;
+    function GetProperty(const Obj: IElement; const pName: String;
+      const pClassInfo: IClassInfo = nil): IInterface;
     function GetPropertyInfo(const pName: String;
       ThrowException: Boolean = False): IPropertyInfo;
     function GetSuperClass: IClassInfo;

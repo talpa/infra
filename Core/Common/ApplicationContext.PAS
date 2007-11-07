@@ -41,7 +41,8 @@ uses
   InfraReference,
   InfraCommonRegister,
   InfraValueTypeRegister,
-  InfraHibernateRegister;
+  InfraHibernateRegister,
+  InfraGUIBuilderRegister;
   // *** InfraMVPRegister;
 
 { TApplicationContext }
@@ -98,6 +99,7 @@ begin
   InfraCommonRegister.RegisterOnReflection;
   InfraValueTypeRegister.RegisterOnReflection;
   InfraHibernateRegister.RegisterOnReflection;
+  InfraGUIBuilderRegister.RegisterOnReflection;
   // *** Marcos: voltar quando encaixar o MVP
   // *** InfraMVPRegister.RegisterOnReflection;
 end;

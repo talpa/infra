@@ -31,6 +31,15 @@ type
 
   TLayoutManagerState = set of (lmLoadingItem, lmRealigningItems, lmResizingItems);
 
+  TLayoutManagerItemList = class(TObjectList)
+  protected
+    function GetItem(Index: Integer): TLayoutManagerItem;
+    procedure SetItem(Index: Integer; AObject: TLayoutManagerItem);
+  public
+    function Add(AObject: TLayoutManagerItem): Integer;
+    property Items[Index: Integer]: TLayoutManagerItem read GetItem write SetItem;
+  end;
+
   TLayoutManagerPositions = class(TPersistent)
   private
     FBottom: Integer;
@@ -48,11 +57,11 @@ type
   protected
     procedure Changed; virtual;
     procedure Clear; virtual;
-    function Equals(APostionsSource, APostionsDest: TLayoutManagerPositions): Boolean;
     procedure Init; virtual; abstract;
   public
     constructor Create;
     procedure Assign(Source: TPersistent); override;
+    class function Equals(APostionsSource, APostionsDest: TLayoutManagerPositions): Boolean;    
   published
     property Bottom: Integer read GetBottom write SetBottom default 1;
     property Left: Integer read GetLeft write SetLeft default 1;
@@ -218,7 +227,7 @@ type
     property Position: TLabelPosition read GetPosition write SetPosition default lpLeft;
     property UseDefPosition: Boolean read GetUseDefPosition write SetUseDefPosition default True;
     property UseDefControlSpacing: Boolean read GetUseDefControlSpacing write SetUseDefControlSpacing default True;
-    property Width: Integer read GetWidth write SetWidth default 50;
+    property Width: Integer read GetWidth write SetWidth;
     property WordWrap: Boolean read GetWordWrap write SetWordWrap default False;
   end;
 
@@ -270,10 +279,6 @@ type
     procedure PositioningControl;
     procedure PositioningLabel;
     procedure Realign(ANeedResize: Boolean);
-    procedure ResizeControlHeight;
-    procedure ResizeControlWidth;
-    procedure ResizeItemHeight;
-    procedure ResizeItemWidth;
     procedure SetAutoAlignCaptions(const Value: Boolean);
     procedure SetCaption(const Value: string);
     procedure SetCaptionOptions(const Value: TLayoutManagerItemCaptionOptions);
@@ -315,6 +320,10 @@ type
     procedure RequestRealignItem;
     procedure RequestResizeControl;
     procedure RequestResizeItem;
+    procedure ResizeControlHeight;
+    procedure ResizeControlWidth;
+    procedure ResizeItemHeight;
+    procedure ResizeItemWidth;
     property State: TLayoutManagerItemState read GetState write SetState;
   published
     property AutoAlignCaptions: Boolean read GetAutoAlignCaptions write SetAutoAlignCaptions default True;
@@ -333,7 +342,7 @@ type
   private
     FActualSize: TPoint;
     FAutoWrap: Boolean;
-    FControlList: TObjectList;
+    FItemList: TLayoutManagerItemList;
     FHasRealignItemsMsgPending: Boolean;
     FHasResizeItemsMsgPending: Boolean;
     FItemDefCaptionPos: TLabelPosition;
@@ -375,19 +384,25 @@ type
     procedure InitializeItem(AItem: TLayoutManagerItem; AControl: TControl);
     procedure Loaded; override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-    procedure RealignItems;
-    procedure ResizeItems;
     procedure UpdateScrollBars;
     procedure WndProc(var Message: TMessage); override;
-    property ControlList: TObjectList read FControlList write FControlList;
     property IsReady: Boolean read GetIsReady;
+    property State: TLayoutManagerState read GetState write SetState;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function AddControl(AControl: TControl): TLayoutManagerItem;
     procedure CreateWnd; override;
+    function GetItemIndexByControlName(AControlName: string): Integer;
+    function GetItemsOutOfContainersHeight(AItems: TObjectList = nil): Boolean;
+    function GetItemsOutOfContainersWidth(AItems: TObjectList = nil): Boolean;
+    function GetScreenHeightRequired: Integer;
+    function GetScreenWidthRequired: Integer;
+    procedure RealignItems;
+    procedure ResizeItems;
     procedure RequestRealignItems;
     procedure RequestResizeItems;
-    property State: TLayoutManagerState read GetState write SetState;
+    property ItemList: TLayoutManagerItemList read FItemList write FItemList;
   published
     property AlignMode: TAlign read GetAlignMode write SetAlignMode;
     property AutoSize;
@@ -399,16 +414,9 @@ type
     property ItemSpacing: TLayoutManagerSpacing read GetItemSpacing write SetItemSpacing;
   end;
 
-procedure Register;
 function RoundLess(AValue: Extended): Integer;
 
 implementation
-
-procedure Register;
-begin
-  RegisterComponents('Infra', [TLayoutManager]);
-  RegisterClasses([TLayoutManagerItem]);
-end;
 
 function RoundLess(AValue: Extended): Integer;
 begin
@@ -416,6 +424,23 @@ begin
     Result := Trunc(AValue)
   else
     Result := Round(AValue);
+end;
+
+{ TLayoutManagerItemList }
+
+function TLayoutManagerItemList.Add(AObject: TLayoutManagerItem): Integer;
+begin
+  Result := inherited Add(AObject);
+end;
+
+function TLayoutManagerItemList.GetItem(Index: Integer): TLayoutManagerItem;
+begin
+  Result := inherited GetItem(Index) as TLayoutManagerItem;
+end;
+
+procedure TLayoutManagerItemList.SetItem(Index: Integer; AObject: TLayoutManagerItem);
+begin
+  inherited SetItem(Index, AObject);
 end;
 
 { TLayoutManagerPositions }
@@ -477,7 +502,7 @@ begin
   Init;
 end;
 
-function TLayoutManagerPositions.Equals(APostionsSource, APostionsDest: TLayoutManagerPositions): Boolean;
+class function TLayoutManagerPositions.Equals(APostionsSource, APostionsDest: TLayoutManagerPositions): Boolean;
 begin
   Result := (APostionsSource.Bottom = APostionsDest.Bottom) and
     (APostionsSource.Left = APostionsDest.Left) and
@@ -550,16 +575,18 @@ var
 begin
   inherited;
 
-  for I := 0 to Container.ControlCount - 1 do
-    if Container.Controls[I] is TLayoutManagerItem then
-    begin
-      lItem := Container.Controls[I] as TLayoutManagerItem;
+  if not Assigned(Container) then
+    Exit;
 
-      if lItem.ItemControl is TLayoutManager then
-        (lItem.ItemControl as TLayoutManager).ItemDefPadding.Assign(Self)
-      else if lItem.UseDefPadding then
-        lItem.Padding.Assign(Self);
-    end;
+  for I := 0 to Container.ItemList.Count - 1 do
+  begin
+    lItem := Container.ItemList.Items[I];
+
+    if lItem.ItemControl is TLayoutManager then
+      (lItem.ItemControl as TLayoutManager).ItemDefPadding.Assign(Self)
+    else if lItem.UseDefPadding then
+      lItem.Padding.Assign(Self);
+  end;
 end;
 
 procedure TLayoutManagerPadding.Clear;
@@ -642,6 +669,9 @@ end;
 procedure TLayoutManagerSpacing.Changed;
 begin
   inherited;
+
+  if not Assigned(Container) then
+    Exit;
 
   Container.RequestResizeItems;
 end;
@@ -817,10 +847,10 @@ begin
 
   Result := Item.Container.Height;
 
-  for I := 0 to Item.Container.ControlList.Count - 1 do
-    if Item.Container.ControlList.Items[I] is TLayoutManagerItem then
+  for I := 0 to Item.Container.ItemList.Count - 1 do
+    if Item.Container.ItemList.Items[I] is TLayoutManagerItem then
     begin
-      lItem := Item.Container.ControlList.Items[I] as TLayoutManagerItem;
+      lItem := Item.Container.ItemList.Items[I];
 
       if (lItem <> Item) and (((lItem.Left + lItem.Width) > Item.Left) and
         (lItem.Left < (Item.Left + Item.Width))) then
@@ -921,10 +951,10 @@ begin
 
   Result := Item.Container.Width;
 
-  for I := 0 to Item.Container.ControlList.Count - 1 do
-    if Item.Container.ControlList.Items[I] is TLayoutManagerItem then
+  for I := 0 to Item.Container.ItemList.Count - 1 do
+    if Item.Container.ItemList.Items[I] is TLayoutManagerItem then
     begin
-      lItem := Item.Container.ControlList.Items[I] as TLayoutManagerItem;
+      lItem := Item.Container.ItemList.Items[I];
 
       if (lItem <> Item) and (((lItem.Top + lItem.Height) > Item.Top) and
         (lItem.Top < (Item.Top + Item.Height))) then
@@ -1130,8 +1160,8 @@ begin
     FItem := Value;
 
     FAlignmentVert:= tlCenter;
-    FPosition:= lpLeft;
     FControlSpacing:= 3;
+    FPosition:= lpLeft;
     FUseDefPosition := True;
     FUseDefControlSpacing := True;
   end;
@@ -1243,12 +1273,12 @@ end;
 
 destructor TLayoutManagerItem.Destroy;
 begin
-  FCanvas.Free;
-  FItemLabel.Free;
-  FCaptionOptions.Free;
-  FHeightOptions.Free;
-  FWidthOptions.Free;
-  FPadding.Free;
+  FreeAndNil(FCanvas);
+  FreeAndNil(FItemLabel);
+  FreeAndNil(FCaptionOptions);
+  FreeAndNil(FHeightOptions);
+  FreeAndNil(FWidthOptions);
+  FreeAndNil(FPadding);
 
   inherited;
 end;
@@ -2028,6 +2058,13 @@ end;
 
 { TLayoutManager }
 
+function TLayoutManager.AddControl(AControl: TControl): TLayoutManagerItem;
+begin
+  AControl.Parent := Self;
+
+  Result := GetControlItem(AControl);
+end;
+
 procedure TLayoutManager.CMControlChange(var Message: TCMControlChange);
 var
   lItem: TLayoutManagerItem;
@@ -2046,14 +2083,14 @@ begin
   if (Assigned(GetControlItem(lControl))) then
   begin
     //Copy Control - ItemControl already exists
-    //Called when a control will be copied and pasted on LM
+    //Called when a control will be copied and dropped on LM
     InitializeItem(GetControlItem(lControl), lControl);
   end
   else if (lControl.ClassType = TLayoutManagerItem) and
     (csDesigning in lControl.ComponentState) then
   begin
     //Copy Item - Item and ItemControl already exists
-    //Called when an item will be copied and pasted on LM
+    //Called when an item will be copied and dropped on LM
     lItem := lControl as TLayoutManagerItem;
 
     Include(FState, lmLoadingItem);
@@ -2062,7 +2099,7 @@ begin
     lItem.Container := Self;
     lItem.Parent := Self;
 
-    ControlList.Add(lItem);
+    ItemList.Add(lItem);
 
     Exclude(FState, lmLoadingItem);
     Exclude(lItem.FState, isInitializing);
@@ -2070,7 +2107,7 @@ begin
   else
   begin
     //New Item - Control does not have an item
-    //Called when a new control will be inserted on LM
+    //Called when a new control will be dropped on LM
     InitializeItem(TLayoutManagerItem.Create(Owner), lControl);
   end;
 
@@ -2111,7 +2148,7 @@ begin
 
   AutoScroll := True;
   FAutoWrap := True;
-  FControlList := TObjectList.Create(False);
+  FItemList := TLayoutManagerItemList.Create(False);
   FItemDefCaptionPos := lpLeft;
   FItemDefControlSpacing := 3;
   FItemLayout := laHorizontal;
@@ -2128,9 +2165,9 @@ end;
 
 destructor TLayoutManager.Destroy;
 begin
-  FControlList.Free;
-  FItemDefPadding.Free;
-  FItemSpacing.Free;
+  FreeAndNil(FItemList);
+  FreeAndNil(FItemDefPadding);
+  FreeAndNil(FItemSpacing);
 
   inherited;
 end;
@@ -2148,30 +2185,20 @@ end;
 procedure TLayoutManager.GetChildren(Proc: TGetChildProc; Root: TComponent);
 var
   I: Integer;
-  lControl: TControl;
 begin
-  for I := 0 to ControlList.Count - 1 do
-  begin
-    lControl := (ControlList[I] as TLayoutManagerItem);
-    Proc(lControl);
-  end;
+  for I := 0 to ItemList.Count - 1 do
+    Proc(ItemList.Items[I]);
 end;
 
 function TLayoutManager.GetControlItem(AControl: TControl): TLayoutManagerItem;
 var
   I: Integer;
-  lControl: TControl;
 begin
   Result := nil;
 
-  for I := 0 to ControlList.Count - 1 do
-    if (ControlList[I] is TLayoutManagerItem) then
-    begin
-      lControl := (ControlList[I] as TLayoutManagerItem).ItemControl;
-
-      if lControl = AControl then
-        Result := ControlList[I] as TLayoutManagerItem;
-    end;
+  for I := 0 to ItemList.Count - 1 do
+    if ItemList.Items[I].ItemControl = AControl then
+      Result := ItemList.Items[I];
 end;
 
 function TLayoutManager.GetItemDefControlSpacing: Integer;
@@ -2189,11 +2216,23 @@ begin
   Result := FItemSpacing;
 end;
 
+
 function TLayoutManager.GetIsReady: Boolean;
 begin
   Result := (not (csLoading in ComponentState)) and
     (not (csDestroying in ComponentState)) and (not (lmLoadingItem in State)) and
     (not (lmRealigningItems in State)) and (not (lmResizingItems in State));
+end;
+
+function TLayoutManager.GetItemIndexByControlName(AControlName: string): Integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+
+  for I := 0 to ItemList.Count - 1 do
+    if ItemList.Items[I].ItemControl.Name = AControlName then
+      Result := I;
 end;
 
 function TLayoutManager.GetItemDefCaptionPos: TLabelPosition;
@@ -2206,9 +2245,113 @@ begin
   Result := FItemLayout;
 end;
 
+function TLayoutManager.GetItemsOutOfContainersHeight(AItems: TObjectList = nil): Boolean;
+var
+  I: Integer;
+  lItem: TLayoutManagerItem;
+begin
+  Result := False;
+
+  for I := 0 to ItemList.Count - 1 do
+  begin
+    lItem := ItemList.Items[I];
+
+    if (lItem.Top > ItemSpacing.Top) and ((lItem.Top + lItem.Height) > Height)
+      and (lItem.Visible) then
+    begin
+      Result := True;
+
+      if Assigned(AItems) then
+        AItems.Add(lItem);
+    end;
+  end;
+end;
+
+function TLayoutManager.GetItemsOutOfContainersWidth(AItems: TObjectList): Boolean;
+var
+  I: Integer;
+  lItem: TLayoutManagerItem;
+begin
+  Result := False;
+
+  for I := 0 to ItemList.Count - 1 do
+  begin
+    lItem := ItemList.Items[I];
+
+    if (lItem.Left > ItemSpacing.Left) and ((lItem.Left + lItem.Width) > Width)
+      and (lItem.Visible) then
+    begin
+      Result := True;
+
+      if Assigned(AItems) then
+        AItems.Add(lItem);
+    end;
+  end;
+end;
+
 function TLayoutManager.GetState: TLayoutManagerState;
 begin
   Result := FState;
+end;
+
+function TLayoutManager.GetScreenHeightRequired: Integer;
+var
+  I: Integer;
+  lItemsOut: TLayoutManagerItemList;
+begin
+  Result := 0;
+
+  for I := 0 to ItemList.Count - 1 do
+    if ItemList.Items[I].Visible then
+      Result := Max(ItemList.Items[I].Top + ItemList.Items[I].Height +
+        ItemSpacing.Bottom, Result);
+
+  lItemsOut := TLayoutManagerItemList.Create(False);
+
+  try
+    GetItemsOutOfContainersWidth(lItemsOut);
+
+    //Add height needed to show items out of container
+    for I := 0 to lItemsOut.Count - 1 do
+      if lItemsOut.Items[I].Visible then
+        Result := Result + lItemsOut.Items[I].GetFullHeight;
+
+  finally
+    lItemsOut.Free;
+  end;
+
+  if Result > Screen.Height then
+    Result := Screen.Height;
+end;
+
+function TLayoutManager.GetScreenWidthRequired: Integer;
+var
+  I: Integer;
+  lItemsOut: TLayoutManagerItemList;
+begin
+  Result := 0;
+
+  for I := 0 to ItemList.Count - 1 do
+    if ItemList.Items[I].Visible then
+      Result := Max(ItemList.Items[I].Left + ItemList.Items[I].Width +
+        ItemSpacing.Right, Result);
+
+  lItemsOut := TLayoutManagerItemList.Create(False);
+
+  try
+    GetItemsOutOfContainersHeight(lItemsOut);
+
+    //Add width needed to show items out of container
+    for I := 0 to lItemsOut.Count - 1 do
+      if lItemsOut.Items[I].Visible then
+        Result := Result + lItemsOut.Items[I].GetFullWidth;
+
+  finally
+    lItemsOut.Free;
+  end;
+
+  if Result > Screen.Width then
+    Result := Screen.Width;
 end;
 
 function TLayoutManager.HasSizeChanged: Boolean;
@@ -2235,8 +2378,8 @@ begin
   AControl.Parent := AItem;
   AControl.FreeNotification(AItem);
 
-  if ControlList.IndexOf(AItem) = - 1 then
-    ControlList.Add(AItem);
+  if ItemList.IndexOf(AItem) = - 1 then
+    ItemList.Add(AItem);
 
   AItem.State := AItem.State - [isInitializing];
   Exclude(FState, lmLoadingItem);
@@ -2256,7 +2399,7 @@ var
 begin
   inherited;
 
-  ControlList.Clear;
+  ItemList.Clear;
 
   for I := 0 to ControlCount - 1 do
   begin
@@ -2265,7 +2408,7 @@ begin
       lItem := Controls[I] as TLayoutManagerItem;
       lItem.Container := Self;
 
-      ControlList.Add(lItem);
+      ItemList.Add(lItem);
 
       lItem.Realign(True);
 
@@ -2281,8 +2424,9 @@ end;
 
 procedure TLayoutManager.Notification(AComponent: TComponent; Operation: TOperation);
 begin
-  if (Operation = opRemove) and (AComponent is TLayoutManagerItem) then
-    ControlList.Remove(AComponent);
+  if (Operation = opRemove) and (AComponent is TLayoutManagerItem) and
+    (Assigned(ItemList)) then
+    ItemList.Remove(AComponent);
 
   inherited;
 end;
@@ -2328,9 +2472,9 @@ begin
   Inc(Position.X, ItemSpacing.Left);
   Inc(Position.Y, ItemSpacing.Top);
 
-  for I := 0 to ControlList.Count - 1 do
+  for I := 0 to ItemList.Count - 1 do
   begin
-    lItem := ControlList[I] as TLayoutManagerItem;
+    lItem := ItemList.Items[I];
 
     if not lItem.Visible and not (csDesigning in ComponentState) then
       Continue;
@@ -2374,12 +2518,28 @@ begin
     if Size.cx > iMaxWidth then
       iMaxWidth := Size.cx;
 
-    //If AUseAutoWrap is not in use, Y or X item values can't change
+    //If AUseAutoWrap is not in use:
+    //laHorizontal: Y (Top) item value can't change
+    //laVertical: X (Left) item value can't change
     if not AUseAutoWrap then
     begin
       case ItemLayout of
-        laHorizontal: Position.Y := lItem.Top;
-        laVertical: Position.X := lItem.Left;
+        laHorizontal:
+          //If calculated Y value is different from item, X value should be
+          //restarted in order to positioning item from begin of the line
+          if Position.Y <> lItem.Top then
+          begin
+            Position.Y := lItem.Top;
+            Position.X := Rect.Left + ItemSpacing.Left;
+          end;
+        laVertical:
+          //If calculated X value is different from item, Y value should be
+          //restarted in order to positioning item from begin of the column
+          if Position.X <> lItem.Left then
+          begin
+            Position.X := lItem.Left;
+            Position.Y := Rect.Top + ItemSpacing.Top;
+          end;
       end;
     end;
 
@@ -2406,8 +2566,8 @@ begin
 
   PositioningItems(True);
 
-  for I := 0 to ControlList.Count - 1 do
-    (ControlList.Items[I] as TLayoutManagerItem).CaptionOptions.AdditionalSpacing := 0;
+  for I := 0 to ItemList.Count - 1 do
+    ItemList.Items[I].CaptionOptions.AdditionalSpacing := 0;
 
   if AutoWrap then
     RecalculateCaptionSpacings;
@@ -2419,7 +2579,7 @@ procedure TLayoutManager.RecalculateCaptionSpacings;
 type
   TCaptionSizes = array of array [0..1] of integer;
 var
-  I, K, iPosition: Integer;
+  I, K, iPosition, iLimit: Integer;
   aPrimarySizes, aSecundarySizes, aCaptionHeights, aCaptionWidths: TCaptionSizes;
   lItem: TLayoutManagerItem;
 
@@ -2449,13 +2609,15 @@ var
     aPrimarySizes := nil;
     aSecundarySizes := nil;
 
-    for J := 0 to ControlList.Count - 1 do
-    begin
-      lItem := ControlList.Items[J] as TLayoutManagerItem;
+    for J := 0 to ItemList.Count - 1 do
+      if (ItemList.Items[J].AutoAlignCaptions) and
+        (ItemList.Items[J].CaptionVisible) then
+      begin
+        lItem := ItemList.Items[J];
 
-      UpdateMaxSize(aCaptionWidths, lItem.Left, lItem.ItemLabel.Width + lItem.CaptionOptions.ControlSpacing);
-      UpdateMaxSize(aCaptionHeights, lItem.Top, lItem.ItemLabel.Height + lItem.CaptionOptions.ControlSpacing);
-    end;
+        UpdateMaxSize(aCaptionWidths, lItem.Left, lItem.ItemLabel.Width + lItem.CaptionOptions.ControlSpacing);
+        UpdateMaxSize(aCaptionHeights, lItem.Top, lItem.ItemLabel.Height + lItem.CaptionOptions.ControlSpacing);
+      end;
 
     if ItemLayout = laHorizontal then
     begin
@@ -2485,73 +2647,6 @@ var
   end;
 
 
-  function GetHigherColumnOrRow: Integer;
-  var
-    J, L: Integer;
-    llItem: TLayoutManagerItem;
-    iSize: Integer;
-  begin
-    Result := 0;
-
-    for J := Low(aSecundarySizes) to High(aSecundarySizes) do
-    begin
-      iSize := 0;
-
-      for L := 0 to ControlList.Count - 1 do
-      begin
-        llItem := ControlList.Items[L] as TLayoutManagerItem;
-
-        if ItemLayout = laHorizontal then
-        begin
-          if llItem.Top = aSecundarySizes[J, 0] then
-            iSize := iSize + llItem.GetFullWidth;
-        end
-        else
-        begin
-          if llItem.Left = aSecundarySizes[J, 0] then
-            iSize := iSize + llItem.GetFullHeight;
-        end;
-      end;
-
-      Result := Max(Result, iSize);
-    end;
-
-    if Result > Width then
-      Result := Width;
-  end;
-
-
-  function HasItemsOutOfContainer: Boolean;
-  var
-    J: Integer;
-    lItem: TLayoutManagerItem;
-  begin
-    Result := False;
-
-    for J := 0 to ControlList.Count - 1 do
-    begin
-      lItem := ControlList.Items[J] as TLayoutManagerItem;
-
-      if ItemLayout = laHorizontal then
-      begin
-        if (lItem.Left > ItemSpacing.Left) and ((lItem.Left + lItem.Width) > Width) then
-        begin
-          Result := True;
-          Break;
-        end;
-      end
-      else
-      begin
-        if (lItem.Top > ItemSpacing.Top) and ((lItem.Top + lItem.Height) > Height) then
-        begin
-          Result := True;
-          Break;
-        end;
-      end;
-    end;
-  end;
-
-
 begin
   //Get all items sizes and fill a list with max values for each column and line
   UpdateMaxCaptionSizes;
@@ -2562,9 +2657,9 @@ begin
   while I <= High(aPrimarySizes) do
   begin
     //Iterate all controls
-    for K := 0 to ControlList.Count - 1 do
+    for K := 0 to ItemList.Count - 1 do
     begin
-      lItem := ControlList.Items[K] as TLayoutManagerItem;
+      lItem := ItemList.Items[K];
 
       if ItemLayout = laHorizontal then
         iPosition := lItem.Left
@@ -2572,7 +2667,8 @@ begin
         iPosition := lItem.Top;
 
       //If item is in the actul column or row, its spacing will be calculated
-      if (iPosition = aPrimarySizes[I, 0]) and (lItem.AutoAlignCaptions) then
+      if (iPosition = aPrimarySizes[I, 0]) and (lItem.AutoAlignCaptions) and
+        (lItem.CaptionVisible) then
       begin
         if lItem.CaptionOptions.Position in [lpLeft, lpRight] then
           lItem.CaptionOptions.AdditionalSpacing := GetMaxSize(aCaptionWidths, lItem.Left) - (lItem.ItemLabel.Width + lItem.CaptionOptions.ControlSpacing)
@@ -2582,7 +2678,22 @@ begin
     end;
 
     //Positioning item with limit (higher column or row or LM width)
-    PositioningItems(False, GetHigherColumnOrRow);
+    if ItemLayout = laVertical then
+    begin
+      iLimit := GetScreenHeightRequired;
+
+      if iLimit > Height then
+        iLimit := Height;
+    end
+    else
+    begin
+      iLimit := GetScreenWidthRequired;
+
+      if iLimit > Width then
+        iLimit := Width;
+    end;
+
+    PositioningItems(False, iLimit);
 
     //Update sizes list, after re-positioning items
     UpdateMaxCaptionSizes;
@@ -2590,7 +2701,8 @@ begin
     inc(I);
   end;
 
-  if HasItemsOutOfContainer then
+  if ((ItemLayout = laHorizontal) and (GetItemsOutOfContainersWidth)) or
+    ((ItemLayout = laVertical) and (GetItemsOutOfContainersHeight)) then
   begin
     //If has some item out of LM edge, process will restart
     PositioningItems(True);
@@ -2623,11 +2735,11 @@ var
 begin
   Include(FState, lmResizingItems);
 
-  for I := 0 to ControlList.Count - 1 do
+  for I := 0 to ItemList.Count - 1 do
   begin
-    (ControlList.Items[I] as TLayoutManagerItem).HeightOptions.RecalculateSize;
-    (ControlList.Items[I] as TLayoutManagerItem).WidthOptions.RecalculateSize;
-    (ControlList.Items[I] as TLayoutManagerItem).Realign(False);
+    ItemList.Items[I].HeightOptions.RecalculateSize;
+    ItemList.Items[I].WidthOptions.RecalculateSize;
+    ItemList.Items[I].Realign(False);
   end;
 
   Exclude(FState, lmResizingItems);
@@ -2674,16 +2786,15 @@ begin
   begin
     FItemDefCaptionPos := Value;
 
-    for I := 0 to ControlCount - 1 do
-      if Controls[I] is TLayoutManagerItem then
-      begin
-        lItem := Controls[I] as TLayoutManagerItem;
+    for I := 0 to ItemList.Count - 1 do
+    begin
+      lItem := ItemList.Items[I];
 
-        if lItem.ItemControl is TLayoutManager then
-          (lItem.ItemControl as TLayoutManager).ItemDefCaptionPos := FItemDefCaptionPos
-        else if lItem.CaptionOptions.UseDefPosition then
-          lItem.CaptionOptions.Position := FItemDefCaptionPos;
-      end;
+      if lItem.ItemControl is TLayoutManager then
+        (lItem.ItemControl as TLayoutManager).ItemDefCaptionPos := FItemDefCaptionPos
+      else if lItem.CaptionOptions.UseDefPosition then
+        lItem.CaptionOptions.Position := FItemDefCaptionPos;
+    end;
 
     RealignItems;
   end;
@@ -2698,16 +2809,15 @@ begin
   begin
     FItemDefControlSpacing := Value;
 
-    for I := 0 to ControlCount - 1 do
-      if Controls[I] is TLayoutManagerItem then
-      begin
-        lItem := Controls[I] as TLayoutManagerItem;
+    for I := 0 to ItemList.Count - 1 do
+    begin
+      lItem := ItemList.Items[I];
 
-        if lItem.ItemControl is TLayoutManager then
-          (lItem.ItemControl as TLayoutManager).ItemDefControlSpacing := FItemDefControlSpacing
-        else if lItem.CaptionOptions.UseDefControlSpacing then
-          lItem.CaptionOptions.ControlSpacing := FItemDefControlSpacing;
-      end;
+      if lItem.ItemControl is TLayoutManager then
+        (lItem.ItemControl as TLayoutManager).ItemDefControlSpacing := FItemDefControlSpacing
+      else if lItem.CaptionOptions.UseDefControlSpacing then
+        lItem.CaptionOptions.ControlSpacing := FItemDefControlSpacing;
+    end;
   end;
 end;
 
