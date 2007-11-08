@@ -86,7 +86,7 @@ contains
   List_GUIControl in 'GUIBuilder\List_GUIControl.pas',
   TabOrderForm in 'LayoutManager\TabOrderForm.pas',
   LayoutManagerReg in 'LayoutManager\LayoutManagerReg.pas',
-  CustomizeForm in 'GUIBuilder\CustomizeForm.pas',
-  CustomizeFormControl in 'GUIBuilder\CustomizeFormControl.pas';
+  CustomizeScreen in 'GUIBuilder\CustomizeScreen.pas',
+  CustomizeScreenControl in 'GUIBuilder\CustomizeScreenControl.pas';
 
 end.
