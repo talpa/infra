@@ -415,6 +415,7 @@ end;
 
 procedure TInfraType.Changed;
 begin
+  FIsNull := False;
   Publisher.Publish(TInfraChangedEvent.Create(
     Self as IElement) as IInfraChangedEvent);
 end;
@@ -466,7 +467,7 @@ end;
 
 procedure TInfraString.SetAsString(const Value: string);
 begin
-  if Value <> FValue then
+  if (Value <> FValue) or (IsNull) then
   begin
     FValue := Value;
     Changed;
@@ -507,7 +508,7 @@ end;
 
 procedure TInfraDouble.SetAsDouble(const Value: Double);
 begin
-  if Value <> FValue then
+  if (Value <> FValue) or (IsNull) then
   begin
     FValue := Value;
     Changed;
@@ -550,7 +551,7 @@ end;
 
 procedure TInfraVariant.SetAsVariant(const Value: Variant);
 begin
-  if Value <> FValue then
+  if (Value <> FValue) or (IsNull) then
   begin
     FValue := Value;
     Changed;
@@ -562,7 +563,7 @@ end;
 class function TInfraInteger.NewFrom(
   const Value: Integer): IInfraInteger;
 begin
-  Result := Self.Create;  
+  Result := Self.Create;
   Result.AsInteger := Value;
 end;
 
@@ -592,7 +593,7 @@ end;
 
 procedure TInfraInteger.SetAsInteger(const Value: Integer);
 begin
-  if Value <> FValue then
+  if (Value <> FValue) or (IsNull)  then
   begin
     FValue := Value;
     Changed;
@@ -623,7 +624,7 @@ end;
 
 procedure TInfraBoolean.SetAsBoolean(Value: boolean);
 begin
-  if Value <> FValue then
+  if (Value <> FValue) or (IsNull) then
   begin
     FValue := Value;
     Changed;
@@ -639,7 +640,7 @@ end;
 
 procedure TInfraDateTime.SetAsDateTime(Value: TDateTime);
 begin
-  if Value <> FValue then
+  if (Value <> FValue) or (IsNull) then
   begin
     FValue := Value;
     Changed;
@@ -653,7 +654,7 @@ end;
 
 procedure TInfraDateTime.SetAsDate(Value: TDateTime);
 begin
-  if Value <> FValue then
+  if (Value <> FValue) or (IsNull) then
   begin
     FValue := Value;
     Changed;
@@ -667,7 +668,7 @@ end;
 
 procedure TInfraDateTime.SetAsTime(Value: TDateTime);
 begin
-  if Value <> FValue then
+  if (Value <> FValue) or (IsNull)  then
   begin
     FValue := Value;
     Changed;
@@ -720,7 +721,7 @@ end;
 
 procedure TInfraDate.SetAsDate(Value: TDateTime);
 begin
-  if Value <> FValue then
+  if (Value <> FValue) or (IsNull) then
   begin
     FValue := Value;
     Changed;
@@ -750,7 +751,7 @@ end;
 
 procedure TInfraTime.SetAsTime(Value: TDateTime);
 begin
-  if Value <> FValue then
+  if (Value <> FValue) or (IsNull) then
   begin
     FValue := Value;
     Changed;
