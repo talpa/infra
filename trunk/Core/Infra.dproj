@@ -72,15 +72,6 @@
     <DelphiCompile Include="Infra.dpk">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
-    <DCCReference Include="C:\Documents and Settings\Diogo\dbexpress.dcp" />
-    <DCCReference Include="C:\Documents and Settings\Diogo\dbrtl.dcp" />
-    <DCCReference Include="C:\Documents and Settings\Diogo\DbxCommonDriver.dcp" />
-    <DCCReference Include="C:\Documents and Settings\Diogo\designide.dcp" />
-    <DCCReference Include="C:\Documents and Settings\Diogo\rtl.dcp" />
-    <DCCReference Include="C:\Documents and Settings\Diogo\vcl.dcp" />
-    <DCCReference Include="C:\Documents and Settings\Diogo\vclactnband.dcp" />
-    <DCCReference Include="C:\Documents and Settings\Diogo\vclx.dcp" />
-    <DCCReference Include="C:\Documents and Settings\Diogo\xmlrtl.dcp" />
     <DCCReference Include="Common\ApplicationContext.PAS" />
     <DCCReference Include="Common\InfraBase.pas" />
     <DCCReference Include="Common\InfraBasicList.pas" />
@@ -100,8 +91,14 @@
     <DCCReference Include="Common\List_Subscription.pas" />
     <DCCReference Include="GUIBuilder\CustomizeScreen.pas" />
     <DCCReference Include="GUIBuilder\CustomizeScreenControl.pas" />
+    <DCCReference Include="GUIBuilder\dbexpress.dcp" />
+    <DCCReference Include="GUIBuilder\dbrtl.dcp" />
+    <DCCReference Include="GUIBuilder\DbxCommonDriver.dcp" />
+    <DCCReference Include="GUIBuilder\designide.dcp" />
     <DCCReference Include="GUIBuilder\GUIAnnotation.pas" />
     <DCCReference Include="GUIBuilder\GUIAnnotationIntf.pas" />
+    <DCCReference Include="GUIBuilder\GUIAnnotationLoaderIntf.pas" />
+    <DCCReference Include="GUIBuilder\GUIAnnotationLoaderXML.pas" />
     <DCCReference Include="GUIBuilder\InfraGUIBuilder.pas" />
     <DCCReference Include="GUIBuilder\InfraGUIBuilderForm.pas" />
     <DCCReference Include="GUIBuilder\InfraGUIBuilderIntf.pas" />
@@ -110,6 +107,10 @@
     <DCCReference Include="GUIBuilder\List_GUIMapping.pas" />
     <DCCReference Include="GUIBuilder\List_Screen.pas" />
     <DCCReference Include="GUIBuilder\List_ScreenItem.pas" />
+    <DCCReference Include="GUIBuilder\rtl.dcp" />
+    <DCCReference Include="GUIBuilder\vcl.dcp" />
+    <DCCReference Include="GUIBuilder\vclx.dcp" />
+    <DCCReference Include="GUIBuilder\xmlrtl.dcp" />
     <DCCReference Include="LayoutManager\LayoutManager.dcr" />
     <DCCReference Include="LayoutManager\LayoutManager.dcr" />
     <DCCReference Include="LayoutManager\LayoutManager.pas" />

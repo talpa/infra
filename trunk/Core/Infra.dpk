@@ -30,12 +30,11 @@ requires
   rtl,
   vcl,
   dbrtl,
-  DbxCommonDriver,
-  dbexpress,
   designide,
   xmlrtl,
-  vclactnband,
-  vclx;
+  vclx,
+  DbxCommonDriver,
+  dbexpress;
 
 contains
   ApplicationContext in 'Common\ApplicationContext.PAS',
@@ -87,6 +86,8 @@ contains
   TabOrderForm in 'LayoutManager\TabOrderForm.pas',
   LayoutManagerReg in 'LayoutManager\LayoutManagerReg.pas',
   CustomizeScreen in 'GUIBuilder\CustomizeScreen.pas',
-  CustomizeScreenControl in 'GUIBuilder\CustomizeScreenControl.pas';
+  CustomizeScreenControl in 'GUIBuilder\CustomizeScreenControl.pas',
+  GUIAnnotationLoaderXML in 'GUIBuilder\GUIAnnotationLoaderXML.pas',
+  GUIAnnotationLoaderIntf in 'GUIBuilder\GUIAnnotationLoaderIntf.pas';
 
 end.

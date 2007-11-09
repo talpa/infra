@@ -4,30 +4,62 @@ interface
 
 uses
   InfraCommonIntf, InfraValueTypeIntf, Controls, ExtCtrls, LayoutManager,
-  GUIAnnotationIntf;
+  GUIAnnotationIntf, Forms;
 
 type
 
+  IGUIControl = interface;
+
+  IGUIControlList = interface;
+
+  IGUI = interface(IMemoryManagedObject)
+    ['{5E2DBC11-126E-4B75-9C2F-BAC58CCD88EA}']
+    function GetBusinessObject: IInfraObject;
+    function GetGUIControlList: IGUIControlList;
+    function GetScreen: IScreen;
+    function GetTitle: string;
+    procedure SetBusinessObject(const Value: IInfraObject);
+    procedure SetGUIControlList(const Value: IGUIControlList);
+    procedure SetScreen(const Value: IScreen);
+    procedure SetTitle(const Value: string);
+    function Clone: IGUI;
+    function FindGUIControl(pPropertyName : string): IGUIControl;
+    property BusinessObject: IInfraObject read GetBusinessObject write SetBusinessObject;
+    property GUIControlList: IGUIControlList read GetGUIControlList write SetGUIControlList;
+    property Screen: IScreen read GetScreen write SetScreen;
+    property Title: string read GetTitle write SetTitle;
+  end;
+
   IGUIControl = interface(IMemoryManagedObject)
     ['{048C693A-63AD-46E1-B84B-94B5A8D1BB18}']
+    function GetControl: TControl;
     function GetControlClass: TControlClass;
+    function GetControlProperty: string;
+    function GetItem: TLayoutManagerItem;
     function GetName: string;
     function GetPropertyInfo: IPropertyInfo;
     function GetPropertyName: string;
     function GetPropertyValue: IInfraType;
-    function GetScreenControl: IScreenControl;
+    function GetScreenItem: IScreenItem;
+    procedure SetControl(const Value: TControl);
     procedure SetControlClass(const Value: TControlClass);
+    procedure SetControlProperty(const Value: string);
+    procedure SetItem(const Value: TLayoutManagerItem);
     procedure SetName(const Value: string);
     procedure SetPropertyInfo(const Value: IPropertyInfo);
     procedure SetPropertyName(const Value: string);
     procedure SetPropertyValue(const Value: IInfraType);
-    procedure SetScreenControl(const Value: IScreenControl);
+    procedure SetScreenItem(const Value: IScreenItem);
+    function Clone: IGUIControl;
+    property Control: TControl read GetControl write SetControl;
     property ControlClass: TControlClass read GetControlClass  write SetControlClass;
+    property ControlProperty: string read GetControlProperty write SetControlProperty;
+    property Item: TLayoutManagerItem read GetItem write SetItem;
     property Name: string read GetName write SetName;
     property PropertyInfo: IPropertyInfo read GetPropertyInfo write SetPropertyInfo;
     property PropertyName: string read GetPropertyName write SetPropertyName;
     property PropertyValue: IInfraType read GetPropertyValue write SetPropertyValue;
-    property ScreenControl: IScreenControl read GetScreenControl write SetScreenControl;
+    property ScreenItem: IScreenItem read GetScreenItem write SetScreenItem;
   end;
 
   IGUIControlIterator = interface(IInterface)
@@ -38,7 +70,7 @@ type
     procedure Next;
   end;
 
-  IGUIControlList = interface(IMemoryManagedObject)
+  IGUIControlListBase = interface(IMemoryManagedObject)
     ['{126083E3-1000-4256-8EF0-4326AA3256E6}']
     function Add(const Item: IGUIControl): Integer;
     function First: IGUIControl;
@@ -53,6 +85,11 @@ type
     procedure SetItem(Index: Integer; const TypeInfo: IGUIControl);
     property Count: Integer read GetCount;
     property Items[Index: Integer]: IGUIControl read GetItem write SetItem; default;
+  end;
+
+  IGUIControlList = interface(IGUIControlListBase)
+    ['{4738BE6D-255E-427E-854C-3273060DD5CE}']
+    function Clone: IGUIControlList;
   end;
 
   IGUIMapping = interface(IMemoryManagedObject)

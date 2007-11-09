@@ -102,10 +102,37 @@ type
       IInfraType = nil): IInfraType; override;
   end;
 
+function GetVariantValue(pValue: IInfraType): IInfraVariant;
+
 implementation
 
 uses
   Variants, SysUtils, InfraValueType;
+
+function GetVariantValue(pValue: IInfraType): IInfraVariant;
+var
+  lTypeConverter: ITypeConverter;
+begin
+  if Supports(pValue, IInfraString) then
+    lTypeConverter := TStringToVariant.Create
+  else if Supports(pValue, IInfraBoolean) then
+    lTypeConverter := TBooleanToVariant.Create
+  else if Supports(pValue, IInfraDateTime) then
+    lTypeConverter := TDateTimeToVariant.Create
+  else if Supports(pValue, IInfraDate) then
+    lTypeConverter := TDateTimeToVariant.Create
+  else if Supports(pValue, IInfraTime) then
+    lTypeConverter := TDateTimeToVariant.Create
+  else if Supports(pValue, IInfraDouble) then
+    lTypeConverter := TDoubleToVariant.Create
+  else if Supports(pValue, IInfraInteger) then
+    lTypeConverter := TIntegerToVariant.Create;
+
+  if Supports(pValue, IInfraVariant) then
+    Result := pValue as IInfraVariant
+  else
+    Result := lTypeConverter.ConvertToRight(pValue) as IInfraVariant;
+end;
 
 { TTypeConverter }
 

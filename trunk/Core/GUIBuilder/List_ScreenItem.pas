@@ -13,13 +13,18 @@ uses
 
 type
   _ITERABLELIST_BASE_ = TMemoryManagedObject;
-  _ITERABLELIST_INTF_ = IScreenItemList;
+  _ITERABLELIST_INTF_ = IScreenItemListBase;
   _ITEM_INTF_ = IScreenItem;
   _ITERATOR_INTF_ = IScreenItemIterator;
   {$I ..\Templates\InfraTempl_IntfList.inc}
   end;
 
-  TScreenItemList = class(_ITERABLELIST_);
+  TScreenItemListBase = class(_ITERABLELIST_);
+
+  TScreenItemList = class(TScreenItemListBase, IScreenItemList)
+  public
+    function Clone: IScreenItemList;
+  end;
 
 implementation
 
@@ -32,6 +37,34 @@ destructor _ITERABLELIST_.Destroy;
 begin
   FreeAndNil(FItems);
   inherited;
+end;
+
+{ TGUIControlList }
+
+function TScreenItemList.Clone: IScreenItemList;
+var
+  It: IScreenItemIterator;
+  lScreenItem: IScreenItem;
+begin
+  Result := TScreenItemList.Create;
+
+  It := NewIterator;
+
+  while not It.IsDone do
+  begin
+    lScreenItem := It.CurrentItem as IScreenItem;
+
+    if Supports(lScreenItem, IScreenControl) then
+      lScreenItem := (lScreenItem as IScreenControl).Clone
+    else if Supports(lScreenItem, IScreenGroup) then
+      lScreenItem := (lScreenItem as IScreenGroup).Clone
+    else
+      lScreenItem := lScreenItem.CloneItem;
+
+    Result.Add(lScreenItem);
+
+    It.Next;
+  end;
 end;
 
 end.

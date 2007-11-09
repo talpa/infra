@@ -4,8 +4,9 @@ interface
 
 uses
   Classes, SysUtils, Math, Forms, Controls, Graphics, LayoutManager, StdCtrls,
-  ExtCtrls, Windows, Buttons, Messages, Dialogs, List_GUIControl,
-  InfraGUIBuilderIntf;
+  ExtCtrls, Windows, Buttons, Messages, Dialogs, List_GUIControl, typinfo,
+  InfraGUIBuilderIntf, InfraValueTypeIntf, GUIAnnotationIntf,
+  GUIAnnotationLoaderIntf;
 
 const
   sr4to3Coefficient = 1.33;
@@ -19,27 +20,35 @@ type
 
   TInfraGUIBuilderForm = class(TCustomForm)
   private
-    FGUIControlList: IGUIControlList;
+    FAdjustFormSize: Boolean;
+    FGUI: IGUI;
     FMainLayoutManager: TLayoutManager;
     FScreenSizeRatio: TScreenSizeRatio;
     procedure CalculateFormHeight;
     procedure CalculateFormWidth;
-    function GetGUIControlList: IGUIControlList;
+    function GetGUI: IGUI;
     function GetMainLayoutManager: TLayoutManager;
     function GetScreenSizeCoefficient: Extended;
     function GetScreenSizeRatio: TScreenSizeRatio;
     procedure PositioningForm;
-    procedure SetGUIControlList(const Value: IGUIControlList);
+    procedure SetGUI(const Value: IGUI);
     procedure SetScreenSizeRatio(const Value: TScreenSizeRatio);
     procedure WMSYSCOMMAND(var message: TWMSYSCOMMAND); message WM_SYSCOMMAND;
   protected
+    procedure CreateLayoutManager;
     function GetAdditionalScreenHeight: Integer; virtual;
     function GetAdditionalScreenWidth: Integer; virtual;
+    procedure SetControlValue(pGUIControl: IGUIControl; pObject: IInfraObject);
+    procedure SetItemOrder;
+    procedure SetPropAnnotationsForItem(pScreenItem: IScreenItem;
+      pItem: TLayoutManagerItem);
+    procedure SetObjectAnnotationsForForm(pScreen: IScreen);
   public
     procedure AdjustFormSize;
+    procedure Build;
     constructor CreateNew(AOwner: TComponent; Dummy: Integer = 0); override;
     procedure CreateParams(var Params: TCreateParams); override;
-    property GUIControlList: IGUIControlList read GetGUIControlList write SetGUIControlList;
+    property GUI: IGUI read GetGUI write SetGUI;
     property MainLayoutManager: TLayoutManager read GetMainLayoutManager;
     property ScreenSizeRatio: TScreenSizeRatio read GetScreenSizeRatio write SetScreenSizeRatio;
   end;
@@ -71,7 +80,8 @@ type
 implementation
 
 uses
-  CustomizeScreen;
+  CustomizeScreen, InfraGUIBuilder, InfraValueTypeConvert,
+  GUIAnnotationLoaderXML;
 
 { TInfraGUIBuilderForm }
 
@@ -139,6 +149,62 @@ begin
   end;
 end;
 
+procedure TInfraGUIBuilderForm.Build;
+var
+  It: IGUIControlIterator;
+  lGUIControl: IGUIControl;
+  lXMLLoader: IGUIAnnotationLoader;
+begin
+  SendToBack;
+
+  Height := 300;
+  Width := 400;
+
+  CreateLayoutManager;
+
+  //Load XML
+  if not DirectoryExists(ExtractFileDir(Application.ExeName) + '\Screens') then
+    CreateDir(ExtractFileDir(Application.ExeName) + '\Screens');
+
+  lXMLLoader := TGUIAnnotationLoaderXML.Create;
+  lXMLLoader.FileName := ExtractFileDir(Application.ExeName) + '\Screens\' + GUI.Title + '.xml';
+  lXMLLoader.GUI := GUI;
+  lXMLLoader.Load;
+
+
+  //Caption := GUI.Title;
+
+  It := GUI.GUIControlList.NewIterator;
+
+  while not It.IsDone do
+  begin
+    lGUIControl := It.CurrentItem as IGUIControl;
+
+    lGUIControl.Control := lGUIControl.ControlClass.Create(Self);
+    lGUIControl.Control.Name := lGUIControl.Name;
+    lGUIControl.Item := MainLayoutManager.AddControl(lGUIControl.Control);
+
+    SetControlValue(lGUIControl, GUI.BusinessObject);
+
+    if Supports(lGUIControl.ScreenItem, IScreenControl) then
+      SetPropAnnotationsForItem(lGUIControl.ScreenItem as IScreenControl, lGUIControl.Item);
+
+    It.Next;
+  end;
+
+  if Assigned(GUI.Screen) then
+    SetObjectAnnotationsForForm(GUI.Screen);
+
+  SetItemOrder;
+
+  if FAdjustFormSize then
+    AdjustFormSize;
+
+  PositioningForm;
+
+  BringToFront;
+end;
+
 procedure TInfraGUIBuilderForm.CalculateFormHeight;
 var
   iNewHeight: Integer;
@@ -159,8 +225,6 @@ begin
     Height := Rect.Bottom - Rect.Top
   else
     ClientHeight := iNewHeight;
-
-  PositioningForm;
 end;
 
 procedure TInfraGUIBuilderForm.CalculateFormWidth;
@@ -183,8 +247,17 @@ begin
     Width := Max(Rect.Right - Rect.Left, Constraints.MinWidth)
   else
     ClientWidth := Max(iNewWidth, Constraints.MinWidth);
+end;
 
-  PositioningForm;
+procedure TInfraGUIBuilderForm.CreateLayoutManager;
+begin
+  if Assigned(FMainLayoutManager) then
+    FreeAndNil(FMainLayoutManager);
+
+  FMainLayoutManager := TLayoutManager.Create(Self);
+  FMainLayoutManager.Parent := Self;
+  FMainLayoutManager.AlignMode := alClient;
+  FMainLayoutManager.ItemLayout :=  laHorizontal;
 end;
 
 constructor TInfraGUIBuilderForm.CreateNew(AOwner: TComponent; Dummy: Integer);
@@ -197,15 +270,8 @@ var
 begin
   inherited;
 
+  FAdjustFormSize := True;
   FScreenSizeRatio := sr4to3;
-
-  FMainLayoutManager := TLayoutManager.Create(Self);
-  FMainLayoutManager.Parent := Self;
-  FMainLayoutManager.AlignMode := alClient;
-  FMainLayoutManager.ItemLayout :=  laHorizontal;
-
-  FGUIControlList := TGUIControlList.Create;
-
 
   //Add menu items
   SystemMenu := GetSystemMenu(Handle, False);
@@ -245,9 +311,9 @@ begin
   Result := 0;
 end;
 
-function TInfraGUIBuilderForm.GetGUIControlList: IGUIControlList;
+function TInfraGUIBuilderForm.GetGUI: IGUI;
 begin
-  Result := FGUIControlList;
+  Result := FGUI;
 end;
 
 function TInfraGUIBuilderForm.GetMainLayoutManager: TLayoutManager;
@@ -280,9 +346,152 @@ begin
   Top := ((Rect.Bottom - Rect.Top) - Height) div 2;
 end;
 
-procedure TInfraGUIBuilderForm.SetGUIControlList(const Value: IGUIControlList);
+procedure TInfraGUIBuilderForm.SetControlValue(pGUIControl: IGUIControl;
+  pObject: IInfraObject);
 begin
-  FGUIControlList := Value;
+  if pGUIControl.Control is TMemo then
+    (pGUIControl.Control as TMemo).Lines.Text :=
+      GetVariantValue(pGUIControl.PropertyValue).AsVariant
+  else if Length(pGUIControl.ControlProperty) > 0 then
+    SetPropValue(pGUIControl.Control, pGUIControl.ControlProperty,
+      GetVariantValue(pGUIControl.PropertyValue).AsVariant);
+end;
+
+procedure TInfraGUIBuilderForm.SetGUI(const Value: IGUI);
+begin
+  FGUI := Value;
+end;
+
+procedure TInfraGUIBuilderForm.SetItemOrder;
+var
+  It: IGUIControlIterator;
+  lCurControl, lNewControl: IGUIControl;
+  iCurIndex, iNewIndex: Integer;
+begin
+  It := GUI.GUIControlList.NewIterator;
+
+  while not It.IsDone do
+  begin
+    iNewIndex := -1;
+
+    if Assigned((It.CurrentItem as IGUIControl).ScreenItem) then
+    begin
+      lCurControl := It.CurrentItem as IGUIControl;
+      iCurIndex := MainLayoutManager.GetItemIndexByControlName(lCurControl.Name);
+
+      if Length(lCurControl.ScreenItem.PutBefore) > 0 then
+      begin
+        lNewControl := GUI.FindGUIControl(lCurControl.ScreenItem.PutBefore);
+
+        Assert(Assigned(lNewControl), 'PutBefore property: ' +
+          lCurControl.ScreenItem.PutBefore + ', does not exists');
+
+        iNewIndex := MainLayoutManager.GetItemIndexByControlName(lNewControl.Name);
+
+        if (iNewIndex >= 0) and (iNewIndex > iCurIndex) then
+          Dec(iNewIndex);
+      end
+      else if Length(lCurControl.ScreenItem.PutAfter) > 0 then
+      begin
+        lNewControl := GUI.FindGUIControl(lCurControl.ScreenItem.PutAfter);
+
+        Assert(Assigned(lNewControl), 'PutAfter property: ' +
+          lCurControl.ScreenItem.PutAfter + ', does not exists');
+
+        iNewIndex := MainLayoutManager.GetItemIndexByControlName(lNewControl.Name);
+
+        if (iNewIndex < MainLayoutManager.ItemList.Count - 1) and (iNewIndex < iCurIndex) then
+          Inc(iNewIndex);
+      end;
+
+      if (iCurIndex > -1) and (iNewIndex > -1) then
+        MainLayoutManager.ItemList.Move(iCurIndex, iNewIndex);
+    end;
+
+    It.Next;
+  end;
+end;
+
+procedure TInfraGUIBuilderForm.SetObjectAnnotationsForForm(pScreen: IScreen);
+begin
+  if not pScreen.Title.IsNull then
+    Caption := pScreen.Title.AsString;
+
+  if not pScreen.Height.IsNull then
+  begin
+    Height := pScreen.Height.AsInteger;
+    FAdjustFormSize := False;
+  end;
+
+  if not pScreen.Width.IsNull then
+  begin
+    Width := pScreen.Width.AsInteger;
+    FAdjustFormSize := False;
+  end;
+
+  if pScreen.CaptionPosition <> MainLayoutManager.ItemDefCaptionPos then
+    MainLayoutManager.ItemDefCaptionPos := pScreen.CaptionPosition;
+
+  if not pScreen.ControlSpacing.IsNull then
+    MainLayoutManager.ItemDefControlSpacing :=
+      pScreen.ControlSpacing.AsInteger;
+
+  if not TLayoutManagerPositions.Equals(pScreen.Padding,
+    MainLayoutManager.ItemDefPadding) then
+    MainLayoutManager.ItemDefPadding.Assign(pScreen.Padding);
+
+  if pScreen.ItemLayout <> MainLayoutManager.ItemLayout then
+    MainLayoutManager.ItemLayout := pScreen.ItemLayout;
+
+  if not TLayoutManagerPositions.Equals(pScreen.ItemSpacing,
+    MainLayoutManager.ItemSpacing) then
+    MainLayoutManager.ItemSpacing.Assign(pScreen.ItemSpacing);
+end;
+
+procedure TInfraGUIBuilderForm.SetPropAnnotationsForItem(
+  pScreenItem: IScreenItem; pItem: TLayoutManagerItem);
+begin
+  if not Assigned(pScreenItem) then
+    Exit;
+
+  if not pScreenItem.Caption.IsNull then
+    pItem.Caption := pScreenItem.Caption.AsString;
+
+  if pScreenItem.CaptionPositionChanged then
+    pItem.CaptionOptions.Position := pScreenItem.CaptionPosition;
+
+  if not pScreenItem.CaptionVisible.IsNull then
+    pItem.CaptionVisible := pScreenItem.CaptionVisible.AsBoolean;
+
+  if pScreenItem.ItemHeightMeasureTypeChanged then
+    pItem.HeightOptions.MeasureType := pScreenItem.ItemHeightMeasureType;
+
+  if not pScreenItem.ItemHeight.IsNull then
+    pItem.HeightOptions.Size := pScreenItem.ItemHeight.AsInteger;
+
+  if pScreenItem.ItemWidthMeasureTypeChanged then
+    pItem.WidthOptions.MeasureType := pScreenItem.ItemWidthMeasureType;
+
+  if not pScreenItem.ItemWidth.IsNull then
+    pItem.WidthOptions.Size := pScreenItem.ItemWidth.AsInteger;
+
+  if not pScreenItem.Visible.IsNull then
+    pItem.Visible := pScreenItem.Visible.AsBoolean;
+
+  if Supports(pScreenItem, IScreenControl) then
+  begin
+    if not (pScreenItem as IScreenControl).Height.IsNull then
+    begin
+      pItem.ItemControl.Height := (pScreenItem as IScreenControl).Height.AsInteger;
+      pItem.ResizeItemHeight;
+    end;
+
+    if not (pScreenItem as IScreenControl).Width.IsNull then
+    begin
+      pItem.ItemControl.Width := (pScreenItem as IScreenControl).Width.AsInteger;
+      pItem.ResizeItemWidth;
+    end;
+  end;
 end;
 
 procedure TInfraGUIBuilderForm.SetScreenSizeRatio(const Value: TScreenSizeRatio);
@@ -302,8 +511,15 @@ begin
         CustomizeScreen := TCustomizeScreen.Create(nil);
 
         try
-          CustomizeScreen.GUIControlList := GUIControlList;
-          CustomizeScreen.Execute;
+          CustomizeScreen.GUI := GUI;
+          CustomizeScreen.Form := Self;
+
+          if CustomizeScreen.Execute then
+          begin
+            GUI := CustomizeScreen.GUI;
+            Build;
+          end;
+
         finally
           CustomizeScreen.Free;
         end;

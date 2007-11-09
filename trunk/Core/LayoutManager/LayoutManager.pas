@@ -25,7 +25,7 @@ type
 
   TLayoutOrientation = (laHorizontal, laVertical);
 
-  TMeasureType = (mtFix, mtPercent, mtFull);
+  TMeasureType = (mtFix, mtPercent);
 
   TLayoutManagerItemState = set of (isInitializing, isInternalUpdating, isRealigning);
 
@@ -414,9 +414,59 @@ type
     property ItemSpacing: TLayoutManagerSpacing read GetItemSpacing write SetItemSpacing;
   end;
 
+const
+  TLabelPositionText: array[TLabelPosition] of string = ('Above', 'Below', 'Left', 'Right');
+  TLayoutOrientationText: array[TLayoutOrientation] of string = ('Horizontal', 'Vertical');
+  TMeasureTypeText: array[TMeasureType] of string = ('Fix', 'Percent');
+
+function GetLabelPosition(const Value: string): TLabelPosition;
+function GetLayoutOrientation(const Value: string): TLayoutOrientation;
+function GetMeasureType(const Value: string): TMeasureType;
 function RoundLess(AValue: Extended): Integer;
 
 implementation
+
+function GetLabelPosition(const Value: string): TLabelPosition;
+var
+  I: TLabelPosition;
+begin
+  Result := lpLeft;
+
+  for I := Low(TLabelPosition) to High(TLabelPosition) do
+    if SameText(TLabelPositionText[I], Value) then
+    begin
+      Result := I;
+      Exit;
+    end;
+end;
+
+function GetLayoutOrientation(const Value: string): TLayoutOrientation;
+var
+  I: TLayoutOrientation;
+begin
+  Result := laHorizontal;
+
+  for I := Low(TLayoutOrientation) to High(TLayoutOrientation) do
+    if SameText(TLayoutOrientationText[I], Value) then
+    begin
+      Result := I;
+      Exit;
+    end;
+end;
+
+function GetMeasureType(const Value: string): TMeasureType;
+var
+  I: TMeasureType;
+begin
+  Result := mtFix;
+
+  for I := Low(TMeasureType) to High(TMeasureType) do
+    if SameText(TMeasureTypeText[I], Value) then
+    begin
+      Result := I;
+      Exit;
+    end;
+end;
 
 function RoundLess(AValue: Extended): Integer;
 begin
@@ -879,7 +929,7 @@ begin
   begin
     case MeasureType of
       mtFix: Result := GetFixSize(APercentHeight, Item.Container.Height);
-      mtFull: Result := GetAvaibleHeight;
+      //mtFull: Result := GetAvaibleHeight;
       mtPercent: Result := GetFixSize(APercentHeight, Item.Container.Height) -
         (Item.Container.ItemSpacing.Top + Item.Container.ItemSpacing.Bottom);
     end;
@@ -984,7 +1034,7 @@ begin
   begin
     case MeasureType of
       mtFix: Result := GetFixSize(APercentWidth, Item.Container.Width);
-      mtFull: Result := GetAvaibleWidth;
+      //mtFull: Result := GetAvaibleWidth;
       mtPercent: Result := GetFixSize(APercentWidth, Item.Container.Width) -
         (Item.Container.ItemSpacing.Left + Item.Container.ItemSpacing.Right);
     end;
