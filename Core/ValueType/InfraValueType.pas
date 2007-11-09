@@ -405,7 +405,9 @@ end;
 function TInfraType.Clone: IInfraType;
 begin
   Result := TInfraType(ClassType.Create);
-  Result.Assign(Self);
+
+  if not IsNull then
+    Result.Assign(Self);
 end;
 
 procedure TInfraType.Calculate;

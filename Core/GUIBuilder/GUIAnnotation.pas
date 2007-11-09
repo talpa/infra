@@ -36,6 +36,8 @@ type
     function GetItemWidthMeasureType: TMeasureType;
     function GetItemWidthMeasureTypeChanged: Boolean;
     function GetName: string;
+    function GetPutAfter: string;
+    function GetPutBefore: string;
     function GetVisible: IInfraBoolean;
     procedure SetCaption(const Value: IInfraString);
     procedure SetCaptionPosition(const Value: TLabelPosition);
@@ -45,14 +47,13 @@ type
     procedure SetItemWidth(const Value: IInfraInteger);
     procedure SetItemWidthMeasureType(const Value: TMeasureType);
     procedure SetName(const Value: string);
+    procedure SetPutAfter(const Value: string);
+    procedure SetPutBefore(const Value: string);
     procedure SetVisible(const Value: IInfraBoolean);
   public
     constructor Create; override;
-    function GetPutAfter: string;
-    function GetPutBefore: string;
+    function CloneItem: IScreenItem;
     procedure SetItemSize(pHeight, pWidth: IInfraInteger);
-    procedure PutBefore(pName: string);
-    procedure PutAfter(pName: string);
     property Caption: IInfraString read GetCaption write SetCaption;
     property CaptionPosition: TLabelPosition read GetCaptionPosition write SetCaptionPosition;
     property CaptionPositionChanged: Boolean read GetCaptionPositionChanged;
@@ -64,6 +65,8 @@ type
     property ItemWidthMeasureType: TMeasureType read GetItemWidthMeasureType write SetItemWidthMeasureType;
     property ItemWidthMeasureTypeChanged: Boolean read GetItemWidthMeasureTypeChanged;
     property Name: string read GetName write SetName;
+    property PutAfter: string read GetPutAfter write SetPutAfter;
+    property PutBefore: string read GetPutBefore write SetPutBefore;
     property Visible: IInfraBoolean read GetVisible write SetVisible;
   end;
 
@@ -86,6 +89,7 @@ type
     procedure SetWidth(const Value: IInfraInteger);
   public
     constructor Create; override;
+    function Clone: IScreenControl;
     procedure SetSize(pHeight, pWidth: IInfraInteger);
     property ControlClass: TControlClass read GetControlClass write SetControlClass;
     property ControlProperty: IInfraString read GetControlProperty write SetControlProperty;
@@ -101,15 +105,16 @@ type
     function GetItemLayout: TLayoutOrientation;
     function GetItems: IScreenItemList;
     procedure SetItemLayout(const Value: TLayoutOrientation);
+    procedure SetItems(const Value: IScreenItemList);
   public
     constructor Create; override;
+    function Clone: IScreenGroup;
     property ItemLayout: TLayoutOrientation read GetItemLayout write SetItemLayout;
-    property Items: IScreenItemList read GetItems;
+    property Items: IScreenItemList read GetItems write SetItems;
   end;
 
   TScreen = class(TElement, IScreen)
   private
-    FCaption: IInfraString;
     FCaptionPosition: TLabelPosition;
     FControlSpacing: IInfraInteger;
     FHeight: IInfraInteger;
@@ -120,8 +125,8 @@ type
     FName: string;
     FPadding: TLayoutManagerPadding;
     FShowProperties: TStrings;
+    FTitle: IInfraString;
     FWidth: IInfraInteger;
-    function GetCaption: IInfraString;
     function GetCaptionPosition: TLabelPosition;
     function GetControlSpacing: IInfraInteger;
     function GetHeight: IInfraInteger;
@@ -132,17 +137,20 @@ type
     function GetName: string;
     function GetPadding: TLayoutManagerPadding;
     function GetShowProperties: TStrings;
+    function GetTitle: IInfraString;
     function GetWidth: IInfraInteger;
-    procedure SetCaption(const Value: IInfraString);
     procedure SetCaptionPosition(const Value: TLabelPosition);
     procedure SetControlSpacing(const Value: IInfraInteger);
     procedure SetHeight(const Value: IInfraInteger);
     procedure SetItemLayout(const Value: TLayoutOrientation);
     procedure SetName(const Value: string);
+    procedure SetTitle(const Value: IInfraString);
     procedure SetWidth(const Value: IInfraInteger);
+    procedure SetItems(const Value: IScreenItemList);
   public
     constructor Create; override;
     destructor Destroy; override;
+    function Clone: IScreen;
     function AddControl(pPropertyName: string): IScreenControl;
     function AddGroup(pName: string): IScreenGroup;
     function GetControl(pPropertyName: string): IScreenControl;
@@ -151,17 +159,17 @@ type
     procedure Group(pProperties: TStrings);
     procedure SetSize(pHeight, pWidth: IInfraInteger);
     function UseProperty(pPropertyName: string): Boolean;
-    property Caption: IInfraString read GetCaption write SetCaption;
     property CaptionPosition: TLabelPosition read GetCaptionPosition write SetCaptionPosition;
     property ControlSpacing: IInfraInteger read GetControlSpacing write SetControlSpacing;
     property Height: IInfraInteger read GetHeight write SetHeight;
     property HideProperties: TStrings read GetHideProperties;
-    property Items: IScreenItemList read GetItems;
+    property Items: IScreenItemList read GetItems write SetItems;
     property ItemLayout: TLayoutOrientation read GetItemLayout write SetItemLayout;
     property ItemSpacing: TLayoutManagerSpacing read GetItemSpacing;
     property Name: string read GetName write SetName;
     property Padding: TLayoutManagerPadding read GetPadding;
     property ShowProperties: TStrings read GetShowProperties;
+    property Title: IInfraString read GetTitle write SetTitle;
     property Width: IInfraInteger read GetWidth write SetWidth;
   end;
 
@@ -179,6 +187,22 @@ type
 implementation
 
 { TScreenItem }
+
+function TScreenItem.CloneItem: IScreenItem;
+begin
+  Result := TScreenItem.Create;
+  Result.Caption := Caption.Clone as IInfraString;
+  Result.CaptionPosition := CaptionPosition;
+  Result.CaptionVisible := CaptionVisible.Clone as IInfraBoolean;
+  Result.ItemHeight := ItemHeight.Clone as IInfraInteger;
+  Result.ItemHeightMeasureType := ItemHeightMeasureType;
+  Result.ItemWidth := Result.ItemWidth.Clone as IInfraInteger;
+  Result.ItemWidthMeasureType := ItemWidthMeasureType;
+  Result.Name := Name;
+  Result.PutAfter := PutAfter;
+  Result.PutBefore := PutBefore;
+  Result.Visible := Visible.Clone as IInfraBoolean;
+end;
 
 constructor TScreenItem.Create;
 begin
@@ -267,20 +291,6 @@ begin
   Result := FVisible;
 end;
 
-procedure TScreenItem.PutAfter(pName: string);
-begin
-  Assert(Length(FPutBefore) = 0, 'PutBefore method was already used for this item');
-
-  FPutAfter := pName;
-end;
-
-procedure TScreenItem.PutBefore(pName: string);
-begin
-  Assert(Length(FPutAfter) = 0, 'PutAfter method was already used for this item');
-
-  FPutBefore := pName;
-end;
-
 procedure TScreenItem.SetCaption(const Value: IInfraString);
 begin
   FCaption := Value;
@@ -336,12 +346,51 @@ begin
   FName := Value;
 end;
 
+procedure TScreenItem.SetPutAfter(const Value: string);
+begin
+  if (Length(Value) > 0) and (Length(FPutBefore) > 0) then
+    raise Exception.Create('PutBefore method was already used for this item');
+
+  FPutAfter := Value;
+end;
+
+procedure TScreenItem.SetPutBefore(const Value: string);
+begin
+  if (Length(Value) > 0) and (Length(FPutAfter) > 0) then
+    raise Exception.Create('PutAfter method was already used for this item');
+
+  FPutBefore := Value;
+end;
+
 procedure TScreenItem.SetVisible(const Value: IInfraBoolean);
 begin
   FVisible := Value;
 end;
 
 { TScreenControl }
+
+function TScreenControl.Clone: IScreenControl;
+begin
+  Result := TScreenControl.Create;
+  Result.Caption := Caption.Clone as IInfraString;
+  Result.CaptionPosition := CaptionPosition;
+  Result.CaptionVisible := CaptionVisible.Clone as IInfraBoolean;
+  Result.ItemHeight := ItemHeight.Clone as IInfraInteger;
+  Result.ItemHeightMeasureType := ItemHeightMeasureType;
+  Result.ItemWidth := ItemWidth.Clone as IInfraInteger;
+  Result.ItemWidthMeasureType := ItemWidthMeasureType;
+  Result.Name := Name;
+  Result.PutAfter := PutAfter;
+  Result.PutBefore := PutBefore;
+  Result.Visible := Visible.Clone as IInfraBoolean;
+
+  //ScreenControl
+  Result.ControlClass := ControlClass;
+  Result.ControlProperty := ControlProperty.Clone as IInfraString;
+  Result.Height := Height.Clone as IInfraInteger;
+  Result.PropertyName := PropertyName;
+  Result.Width := Width.Clone as IInfraInteger;
+end;
 
 constructor TScreenControl.Create;
 begin
@@ -410,6 +459,26 @@ end;
 
 { TScreenGroup }
 
+function TScreenGroup.Clone: IScreenGroup;
+begin
+  Result := TScreenGroup.Create;
+  Result.Caption := Caption.Clone as IInfraString;
+  Result.CaptionPosition := CaptionPosition;
+  Result.CaptionVisible := CaptionVisible.Clone as IInfraBoolean;
+  Result.ItemHeight := ItemHeight.Clone as IInfraInteger;
+  Result.ItemHeightMeasureType := ItemHeightMeasureType;
+  Result.ItemWidth := Result.ItemWidth.Clone as IInfraInteger;
+  Result.ItemWidthMeasureType := ItemWidthMeasureType;
+  Result.Name := Name;
+  Result.PutAfter := PutAfter;
+  Result.PutBefore := PutBefore;
+  Result.Visible := Visible.Clone as IInfraBoolean;
+
+  //ScreenGroup
+  Result.ItemLayout := ItemLayout;
+  Result.Items := Items.Clone;
+end;
+
 constructor TScreenGroup.Create;
 begin
   inherited;
@@ -430,6 +499,11 @@ end;
 procedure TScreenGroup.SetItemLayout(const Value: TLayoutOrientation);
 begin
   FItemLayout := Value;
+end;
+
+procedure TScreenGroup.SetItems(const Value: IScreenItemList);
+begin
+  FItems := Value;
 end;
 
 { TScreen }
@@ -469,11 +543,27 @@ begin
   end;
 end;
 
+function TScreen.Clone: IScreen;
+begin
+  Result := TScreen.Create;
+  Result.CaptionPosition := CaptionPosition;
+  Result.ControlSpacing := ControlSpacing.Clone as IInfraInteger;
+  Result.Height := Height.Clone as IInfraInteger;
+  Result.HideProperties.Assign(HideProperties);
+  Result.Items := Items.Clone;
+  Result.ItemLayout := ItemLayout;
+  Result.ItemSpacing.Assign(ItemSpacing);
+  Result.Name := Name;
+  Result.Padding.Assign(Padding);
+  Result.ShowProperties.Assign(ShowProperties);
+  Result.Title := Title.Clone as IInfraString;
+  Result.Width := Width.Clone as IInfraInteger;
+end;
+
 constructor TScreen.Create;
 begin
   inherited;
 
-  FCaption := TInfraString.Create;
   FCaptionPosition := lpLeft;
   FControlSpacing := TInfraInteger.Create;
   FHeight := TInfraInteger.Create;
@@ -483,6 +573,7 @@ begin
   FItemSpacing := TLayoutManagerSpacing.Create;
   FPadding := TLayoutManagerPadding.Create;
   FShowProperties := TStringList.Create;
+  FTitle := TInfraString.Create;
   FWidth := TInfraInteger.Create;
 end;
 
@@ -492,11 +583,6 @@ begin
   FItemSpacing.Free;
   FHideProperties.Free;
   FShowProperties.Free;
-end;
-
-function TScreen.GetCaption: IInfraString;
-begin
-  Result := FCaption;
 end;
 
 function TScreen.GetCaptionPosition: TLabelPosition;
@@ -612,6 +698,11 @@ begin
   Result := FShowProperties;
 end;
 
+function TScreen.GetTitle: IInfraString;
+begin
+  Result := FTitle;
+end;
+
 function TScreen.GetWidth: IInfraInteger;
 begin
   Result := FWidth;
@@ -620,11 +711,6 @@ end;
 procedure TScreen.Group(pProperties: TStrings);
 begin
   //TODO
-end;
-
-procedure TScreen.SetCaption(const Value: IInfraString);
-begin
-  FCaption := Value;
 end;
 
 procedure TScreen.SetCaptionPosition(const Value: TLabelPosition);
@@ -647,6 +733,11 @@ begin
   FItemLayout := Value;
 end;
 
+procedure TScreen.SetItems(const Value: IScreenItemList);
+begin
+  FItems := Value;
+end;
+
 procedure TScreen.SetName(const Value: string);
 begin
   FName := Value;
@@ -656,6 +747,11 @@ procedure TScreen.SetSize(pHeight, pWidth: IInfraInteger);
 begin
   FHeight := pHeight;
   FWidth := pWidth;
+end;
+
+procedure TScreen.SetTitle(const Value: IInfraString);
+begin
+  FTitle := Value;
 end;
 
 procedure TScreen.SetWidth(const Value: IInfraInteger);

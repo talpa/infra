@@ -42,7 +42,7 @@ begin
   lPerson.ID.AsInteger := 1;
   lPerson.Name.AsString := 'Diogo Augusto Pereira';
   lPerson.Email.AsString := 'diogoap82@gmail.com';
-  lPerson.Address.AsString := 'Rua Aldredo Wust, 838';
+  lPerson.Address.AsString := 'Rua Alfredo Wust, 838';
   lPerson.City.Name.AsString := 'Rolante';
   lPerson.City.Population.AsInteger := 18500;
   lPerson.State.AsString := 'RS';
@@ -59,7 +59,7 @@ begin
 
   //Simples --------------------------------------------------------------------
   lGUIPersonSimple := (lPersonInfo.Annotate(IScreens) as IScreens).AddScreen('Cadastro de pessoas - Simples');
-  lGUIPersonSimple.Caption.AsString := 'Cadastro de pessoas - Simples';
+  lGUIPersonSimple.Title.AsString := 'Cadastro de pessoas - Simples';
   lGUIPersonSimple.CaptionPosition := lpAbove;
   lGUIPersonSimple.HideProperties.Add('Email');
   lGUIPersonSimple.HideProperties.Add('State');
@@ -84,7 +84,7 @@ begin
 
   //Completa -------------------------------------------------------------------
   lGUIPerson := (lPersonInfo.Annotate(IScreens) as IScreens).AddScreen('Cadastro de pessoas');
-  lGUIPerson.Caption.AsString := 'Cadastro de pessoas';
+  lGUIPerson.Title.AsString := 'Cadastro de pessoas';
   lGUIPerson.CaptionPosition := lpLeft;
   lGUIPerson.ItemLayout := laHorizontal;
 
@@ -96,13 +96,12 @@ begin
   lItem.SetSize(TInfraInteger.NewFrom(30), TInfraInteger.NewFrom(450));
 
   lItem := lGUIPerson.AddControl('Email');
-  lItem.ItemWidthMeasureType := mtPercent;
-  lItem.ItemWidth.AsInteger := 100;
+  lItem.ItemWidth.AsInteger := 500;
 
   lItem := lGUIPerson.AddControl('Address');
   lItem.Caption.AsString := 'Endereço';
   lItem.Width.AsInteger := 500;
-  lItem.PutBefore('ID');
+  lItem.PutBefore := 'ID';
 
   lItem := lGUIPerson.AddControl('City.Name');
   lItem.Caption.AsString := 'Cidade - Nome';
@@ -112,22 +111,21 @@ begin
   lItem := lGUIPerson.AddControl('City.Population');
   lItem.Caption.AsString := 'Cidade - População';
   lItem.Width.AsInteger := 100;
-  lItem.PutBefore('Email');
+  lItem.PutBefore := 'Email';
 
   lItem := lGUIPerson.AddControl('Birthday');
   lItem.Caption.AsString := 'Data de nascimento';
   lItem.ControlClass := TcxDateEdit;
   lItem.CaptionPosition := lpLeft;
-  lItem.PutBefore('City.Population');
+  lItem.PutBefore := 'Amount';
 
   lItem := lGUIPerson.AddControl('Details');
   lItem.Caption.AsString := 'Observações';
   lItem.ControlClass := TMemo;
-  lItem.ItemWidthMeasureType := mtPercent;
-  lItem.ItemWidth.AsInteger := 100;
+  lItem.ItemWidth.AsInteger := 500;
   lItem.ItemHeightMeasureType := mtPercent;
   lItem.ItemHeight.AsInteger := 35;
-  lItem.PutAfter('City.Name');
+  lItem.PutAfter := 'City.Name';
 
 
 

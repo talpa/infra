@@ -163,7 +163,7 @@ type
     function GetAllMethods: IMethodInfoIterator;
     function FindPropertyInfo(const pName: string): IPropertyInfo;
   public
-    constructor create; override;
+    constructor Create; override;
     property ClassFamily: TGUID read GetClassFamily write SetClassFamily;
     property FullName: string read GetFullName;
     property TypeID: TGUID read GetTypeID write SetTypeID;

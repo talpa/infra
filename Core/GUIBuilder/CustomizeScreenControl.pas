@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, LayoutManager, StdCtrls, ExtCtrls, ActnList, InfraGUIBuilderIntf,
-  InfraGUIBuilder, Mask;
+  InfraGUIBuilder, Mask, GUIAnnotationIntf, GUIAnnotation;
 
 type
   TCustomizeScreenControl = class(TForm)
@@ -15,10 +15,6 @@ type
     LayoutManager1: TLayoutManager;
     editCaption: TEdit;
     Caption: TLayoutManagerItem;
-    editHeight: TMaskEdit;
-    Height: TLayoutManagerItem;
-    editWidth: TMaskEdit;
-    Width: TLayoutManagerItem;
     actlActions: TActionList;
     actnClose: TAction;
     ckbxVisible: TCheckBox;
@@ -35,6 +31,12 @@ type
     ItemHeightMeasureType: TLayoutManagerItem;
     ItemWidthMeasureType: TLayoutManagerItem;
     combItemWidthMeasureType: TComboBox;
+    editName: TEdit;
+    Name: TLayoutManagerItem;
+    editPutAfter: TEdit;
+    PutAfter: TLayoutManagerItem;
+    editPutBefore: TEdit;
+    PutBefore: TLayoutManagerItem;
     procedure actnCloseExecute(Sender: TObject);
     procedure btbtCancelClick(Sender: TObject);
     procedure btbtOKClick(Sender: TObject);
@@ -48,7 +50,6 @@ type
     procedure InterfaceToObject;
     procedure ObjectToInterface;
   public
-    constructor Create(AOwner: TComponent); override;
     function Execute: Boolean;
     property GUIControl: IGUIControl read GetGUIControl write SetGUIControl;
   end;
@@ -69,16 +70,11 @@ end;
 
 procedure TCustomizeScreenControl.btbtOKClick(Sender: TObject);
 begin
+  InterfaceToObject;
+
   FExecute := True;
 
   Close;
-end;
-
-constructor TCustomizeScreenControl.Create(AOwner: TComponent);
-begin
-  inherited;
-
-  FGUIControl := TGUIControl.Create;
 end;
 
 function TCustomizeScreenControl.Execute: Boolean;
@@ -90,6 +86,11 @@ end;
 
 procedure TCustomizeScreenControl.FormShow(Sender: TObject);
 begin
+  //Height.Enabled := Supports(GUIControl.ScreenItem, IScreenControl) or
+  // (not Assigned(GUIControl.ScreenItem));
+  //Width.Enabled := Supports(GUIControl.ScreenItem, IScreenControl) or
+  // (not Assigned(GUIControl.ScreenItem));
+
   ObjectToInterface;
 end;
 
@@ -99,45 +100,244 @@ begin
 end;
 
 procedure TCustomizeScreenControl.InterfaceToObject;
-begin
-  if Assigned(GUIControl.ScreenControl) then
+var
+  //bAssign: Boolean;
+  vValue: Variant;
+  lpValue: TLabelPosition;
+  mtValue: TMeasureType;
+
+  procedure VerityScreenControlInstance;
   begin
-    GUIControl.ScreenControl.Caption.AsString := editCaption.Text;
+    if not Assigned(GUIControl.ScreenItem) then
+      GUIControl.ScreenItem := TScreenControl.Create;
+  end;
+
+begin
+  //Visible
+  vValue := ckbxVisible.Checked;
+
+  if (Assigned(GUIControl.ScreenItem)) and
+    (not GUIControl.ScreenItem.Visible.IsNull) and
+    (GUIControl.ScreenItem.Visible.AsBoolean <> vValue) or
+    (GUIControl.Item.Visible <> vValue) then
+  begin
+    VerityScreenControlInstance;
+    GUIControl.ScreenItem.Visible.AsBoolean := vValue;
+  end;
+
+  //Caption
+  vValue := Trim(editCaption.Text);
+
+  if (Assigned(GUIControl.ScreenItem)) and
+    (not GUIControl.ScreenItem.Caption.IsNull) and
+    (GUIControl.ScreenItem.Caption.AsString <> vValue) or
+    (GUIControl.Item.Caption <> vValue) then
+  begin
+    VerityScreenControlInstance;
+    GUIControl.ScreenItem.Caption.AsString := vValue;
+  end;
+
+  //CaptionVisible
+  vValue := ckbxCaptionVisible.Checked;
+
+  if (Assigned(GUIControl.ScreenItem)) and
+    (not GUIControl.ScreenItem.CaptionVisible.IsNull) and
+    (GUIControl.ScreenItem.CaptionVisible.AsBoolean <> vValue) or
+    (GUIControl.Item.CaptionVisible <> vValue) then
+  begin
+    VerityScreenControlInstance;
+    GUIControl.ScreenItem.CaptionVisible.AsBoolean := vValue;
+  end;
+
+  //CaptionPosition
+  lpValue := TLabelPosition(combCaptionPosition.ItemIndex);
+
+  if (Assigned(GUIControl.ScreenItem)) and
+    (GUIControl.ScreenItem.CaptionPosition <> lpValue) or
+    (GUIControl.Item.CaptionOptions.Position <> lpValue) then
+  begin
+    VerityScreenControlInstance;
+    GUIControl.ScreenItem.CaptionPosition := lpValue;
+  end;
+
+  //ItemHeight
+  vValue := StrToIntDef(Trim(editItemHeight.Text), 0);
+
+  if (Assigned(GUIControl.ScreenItem)) and
+    (not GUIControl.ScreenItem.ItemHeight.IsNull) and
+    (GUIControl.ScreenItem.ItemHeight.AsInteger <> vValue) or
+    (GUIControl.Item.HeightOptions.Size <> vValue) then
+  begin
+    VerityScreenControlInstance;
+    GUIControl.ScreenItem.ItemHeight.AsInteger := vValue;
+  end;
+
+  //ItemHeightMeasureType
+  mtValue := TMeasureType(combItemHeightMeasureType.ItemIndex);
+
+  if (Assigned(GUIControl.ScreenItem)) and
+    (GUIControl.ScreenItem.ItemHeightMeasureType <> mtValue) or
+    (GUIControl.Item.HeightOptions.MeasureType <> mtValue) then
+  begin
+    VerityScreenControlInstance;
+    GUIControl.ScreenItem.ItemHeightMeasureType := mtValue;
+  end;
+
+  //ItemWidth
+  vValue := StrToIntDef(Trim(editItemWidth.Text), 0);
+
+  if (Assigned(GUIControl.ScreenItem)) and
+    (not GUIControl.ScreenItem.ItemWidth.IsNull) and
+    (GUIControl.ScreenItem.ItemWidth.AsInteger <> vValue) or
+    (GUIControl.Item.WidthOptions.Size <> vValue) then
+  begin
+    VerityScreenControlInstance;
+    GUIControl.ScreenItem.ItemWidth.AsInteger := vValue;
+  end;
+
+  //ItemWidthMeasureType
+  mtValue := TMeasureType(combItemWidthMeasureType.ItemIndex);
+
+  if (Assigned(GUIControl.ScreenItem)) and
+    (GUIControl.ScreenItem.ItemWidthMeasureType <> mtValue) or
+    (GUIControl.Item.WidthOptions.MeasureType <> mtValue) then
+  begin
+    VerityScreenControlInstance;
+    GUIControl.ScreenItem.ItemWidthMeasureType := mtValue;
+  end;
+
+  //Height
+  {bAssign := False;
+  vValue := StrToIntDef(Trim(editHeight.Text), 0);
+
+  if (Assigned(GUIControl.ScreenItem)) and
+    (Supports(GUIControl.ScreenItem, IScreenControl) and
+    (not (GUIControl.ScreenItem as IScreenControl).Height.IsNull) and
+    ((GUIControl.ScreenItem as IScreenControl).Height.AsInteger <> vValue)) then
+    bAssign := True
+  else if (not (Assigned(GUIControl.ScreenItem))) or
+    ((Assigned(GUIControl.ScreenItem)) and
+    (GUIControl.ScreenItem.ItemHeightMeasureType <> mtPercent)) and
+    (GUIControl.Control.Height <> vValue) then
+    bAssign := True;
+
+  if bAssign then
+  begin
+    VerityScreenControlInstance;
+    (GUIControl.ScreenItem as IScreenControl).Height.AsInteger := vValue;
+  end; }
+
+  //Width
+  {bAssign := False;
+  vValue := StrToIntDef(Trim(editWidth.Text), 0);
+
+  if (Assigned(GUIControl.ScreenItem)) and
+    (Supports(GUIControl.ScreenItem, IScreenControl) and
+    (not (GUIControl.ScreenItem as IScreenControl).Width.IsNull) and
+    ((GUIControl.ScreenItem as IScreenControl).Width.AsInteger <> vValue)) then
+    bAssign := True
+  else if (not (Assigned(GUIControl.ScreenItem))) or
+    ((Assigned(GUIControl.ScreenItem)) and
+    (GUIControl.ScreenItem.ItemWidthMeasureType <> mtPercent)) and
+    (GUIControl.Control.Width <> vValue) then
+    bAssign := True;
+
+  if bAssign then
+  begin
+    VerityScreenControlInstance;
+    (GUIControl.ScreenItem as IScreenControl).Width.AsInteger := vValue;
+  end;}
+
+  //PutAfter
+  vValue := Trim(editPutAfter.Text);
+
+  if Assigned(GUIControl.ScreenItem) and
+    (GUIControl.ScreenItem.PutAfter <> vValue) then
+  begin
+    VerityScreenControlInstance;
+    GUIControl.ScreenItem.PutBefore := '';
+    GUIControl.ScreenItem.PutAfter := vValue;
+  end;
+
+  //PutBefore
+  vValue := Trim(editPutBefore.Text);
+
+  if Assigned(GUIControl.ScreenItem) and
+    (GUIControl.ScreenItem.PutBefore <> vValue) then
+  begin
+    VerityScreenControlInstance;
+    GUIControl.ScreenItem.PutAfter := '';
+    GUIControl.ScreenItem.PutBefore := vValue;
   end;
 end;
 
 procedure TCustomizeScreenControl.ObjectToInterface;
 begin
-  if Assigned(GUIControl.ScreenControl) then
-  begin
-    ckbxVisible.Checked := GUIControl.ScreenControl.Visible.AsBoolean;
-    editCaption.Text := GUIControl.ScreenControl.Caption.AsString;
-    ckbxCaptionVisible.Checked := GUIControl.ScreenControl.CaptionVisible.AsBoolean;
+  editName.Text := GUIControl.PropertyName;
 
-    case GUIControl.ScreenControl.CaptionPosition of
+  if (Assigned(GUIControl.ScreenItem)) and (not GUIControl.ScreenItem.Visible.IsNull) then
+    ckbxVisible.Checked := GUIControl.ScreenItem.Visible.AsBoolean
+  else
+    ckbxVisible.Checked := True;
+
+  if (Assigned(GUIControl.ScreenItem)) and (not GUIControl.ScreenItem.Caption.IsNull) then
+    editCaption.Text := GUIControl.ScreenItem.Caption.AsString
+  else
+    editCaption.Text := GUIControl.PropertyName;
+
+  if (Assigned(GUIControl.ScreenItem)) and (not GUIControl.ScreenItem.CaptionVisible.IsNull) then
+    ckbxCaptionVisible.Checked := GUIControl.ScreenItem.CaptionVisible.AsBoolean
+  else
+    ckbxCaptionVisible.Checked := GUIControl.Item.CaptionVisible;
+
+  if (Assigned(GUIControl.ScreenItem)) and (GUIControl.ScreenItem.CaptionPosition <> lpLeft) then
+  begin
+    case GUIControl.ScreenItem.CaptionPosition of
       lpAbove: combCaptionPosition.ItemIndex := 0;
       lpBelow: combCaptionPosition.ItemIndex := 1;
-      lpLeft: combCaptionPosition.ItemIndex := 2;
       lpRight: combCaptionPosition.ItemIndex := 3;
     end;
+  end
+  else
+    combCaptionPosition.ItemIndex := 2;
 
-    editHeight.Text := IntToStr(GUIControl.ScreenControl.Height.AsInteger);
-    editWidth.Text := IntToStr(GUIControl.ScreenControl.Width.AsInteger);
+  if (Assigned(GUIControl.ScreenItem)) and (not GUIControl.ScreenItem.ItemHeight.IsNull) then
+    editItemHeight.Text := IntToStr(GUIControl.ScreenItem.ItemHeight.AsInteger)
+  else
+    editItemHeight.Text := FloatToStr(GUIControl.Item.HeightOptions.Size);
 
-    editItemHeight.Text := IntToStr(GUIControl.ScreenControl.ItemHeight.AsInteger);
+  if (Assigned(GUIControl.ScreenItem)) and (GUIControl.ScreenItem.ItemHeightMeasureType <> mtFix) then
+    combItemHeightMeasureType.ItemIndex := 1
+  else
+    combItemHeightMeasureType.ItemIndex := 0;
 
-    case GUIControl.ScreenControl.ItemHeightMeasureType of
-      mtFix: combItemHeightMeasureType.ItemIndex := 0;
-      mtPercent: combItemHeightMeasureType.ItemIndex := 1;
-    end;
+  if (Assigned(GUIControl.ScreenItem)) and (not GUIControl.ScreenItem.ItemWidth.IsNull) then
+    editItemWidth.Text := IntToStr(GUIControl.ScreenItem.ItemWidth.AsInteger)
+  else
+    editItemWidth.Text := FloatToStr(GUIControl.Item.WidthOptions.Size);
 
-    editItemWidth.Text := IntToStr(GUIControl.ScreenControl.ItemWidth.AsInteger);
+  if (Assigned(GUIControl.ScreenItem)) and (GUIControl.ScreenItem.ItemWidthMeasureType <> mtFix) then
+    combItemWidthMeasureType.ItemIndex := 1
+  else
+    combItemWidthMeasureType.ItemIndex := 0;
 
-    case GUIControl.ScreenControl.ItemWidthMeasureType of
-      mtFix: combItemWidthMeasureType.ItemIndex := 0;
-      mtPercent: combItemWidthMeasureType.ItemIndex := 1;
-    end;
-  end;
+  {if (Assigned(GUIControl.ScreenItem)) and (Supports(GUIControl.ScreenItem, IScreenControl)) and
+    (not (GUIControl.ScreenItem as IScreenControl).Height.IsNull) then
+    editHeight.Text := IntToStr((GUIControl.ScreenItem as IScreenControl).Height.AsInteger)
+  else
+    editHeight.Text := IntToStr(GUIControl.Control.Height);
+
+  if (Assigned(GUIControl.ScreenItem)) and (Supports(GUIControl.ScreenItem, IScreenControl)) and
+    (not (GUIControl.ScreenItem as IScreenControl).Width.IsNull) then
+    editWidth.Text := IntToStr((GUIControl.ScreenItem as IScreenControl).Width.AsInteger)
+  else
+    editWidth.Text := IntToStr(GUIControl.Control.Width);}
+
+  if Assigned(GUIControl.ScreenItem) then
+    editPutAfter.Text := GUIControl.ScreenItem.PutAfter;
+
+  if Assigned(GUIControl.ScreenItem) then
+    editPutBefore.Text := GUIControl.ScreenItem.PutBefore;
 end;
 
 procedure TCustomizeScreenControl.SetGUIControl(const Value: IGUIControl);

@@ -5,38 +5,75 @@ interface
 uses
   Classes, SysUtils, Math, Forms, Controls, Graphics, InfraBase, InfraCommon,
   InfraCommonIntf, InfraValueType, InfraValueTypeIntf, LayoutManager, StdCtrls,
-  InfraGUIBuilderIntf, ComCtrls, Mask, ExtCtrls, typinfo, InfraValueTypeConvert,
+  InfraGUIBuilderIntf, ComCtrls, Mask, ExtCtrls, InfraValueTypeConvert,
   InfraGUIBuilderForm, GUIAnnotationIntf, List_GUIControl;
 
 type
 
+  TGUI = class(TMemoryManagedObject, IGUI)
+  private
+    FBusinessObject: IInfraObject;
+    FGUIControlList: IGUIControlList;
+    FScreen: IScreen;
+    FTitle: string;
+    function GetBusinessObject: IInfraObject;
+    function GetGUIControlList: IGUIControlList;
+    function GetScreen: IScreen;
+    function GetTitle: string;
+    procedure SetBusinessObject(const Value: IInfraObject);
+    procedure SetGUIControlList(const Value: IGUIControlList);
+    procedure SetScreen(const Value: IScreen);
+    procedure SetTitle(const Value: string);
+  public
+    constructor Create; override;
+    function Clone: IGUI;
+    function FindGUIControl(pPropertyName : string): IGUIControl;
+    property BusinessObject: IInfraObject read GetBusinessObject write SetBusinessObject;
+    property GUIControlList: IGUIControlList read GetGUIControlList write SetGUIControlList;
+    property Screen: IScreen read GetScreen write SetScreen;
+    property Title: string read GetTitle write SetTitle;
+  end;
+
   TGUIControl = class(TMemoryManagedObject, IGUIControl)
   private
+    FControl: TControl;
     FControlClass: TControlClass;
+    FControlProperty: string;
+    FItem: TLayoutManagerItem;
     FName: string;
     FPropertyInfo: IPropertyInfo;
     FPropertyName: string;
     FPropertyValue: IInfraType;
-    FScreenControl: IScreenControl;
+    FScreenItem: IScreenItem;
+    function GetControl: TControl;
+    function GetControlClass: TControlClass;
+    function GetControlProperty: string;
+    function GetItem: TLayoutManagerItem;
     function GetName: string;
     function GetPropertyInfo: IPropertyInfo;
     function GetPropertyName: string;
     function GetPropertyValue: IInfraType;
-    function GetScreenControl: IScreenControl;
+    function GetScreenItem: IScreenItem;
+    procedure SetControl(const Value: TControl);
+    procedure SetControlClass(const Value: TControlClass);
+    procedure SetControlProperty(const Value: string);
+    procedure SetItem(const Value: TLayoutManagerItem);
     procedure SetName(const Value: string);
     procedure SetPropertyInfo(const Value: IPropertyInfo);
     procedure SetPropertyName(const Value: string);
     procedure SetPropertyValue(const Value: IInfraType);
-    procedure SetScreenControl(const Value: IScreenControl);
-    function GetControlClass: TControlClass;
-    procedure SetControlClass(const Value: TControlClass);
+    procedure SetScreenItem(const Value: IScreenItem);
   public
+    function Clone: IGUIControl;
+    property Control: TControl read GetControl write SetControl;
     property ControlClass: TControlClass read GetControlClass  write SetControlClass;
+    property ControlProperty: string read GetControlProperty write SetControlProperty;    
+    property Item: TLayoutManagerItem read GetItem write SetItem;
     property Name: string read GetName write SetName;
     property PropertyInfo: IPropertyInfo read GetPropertyInfo write SetPropertyInfo;
     property PropertyName: string read GetPropertyName write SetPropertyName;
     property PropertyValue: IInfraType read GetPropertyValue write SetPropertyValue;
-    property ScreenControl: IScreenControl read GetScreenControl write SetScreenControl;
+    property ScreenItem: IScreenItem read GetScreenItem write SetScreenItem;
   end;
 
   TGUIMapping = class(TMemoryManagedObject, IGUIMapping)
@@ -61,7 +98,6 @@ type
 
   TInfraGUIService = class(TMemoryManagedObject, IInfraGUIService)
   private
-    FAdjustFormSize: Boolean;
     FGUIMappings: IGUIMappingList;
     function FindGUIControl(pGUIControlList: IGUIControlList;
       pPropertyName: string): IGUIControl;
@@ -69,24 +105,14 @@ type
       pControlInfo: IScreenControl = nil): string;
     function GetControlClass(pControlInfo: IScreenControl;
       pTypeID: TGUID): TControlClass;
-    function GetGUIControlList(pObject: IInfraObject;
-      pScreen: IScreen = nil): IGUIControlList;
     function GetGUIMapping(pTypeInfo: TGUID): IGUIMapping;
     function GetGUIMappings: IGUIMappingList;
-    function GetVariantValue(pValue: IInfraType;
-      pObject: IInfraObject): IInfraVariant;
-    procedure SetControlValue(pControl: TControl;
-      pControlProperty: string; pValue: IInfraType; pObject: IInfraObject);
-    procedure SetPropAnnotationsForItem(pControlInfo: IScreenControl;
-      pItem: TLayoutManagerItem);
-    procedure SetObjectAnnotationsForForm(pObjectInfo: IClassInfo;
-      pScreen: IScreen; pForm: TInfraGUIBuilderForm);
-    procedure SetItemOrder(pScreen: IScreen; pLayoutManager: TLayoutManager);
+    function PrepareGUIInfo(pObject: IInfraObject;
+      pScreen: IScreen = nil): IGUI;
   protected
     property GUIMappings: IGUIMappingList read GetGUIMappings;
   public
     procedure Build(pObject: IInfraObject; pScreen: IScreen = nil);
-    constructor Create; override;
     procedure RegisterGUIMapping(pControlClass: TControlClass; pTypeInfo: TGUID;
       pControlProperty: string = '');
   end;
@@ -96,11 +122,129 @@ implementation
 uses
   List_GUIMapping;
 
+{ TGUI }
+
+function TGUI.Clone: IGUI;
+begin
+  Result := TGUI.Create;
+
+  Result.BusinessObject := BusinessObject;
+  Result.GUIControlList := GUIControlList.Clone;
+  Result.Screen := Screen.Clone; 
+  Result.Title := Title;
+end;
+
+constructor TGUI.Create;
+begin
+  inherited;
+
+  FGUIControlList := TGUIControlList.Create;
+end;
+
+function TGUI.FindGUIControl(pPropertyName : string): IGUIControl;
+var
+  It: IGUIControlIterator;
+begin
+  Result := nil;
+
+  It := GUIControlList.NewIterator;
+
+  while not It.IsDone do
+  begin
+    if SameText((It.CurrentItem as IGUIControl).PropertyName, pPropertyName) then
+    begin
+      Result := It.CurrentItem as IGUIControl;
+      Break;
+    end;
+
+    It.Next;
+  end;
+end;
+
+function TGUI.GetBusinessObject: IInfraObject;
+begin
+  Result := FBusinessObject;
+end;
+
+function TGUI.GetGUIControlList: IGUIControlList;
+begin
+  Result := FGUIControlList;
+end;
+
+function TGUI.GetScreen: IScreen;
+begin
+  Result := FScreen;
+end;
+
+function TGUI.GetTitle: string;
+begin
+  Result := FTitle;
+end;
+
+procedure TGUI.SetBusinessObject(const Value: IInfraObject);
+begin
+  FBusinessObject := Value;
+end;
+
+procedure TGUI.SetGUIControlList(const Value: IGUIControlList);
+begin
+  FGUIControlList := Value;
+end;
+
+procedure TGUI.SetScreen(const Value: IScreen);
+begin
+  FScreen := Value;
+end;
+
+procedure TGUI.SetTitle(const Value: string);
+begin
+  FTitle := Value;
+end;
+
 { TGUIControl }
+
+function TGUIControl.Clone: IGUIControl;
+begin
+  Result := TGUIControl.Create;
+
+  Result.Control := Control;
+  Result.ControlClass := ControlClass;
+  Result.ControlProperty := ControlProperty;
+  Result.Item := Item;
+  Result.Name := Name;
+  Result.PropertyInfo := PropertyInfo;
+  Result.PropertyName := PropertyName;
+  Result.PropertyValue := PropertyValue.Clone;
+
+  if Assigned(ScreenItem) then
+  begin
+    if Supports(ScreenItem, IScreenControl) then
+      Result.ScreenItem := (ScreenItem as IScreenControl).Clone
+    else if Supports(ScreenItem, IScreenGroup) then
+      Result.ScreenItem := (ScreenItem as IScreenGroup).Clone
+    else
+      Result.ScreenItem := ScreenItem.CloneItem;
+  end;
+end;
+
+function TGUIControl.GetControl: TControl;
+begin
+  Result := FControl;
+end;
 
 function TGUIControl.GetControlClass: TControlClass;
 begin
   Result := FControlClass;
+end;
+
+function TGUIControl.GetControlProperty: string;
+begin
+  Result := FControlProperty;
+end;
+
+function TGUIControl.GetItem: TLayoutManagerItem;
+begin
+  Result := FItem;
 end;
 
 function TGUIControl.GetName: string;
@@ -123,14 +267,29 @@ begin
   Result := FPropertyValue;
 end;
 
-function TGUIControl.GetScreenControl: IScreenControl;
+function TGUIControl.GetScreenItem: IScreenItem;
 begin
-  Result := FScreenControl;
+  Result := FScreenItem;
+end;
+
+procedure TGUIControl.SetControl(const Value: TControl);
+begin
+  FControl := Value;
 end;
 
 procedure TGUIControl.SetControlClass(const Value: TControlClass);
 begin
   FControlClass := Value;
+end;
+
+procedure TGUIControl.SetControlProperty(const Value: string);
+begin
+  FControlProperty := Value;
+end;
+
+procedure TGUIControl.SetItem(const Value: TLayoutManagerItem);
+begin
+  FItem := Value;
 end;
 
 procedure TGUIControl.SetName(const Value: string);
@@ -153,9 +312,9 @@ begin
   FPropertyValue := Value;
 end;
 
-procedure TGUIControl.SetScreenControl(const Value: IScreenControl);
+procedure TGUIControl.SetScreenItem(const Value: IScreenItem);
 begin
-  FScreenControl := Value;
+  FScreenItem := Value;
 end;
 
 { TGUIMapping }
@@ -202,67 +361,19 @@ end;
 
 procedure TInfraGUIService.Build(pObject: IInfraObject; pScreen: IScreen = nil);
 var
-  It: IGUIControlIterator;
-  lGUIControlList: IGUIControlList;
+  lGUI: IGUI;
   lForm: TInfraGUIBuilderEditForm;
-  lControl: TControl;
-  lControlClass: TControlClass;
-  lItem: TLayoutManagerItem;
-  lGUIControl: IGUIControl;
-  sControlProperty: string;
 begin
-  //Form creation
+  lGUI := PrepareGUIInfo(pObject, pScreen);
+
   lForm := TInfraGUIBuilderEditForm.CreateNew(nil);
-  lForm.Caption := pObject.TypeInfo.Name;
-
-  //If object has one screen annotated for it
-  if Assigned(pScreen) then
-    SetObjectAnnotationsForForm(pObject.TypeInfo, pScreen, lForm);
-
-  lGUIControlList := GetGUIControlList(pObject, pScreen);
-  lForm.GUIControlList := lGUIControlList;
-
-  It := lGUIControlList.NewIterator;
-
-  while not It.IsDone do
-  begin
-    lGUIControl := It.CurrentItem as IGUIControl;
-
-    //If there are ControlClass information for this property
-    if Assigned(lGUIControl.ControlClass) then
-    begin
-      lControl := lGUIControl.ControlClass.Create(lForm);
-      lControl.Name := lGUIControl.Name;
-      lItem := lForm.MainLayoutManager.AddControl(lControl);
-
-      sControlProperty := GetControlProperty(
-        lGUIControl.PropertyInfo.TypeInfo.TypeID, lGUIControl.ScreenControl);
-
-      //If control has ControlProperty, property data will be set to it
-      SetControlValue(lControl, sControlProperty, lGUIControl.PropertyValue, pObject);
-
-      //Set property annotations for layout manager item
-      SetPropAnnotationsForItem(lGUIControl.ScreenControl, lItem);
-    end;
-
-    It.Next;
+  try
+    lForm.GUI := lGUI;
+    lForm.Build;
+    lForm.ShowModal;
+  finally
+    lForm.Free;
   end;
-
-  SetItemOrder(pScreen, lForm.MainLayoutManager);
-
-  if FAdjustFormSize then
-    lForm.AdjustFormSize;
-
-  lForm.ShowModal;
-
-  lForm.Free;
-end;
-
-constructor TInfraGUIService.Create;
-begin
-  inherited;
-
-  FAdjustFormSize := True;
 end;
 
 function TInfraGUIService.FindGUIControl(pGUIControlList: IGUIControlList;
@@ -320,80 +431,6 @@ begin
   end;
 end;
 
-function TInfraGUIService.GetGUIControlList(pObject: IInfraObject;
-  pScreen: IScreen): IGUIControlList;
-var
-  ItMember: IMemberInfoIterator;
-  ItScreenItem: IScreenItemIterator;
-  lItem: IGUIControl;
-  lScreenControl: IScreenControl;
-begin
-  Result := TGUIControlList.Create;
-
-  //Get all object properties
-  ItMember := pObject.TypeInfo.FindMembers([mtProperty]);
-
-  while not ItMember.IsDone do
-  begin
-    if Supports(ItMember.CurrentItem, IPropertyInfo) then
-    begin
-      if (not Assigned(pScreen)) or ((Assigned(pScreen)) and
-        (pScreen.UseProperty((ItMember.CurrentItem as IPropertyInfo).Name))) then
-      begin
-        lItem := TGUIControl.Create;
-        lItem.Name := (ItMember.CurrentItem as IPropertyInfo).Name;
-        lItem.PropertyName := (ItMember.CurrentItem as IPropertyInfo).Name;
-        lItem.PropertyValue := pObject.TypeInfo.GetProperty(pObject,
-          lItem.PropertyName) as IInfraType;
-        lItem.PropertyInfo := pObject.TypeInfo.GetPropertyInfo(lItem.PropertyName);
-
-        if Assigned(pScreen) then
-          lItem.ScreenControl := pScreen.GetControl(lItem.PropertyName);
-
-        lItem.ControlClass := GetControlClass(lItem.ScreenControl,
-          lItem.PropertyInfo.TypeInfo.TypeID);
-
-        Result.Add(lItem);
-      end;
-    end;
-
-    ItMember.Next;
-  end;
-
-  //Get additional properties which were added in screen
-  if Assigned(pScreen) then
-  begin
-    ItScreenItem := pScreen.Items.NewIterator;
-
-    while not ItScreenItem.IsDone do
-    begin
-      if Supports(ItScreenItem.CurrentItem, IScreenControl) then
-      begin
-        lScreenControl := ItScreenItem.CurrentItem as IScreenControl;
-
-        //Test if property was not added previously and if it could be used
-        if (not Assigned(FindGUIControl(Result, lScreenControl.PropertyName)))
-          and (pScreen.UseProperty(lScreenControl.PropertyName)) then
-        begin
-          lItem := TGUIControl.Create;
-          lItem.Name := lScreenControl.Name;
-          lItem.PropertyName := lScreenControl.PropertyName;
-          lItem.ScreenControl := lScreenControl;
-          lItem.PropertyInfo := pObject.TypeInfo.GetPropertyInfo(lItem.PropertyName);
-          lItem.PropertyValue := pObject.TypeInfo.GetProperty(pObject,
-            lItem.PropertyName) as IInfraType;
-          lItem.ControlClass := GetControlClass(lItem.ScreenControl,
-            lItem.PropertyInfo.TypeInfo.TypeID);
-
-          Result.Add(lItem);
-        end;
-      end;
-
-      ItScreenItem.Next;
-    end;
-  end;
-end;
-
 function TInfraGUIService.GetGUIMapping(pTypeInfo: TGUID): IGUIMapping;
 var
   It: IGUIMappingIterator;
@@ -421,173 +458,93 @@ begin
   Result := FGUIMappings;
 end;
 
-function TInfraGUIService.GetVariantValue(pValue: IInfraType;
-  pObject: IInfraObject): IInfraVariant;
+function TInfraGUIService.PrepareGUIInfo(pObject: IInfraObject;
+  pScreen: IScreen): IGUI;
 var
-  lTypeConverter: ITypeConverter;
-begin
-  if Supports(pValue, IInfraString) then
-    lTypeConverter := TStringToVariant.Create
-  else if Supports(pValue, IInfraBoolean) then
-    lTypeConverter := TBooleanToVariant.Create
-  else if Supports(pValue, IInfraDateTime) then
-    lTypeConverter := TDateTimeToVariant.Create
-  else if Supports(pValue, IInfraDate) then
-    lTypeConverter := TDateTimeToVariant.Create
-  else if Supports(pValue, IInfraTime) then
-    lTypeConverter := TDateTimeToVariant.Create
-  else if Supports(pValue, IInfraDouble) then
-    lTypeConverter := TDoubleToVariant.Create
-  else if Supports(pValue, IInfraInteger) then
-    lTypeConverter := TIntegerToVariant.Create;
-
-  if Supports(pValue, IInfraVariant) then
-    Result := pValue as IInfraVariant
-  else
-    Result := lTypeConverter.ConvertToRight(
-      pValue) as IInfraVariant;
-end;
-
-procedure TInfraGUIService.SetControlValue(pControl: TControl;
-  pControlProperty: string; pValue: IInfraType; pObject: IInfraObject);
-begin
-  if pControl is TMemo then
-    (pControl as TMemo).Lines.Text := GetVariantValue(pValue, pObject).AsVariant
-  else if Length(pControlProperty) > 0 then
-    SetPropValue(pControl, pControlProperty,
-      GetVariantValue(pValue, pObject).AsVariant);
-end;
-
-procedure TInfraGUIService.SetItemOrder(pScreen: IScreen;
-  pLayoutManager: TLayoutManager);
-var
+  ItMember: IMemberInfoIterator;
   ItScreenItem: IScreenItemIterator;
-  lCurControl, lNewControl: IScreenControl;
-  iCurIndex, iNewIndex: Integer;
+  lItem: IGUIControl;
+  lScreenControl: IScreenControl;
 begin
-  if not Assigned(pScreen) then
-    Exit;
+  Result := TGUI.Create;
+  Result.BusinessObject := pObject;
+  Result.Title := pObject.TypeInfo.Name;
+  Result.Screen := pScreen;
 
-  ItScreenItem := pScreen.Items.NewIterator;
+  //Get all object properties
+  ItMember := pObject.TypeInfo.FindMembers([mtProperty]);
 
-  while not ItScreenItem.IsDone do
+  while not ItMember.IsDone do
   begin
-    iCurIndex := -1;
-    iNewIndex := -1;
-
-    //Set order for ScreenControl items
-    if Supports(ItScreenItem.CurrentItem, IScreenControl) then
+    if Supports(ItMember.CurrentItem, IPropertyInfo) then
     begin
-      lCurControl := ItScreenItem.CurrentItem as IScreenControl;
-      iCurIndex := pLayoutManager.GetItemIndexByControlName(lCurControl.Name);
-
-      if Length(lCurControl.GetPutBefore) > 0 then
+      if (not Assigned(pScreen)) or ((Assigned(pScreen)) and
+        (pScreen.UseProperty((ItMember.CurrentItem as IPropertyInfo).Name))) then
       begin
-        lNewControl := pScreen.GetControl(lCurControl.GetPutBefore);
+        lItem := TGUIControl.Create;
+        lItem.Name := (ItMember.CurrentItem as IPropertyInfo).Name;
+        lItem.PropertyName := (ItMember.CurrentItem as IPropertyInfo).Name;
+        lItem.PropertyValue := pObject.TypeInfo.GetProperty(pObject,
+          lItem.PropertyName) as IInfraType;
+        lItem.PropertyInfo := pObject.TypeInfo.GetPropertyInfo(lItem.PropertyName);
 
-        Assert(Assigned(lNewControl), 'PutBefore property: ' +
-          lCurControl.GetPutBefore + ', does not exists');
+        if Assigned(pScreen) then
+          lItem.ScreenItem := pScreen.GetControl(lItem.PropertyName);
 
-        iNewIndex := pLayoutManager.GetItemIndexByControlName(lNewControl.Name);
-      end
-      else if Length(lCurControl.GetPutAfter) > 0 then
-      begin
-        lNewControl := pScreen.GetControl(lCurControl.GetPutAfter);
+        lItem.ControlClass := GetControlClass(lItem.ScreenItem as IScreenControl,
+          lItem.PropertyInfo.TypeInfo.TypeID);
 
-        Assert(Assigned(lNewControl), 'PutAfter property: ' +
-          lCurControl.GetPutAfter + ', does not exists');
+        if (Assigned(lItem)) and (Supports(lItem, IScreenControl)) then
+          lItem.ControlProperty := GetControlProperty(
+            lItem.PropertyInfo.TypeInfo.TypeID, lItem.ScreenItem as IScreenControl)
+        else
+          lItem.ControlProperty := GetControlProperty(
+            lItem.PropertyInfo.TypeInfo.TypeID, nil);
 
-        iNewIndex := pLayoutManager.GetItemIndexByControlName(lNewControl.Name);
-
-        if (iNewIndex > -1) and (iNewIndex < pLayoutManager.ItemList.Count - 1) then
-          Inc(iNewIndex);
+        //If does not have ControlClass, it cannot be added into screen
+        if Assigned(lItem.ControlClass) then
+          Result.GUIControlList.Add(lItem);
       end;
     end;
 
-    if (iCurIndex > -1) and (iNewIndex > -1) then
-      pLayoutManager.ItemList.Move(iCurIndex, iNewIndex);
-
-    ItScreenItem.Next;
-  end;
-end;
-
-procedure TInfraGUIService.SetObjectAnnotationsForForm(pObjectInfo: IClassInfo;
-  pScreen: IScreen; pForm: TInfraGUIBuilderForm);
-begin
-  if not pScreen.Caption.IsNull then
-    pForm.Caption := pScreen.Caption.AsString;
-
-  if not pScreen.Height.IsNull then
-  begin
-    pForm.Height := pScreen.Height.AsInteger;
-    FAdjustFormSize := False;
+    ItMember.Next;
   end;
 
-  if not pScreen.Width.IsNull then
+  //Get additional properties which were added in screen
+  if Assigned(pScreen) then
   begin
-    pForm.Width := pScreen.Width.AsInteger;
-    FAdjustFormSize := False;
-  end;
+    ItScreenItem := pScreen.Items.NewIterator;
 
-  if pScreen.CaptionPosition <> pForm.MainLayoutManager.ItemDefCaptionPos then
-    pForm.MainLayoutManager.ItemDefCaptionPos := pScreen.CaptionPosition;
+    while not ItScreenItem.IsDone do
+    begin
+      if Supports(ItScreenItem.CurrentItem, IScreenControl) then
+      begin
+        lScreenControl := ItScreenItem.CurrentItem as IScreenControl;
 
-  if not pScreen.ControlSpacing.IsNull then
-    pForm.MainLayoutManager.ItemDefControlSpacing :=
-      pScreen.ControlSpacing.AsInteger;
+        //Test if property was not added previously and if it could be used
+        if (not Assigned(FindGUIControl(Result.GUIControlList, lScreenControl.PropertyName)))
+          and (pScreen.UseProperty(lScreenControl.PropertyName)) then
+        begin
+          lItem := TGUIControl.Create;
+          lItem.Name := lScreenControl.Name;
+          lItem.PropertyName := lScreenControl.PropertyName;
+          lItem.ScreenItem := lScreenControl;
+          lItem.PropertyInfo := pObject.TypeInfo.GetPropertyInfo(lItem.PropertyName);
+          lItem.PropertyValue := pObject.TypeInfo.GetProperty(pObject,
+            lItem.PropertyName) as IInfraType;
+          lItem.ControlClass := GetControlClass(lItem.ScreenItem as IScreenControl,
+            lItem.PropertyInfo.TypeInfo.TypeID);
+          lItem.ControlProperty := GetControlProperty(lItem.PropertyInfo.TypeInfo.TypeID,
+            lItem.ScreenItem as IScreenControl);
 
-  if not TLayoutManagerPositions.Equals(pScreen.Padding,
-    pForm.MainLayoutManager.ItemDefPadding) then
-    pForm.MainLayoutManager.ItemDefPadding.Assign(pScreen.Padding);
+          //If does not have ControlClass, it cannot be added into screen
+          if Assigned(lItem.ControlClass) then
+             Result.GUIControlList.Add(lItem);
+        end;
+      end;
 
-  if pScreen.ItemLayout <> pForm.MainLayoutManager.ItemLayout then
-    pForm.MainLayoutManager.ItemLayout := pScreen.ItemLayout;
-
-  if not TLayoutManagerPositions.Equals(pScreen.ItemSpacing,
-    pForm.MainLayoutManager.ItemSpacing) then
-    pForm.MainLayoutManager.ItemSpacing.Assign(pScreen.ItemSpacing);
-end;
-
-procedure TInfraGUIService.SetPropAnnotationsForItem(
-  pControlInfo: IScreenControl; pItem: TLayoutManagerItem);
-begin
-  if not Assigned(pControlInfo) then
-    Exit;
-
-  if not pControlInfo.Caption.IsNull then
-    pItem.Caption := pControlInfo.Caption.AsString;
-
-  if pControlInfo.CaptionPositionChanged then
-    pItem.CaptionOptions.Position := pControlInfo.CaptionPosition;
-
-  if not pControlInfo.CaptionVisible.IsNull then
-    pItem.CaptionVisible := pControlInfo.CaptionVisible.AsBoolean;
-
-  if not pControlInfo.Height.IsNull then
-  begin
-    pItem.ItemControl.Height := pControlInfo.Height.AsInteger;
-    pItem.ResizeItemHeight;
-  end;
-
-  if pControlInfo.ItemHeightMeasureTypeChanged then
-    pItem.HeightOptions.MeasureType := pControlInfo.ItemHeightMeasureType;
-
-  if not pControlInfo.ItemHeight.IsNull then
-    pItem.HeightOptions.Size := pControlInfo.ItemHeight.AsInteger;
-
-  if pControlInfo.ItemWidthMeasureTypeChanged then
-    pItem.WidthOptions.MeasureType := pControlInfo.ItemWidthMeasureType;
-
-  if not pControlInfo.ItemWidth.IsNull then
-    pItem.WidthOptions.Size := pControlInfo.ItemWidth.AsInteger;
-
-  if not pControlInfo.Visible.IsNull then
-    pItem.Visible := pControlInfo.Visible.AsBoolean;
-
-  if not pControlInfo.Width.IsNull then
-  begin
-    pItem.ItemControl.Width := pControlInfo.Width.AsInteger;
-    pItem.ResizeItemWidth;
+      ItScreenItem.Next;
+    end;
   end;
 end;
 

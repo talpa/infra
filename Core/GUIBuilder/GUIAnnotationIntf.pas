@@ -21,6 +21,8 @@ type
     function GetItemWidthMeasureType: TMeasureType;
     function GetItemWidthMeasureTypeChanged: Boolean;
     function GetName: string;
+    function GetPutAfter: string;
+    function GetPutBefore: string;
     function GetVisible: IInfraBoolean;
     procedure SetCaption(const Value: IInfraString);
     procedure SetCaptionPosition(const Value: TLabelPosition);
@@ -30,12 +32,11 @@ type
     procedure SetItemWidth(const Value: IInfraInteger);
     procedure SetItemWidthMeasureType(const Value: TMeasureType);
     procedure SetName(const Value: string);
+    procedure SetPutAfter(const Value: string);
+    procedure SetPutBefore(const Value: string);
     procedure SetVisible(const Value: IInfraBoolean);
+    function CloneItem: IScreenItem;
     procedure SetItemSize(pHeight, pWidth: IInfraInteger);
-    procedure PutBefore(pName: string);
-    procedure PutAfter(pName: string);
-    function GetPutAfter: string;
-    function GetPutBefore: string;
     property Caption: IInfraString read GetCaption write SetCaption;
     property CaptionPosition: TLabelPosition read GetCaptionPosition write SetCaptionPosition;
     property CaptionPositionChanged: Boolean read GetCaptionPositionChanged;
@@ -47,6 +48,8 @@ type
     property ItemWidthMeasureType: TMeasureType read GetItemWidthMeasureType write SetItemWidthMeasureType;
     property ItemWidthMeasureTypeChanged: Boolean read GetItemWidthMeasureTypeChanged;
     property Name: string read GetName write SetName;
+    property PutAfter: string read GetPutAfter write SetPutAfter;
+    property PutBefore: string read GetPutBefore write SetPutBefore;
     property Visible: IInfraBoolean read GetVisible write SetVisible;
   end;
 
@@ -58,7 +61,7 @@ type
     procedure Next;
   end;
 
-  IScreenItemList = interface(IMemoryManagedObject)
+  IScreenItemListBase = interface(IMemoryManagedObject)
     ['{00D52CFB-9FE3-4AD0-BB94-D71B87399A36}']
     function Add(const Item: IScreenItem): Integer;
     function First: IScreenItem;
@@ -75,6 +78,11 @@ type
     property Items[Index: Integer]: IScreenItem read GetItem write SetItem; default;
   end;
 
+  IScreenItemList = interface(IScreenItemListBase)
+    ['{DA9CF4FD-E5E2-4EF3-A936-C5A3642F4116}']
+    function Clone: IScreenItemList;
+  end;
+
   IScreenControl = interface(IScreenItem)
     ['{AAAACFBB-E1C1-43CA-A8AC-3031F166DD01}']
     function GetControlClass: TControlClass;
@@ -88,6 +96,7 @@ type
     procedure SetPropertyName(const Value: string);
     procedure SetWidth(const Value: IInfraInteger);
     procedure SetSize(pHeight, pWidth: IInfraInteger);
+    function Clone: IScreenControl;
     property ControlClass: TControlClass read GetControlClass write SetControlClass;
     property ControlProperty: IInfraString read GetControlProperty write SetControlProperty;
     property Height: IInfraInteger read GetHeight write SetHeight;
@@ -100,13 +109,14 @@ type
     function GetItemLayout: TLayoutOrientation;
     function GetItems: IScreenItemList;
     procedure SetItemLayout(const Value: TLayoutOrientation);
+    procedure SetItems(const Value: IScreenItemList);
+    function Clone: IScreenGroup;
     property ItemLayout: TLayoutOrientation read GetItemLayout write SetItemLayout;
-    property Items: IScreenItemList read GetItems;
+    property Items: IScreenItemList read GetItems write SetItems;
   end;
 
   IScreen = interface(IElement)
     ['{BAAA2E7E-90DA-449A-8AD8-90533B51BDFA}']
-    function GetCaption: IInfraString;
     function GetCaptionPosition: TLabelPosition;
     function GetControlSpacing: IInfraInteger;
     function GetHeight: IInfraInteger;
@@ -117,14 +127,17 @@ type
     function GetName: string;
     function GetPadding: TLayoutManagerPadding;
     function GetShowProperties: TStrings;
+    function GetTitle: IInfraString;
     function GetWidth: IInfraInteger;
-    procedure SetCaption(const Value: IInfraString);
     procedure SetCaptionPosition(const Value: TLabelPosition);
     procedure SetControlSpacing(const Value: IInfraInteger);
     procedure SetHeight(const Value: IInfraInteger);
     procedure SetItemLayout(const Value: TLayoutOrientation);
+    procedure SetItems(const Value: IScreenItemList);
     procedure SetName(const Value: string);
+    procedure SetTitle(const Value: IInfraString);
     procedure SetWidth(const Value: IInfraInteger);
+    function Clone: IScreen;        
     function AddControl(pPropertyName: string): IScreenControl;
     function AddGroup(pName: string): IScreenGroup;
     function GetControl(pPropertyName: string): IScreenControl;
@@ -133,17 +146,17 @@ type
     procedure Group(pProperties: TStrings);
     procedure SetSize(pHeight, pWidth: IInfraInteger);
     function UseProperty(pPropertyName: string): Boolean;
-    property Caption: IInfraString read GetCaption write SetCaption;
     property CaptionPosition: TLabelPosition read GetCaptionPosition write SetCaptionPosition;
     property ControlSpacing: IInfraInteger read GetControlSpacing write SetControlSpacing;
     property Height: IInfraInteger read GetHeight write SetHeight;
     property HideProperties: TStrings read GetHideProperties;
-    property Items: IScreenItemList read GetItems;
+    property Items: IScreenItemList read GetItems write SetItems;
     property ItemLayout: TLayoutOrientation read GetItemLayout write SetItemLayout;
     property ItemSpacing: TLayoutManagerSpacing read GetItemSpacing;
     property Name: string read GetName write SetName;
     property Padding: TLayoutManagerPadding read GetPadding;
     property ShowProperties: TStrings read GetShowProperties;
+    property Title: IInfraString read GetTitle write SetTitle;
     property Width: IInfraInteger read GetWidth write SetWidth;
   end;
 
