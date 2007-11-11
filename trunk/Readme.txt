@@ -6,4 +6,3 @@ How To Install?
 3) Add c:\infra\bin to Search Path
 4) Open c:\Infra\Infra.bpg
 5) Build All projects
-* 6) Run the PersonalMoney Sample

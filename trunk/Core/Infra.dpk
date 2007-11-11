@@ -30,11 +30,11 @@ requires
   rtl,
   vcl,
   dbrtl,
+  dbexpress,
   designide,
   xmlrtl,
-  vclx,
-  DbxCommonDriver,
-  dbexpress;
+  vclactnband,
+  vclx;
 
 contains
   ApplicationContext in 'Common\ApplicationContext.PAS',
@@ -88,6 +88,13 @@ contains
   CustomizeScreen in 'GUIBuilder\CustomizeScreen.pas',
   CustomizeScreenControl in 'GUIBuilder\CustomizeScreenControl.pas',
   GUIAnnotationLoaderXML in 'GUIBuilder\GUIAnnotationLoaderXML.pas',
-  GUIAnnotationLoaderIntf in 'GUIBuilder\GUIAnnotationLoaderIntf.pas';
+  GUIAnnotationLoaderIntf in 'GUIBuilder\GUIAnnotationLoaderIntf.pas',
+  InfraAspectIntf in 'Aspect\InfraAspectIntf.pas',
+  InfraAspect in 'Aspect\InfraAspect.pas',
+  InfraAspectEval in 'Aspect\InfraAspectEval.pas',
+  InfraAspectUtil in 'Aspect\InfraAspectUtil.pas',
+  List_InterceptMethod in 'Aspect\List_InterceptMethod.pas',
+  List_JointPoint in 'Aspect\List_JointPoint.pas',
+  InfraVMTUtil in 'Common\InfraVMTUtil.pas';
 
 end.

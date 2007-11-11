@@ -6,14 +6,13 @@ program InfraHibernateTests;
 {$I Infra.Inc}
 
 uses
-  {$IFDEF USA_FASTMM}FastMM4,{$ENDIF}
+  {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}
   ApplicationContext,
-  InfraHibernate,
-  TestFramework {$IFDEF LINUX},
-  QForms,
-  QGUITestRunner {$ELSE},
-  Forms,
-  GUITestRunner {$ENDIF},
+  TestFramework,
+  InfraHibernate
+  {$IFDEF LINUX}, QForms, QGUITestRunner
+  {$ELSE}, Forms, GUITestRunner
+  {$ENDIF},
   TextTestRunner,
   HibernateModel in 'HibernateModel.pas',
   HibernateModelIntf in 'HibernateModelIntf.pas',

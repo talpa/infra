@@ -1,18 +1,14 @@
-{
-http://www.knowsky.com/336168.html
-http://www.knowsky.com/336169.html
-}
-// FixUses
-unit u_TestCasesTypes;
+unit AspectsTests;
 
 interface
 
 uses
-  TestFramework, u_ClassesFuncType, u_ClassesProcType;
+  TestFramework,
+  AspectModelIntf,
+  InfraAspectIntf;
 
 type
-
-  TAspectTypeProcedure_Test = class(TTestCase)
+  TAspectProcedures_Test = class(TTestCase)
   private
     ClasseA: IClassA;
   protected
@@ -28,7 +24,7 @@ type
     procedure TestProcWith5Parameter;
   end;
 
-  TAspectTypeFunction_Test = class(TTestCase)
+  TAspectFunctions_Test = class(TTestCase)
   private
     ClasseB: IClassB;
   protected
@@ -45,32 +41,48 @@ type
     procedure TestFuncWithProceed;
   end;
 
+  TAspectEval_Test = class(TTestCase)
+  private
+    FEvalutor: IAspectPointcutEval;
+  protected
+    procedure SetUp; override;
+    procedure TearDown; override;
+  published
+    procedure TestExpressionNot;
+    procedure TestExpressionAnd;
+    procedure TestExpressionOr;
+  end;
+
 implementation
 
 uses
-  SysUtils, InfraInterfaces, u_GlobalTestList, SimpleTypeImpl;
+  SysUtils,
+  AspectModel,
+  InfraValueTypeIntf,
+  InfraValueType,
+  InfraAspectEval;
 
-procedure TAspectTypeProcedure_Test.SetUp;
+procedure TAspectProcedures_Test.SetUp;
 begin
   inherited;
   ClasseA := TClassA.Create;
   GlobalTestList.Clear;
 end;
 
-procedure TAspectTypeProcedure_Test.TearDown;
+procedure TAspectProcedures_Test.TearDown;
 begin
   GlobalTestList.Clear;
   inherited;
 end;
 
-procedure TAspectTypeProcedure_Test.TestMethodNotIntercepted;
+procedure TAspectProcedures_Test.TestMethodNotIntercepted;
 begin
   ClasseA.NotIntercepted;
   CheckEquals(1, GlobalTestList.Count, 'NotIntercepted not was called');
   CheckEquals('TClassA.NotIntercepted() called', GlobalTestList.Strings[0]);
 end;
 
-procedure TAspectTypeProcedure_Test.TestProcWithoutParameters;
+procedure TAspectProcedures_Test.TestProcWithoutParameters;
 begin
   CheckEquals(0, GlobalTestList.Count);
   ClasseA.ProcSemPar;
@@ -94,7 +106,7 @@ begin
       ['TAspect1.After']));
 end;
 
-procedure TAspectTypeProcedure_Test.TestProcWith1Parameter;
+procedure TAspectProcedures_Test.TestProcWith1Parameter;
 var
   x: IInfraInteger;
 begin
@@ -115,7 +127,7 @@ begin
       ['TAspect2.After']));
 end;
 
-procedure TAspectTypeProcedure_Test.TestProcWith2Parameter;
+procedure TAspectProcedures_Test.TestProcWith2Parameter;
 var
   x, y: IInfraInteger;
 begin
@@ -137,7 +149,7 @@ begin
       ['TAspect1.After']));
 end;
 
-procedure TAspectTypeProcedure_Test.TestProcWith3Parameter;
+procedure TAspectProcedures_Test.TestProcWith3Parameter;
 var
   x, y, z: IInfraInteger;
 begin
@@ -160,7 +172,7 @@ begin
       ['TAspect2.After']));
 end;
 
-procedure TAspectTypeProcedure_Test.TestProcWith4Parameter;
+procedure TAspectProcedures_Test.TestProcWith4Parameter;
 var
   x, y, z, w: IInfraInteger;
 begin
@@ -184,7 +196,7 @@ begin
       ['TAspect2.After']));
 end;
 
-procedure TAspectTypeProcedure_Test.TestProcWith5Parameter;
+procedure TAspectProcedures_Test.TestProcWith5Parameter;
 var
   x, y, z, w, k: IInfraInteger;
 begin
@@ -209,22 +221,22 @@ begin
       ['TAspect2.After']));
 end;
 
-{ TAspectTypeFunction_Test }
+{ TAspectFunctions_Test }
 
-procedure TAspectTypeFunction_Test.SetUp;
+procedure TAspectFunctions_Test.SetUp;
 begin
   inherited;
   ClasseB := TClassB.Create;
   GlobalTestList.Clear;
 end;
 
-procedure TAspectTypeFunction_Test.TearDown;
+procedure TAspectFunctions_Test.TearDown;
 begin
   GlobalTestList.Clear;
   inherited;
 end;
 
-procedure TAspectTypeFunction_Test.TestFuncWithoutParameters;
+procedure TAspectFunctions_Test.TestFuncWithoutParameters;
 var
   r: IInfraInteger;
 begin
@@ -245,7 +257,7 @@ begin
       ['TAspect1.After']));
 end;
 
-procedure TAspectTypeFunction_Test.TestFuncWithoutProceed;
+procedure TAspectFunctions_Test.TestFuncWithoutProceed;
 var
   r: IInfraInteger;
 begin
@@ -260,7 +272,7 @@ begin
       ['TAspect3.Around']));
 end;
 
-procedure TAspectTypeFunction_Test.TestFuncWithProceed;
+procedure TAspectFunctions_Test.TestFuncWithProceed;
 var
   r: IInfraInteger;
 begin
@@ -284,7 +296,7 @@ begin
       ['TAspect4.Around']));
 end;
 
-procedure TAspectTypeFunction_Test.TestFuncWith1Parameter;
+procedure TAspectFunctions_Test.TestFuncWith1Parameter;
 var
   r, x: IInfraInteger;
 begin
@@ -306,14 +318,15 @@ begin
       ['TAspect2.After']));
 end;
 
-procedure TAspectTypeFunction_Test.TestFuncWith2Parameter;
+procedure TAspectFunctions_Test.TestFuncWith2Parameter;
 var
   r, x, y: IInfraInteger;
 begin
   x := TInfraInteger.NewFrom(5);
   y := TInfraInteger.NewFrom(3);
   CheckEquals(0, GlobalTestList.Count);
-  r := ClasseB.Func2Par(x, y);
+  r := ClasseB.Func2Par(x, y);                                                  
+
   CheckEquals(8, r.AsInteger);
   Check(Self.Name = 'TestFuncWith2Parameter',
     'Self was changed after method intercepted');
@@ -329,7 +342,7 @@ begin
       ['TAspect2.After']));
 end;
 
-procedure TAspectTypeFunction_Test.TestFuncWith3Parameter;
+procedure TAspectFunctions_Test.TestFuncWith3Parameter;
 var
   r, x, y, z: IInfraInteger;
 begin
@@ -353,7 +366,7 @@ begin
       ['TAspect1.After']));
 end;
 
-procedure TAspectTypeFunction_Test.TestFuncWith4Parameter;
+procedure TAspectFunctions_Test.TestFuncWith4Parameter;
 var
   r, x, y, z, w: IInfraInteger;
 begin
@@ -378,7 +391,7 @@ begin
       ['TAspect1.After']));
 end;
 
-procedure TAspectTypeFunction_Test.TestFuncWith5Parameter;
+procedure TAspectFunctions_Test.TestFuncWith5Parameter;
 var
   r, x, y, z, w, k: IInfraInteger;
 begin
@@ -404,10 +417,66 @@ begin
       ['TAspect1.After']));
 end;
 
+{ TAspectEval_Test }
+
+procedure TAspectEval_Test.SetUp;
+begin
+  inherited;
+  FEvalutor := TAspectPointcutEval.Create;
+end;
+
+procedure TAspectEval_Test.TearDown;
+begin
+  inherited;
+  FEvalutor := nil;
+end;
+
+procedure TAspectEval_Test.TestExpressionAnd;
+begin
+  CheckFalse(FEvalutor.Evaluate('Metodo2', 'Metodo1 AND Metodo2'),
+    'AND: Expressao1 nao deveria ser compatível');
+  Check(FEvalutor.Evaluate('Metodo2', 'Metodo* AND M*2'),
+    'AND: Expressao2 deveria ser compatível');
+  Check(FEvalutor.Evaluate('Metodo2', '(Metodo* AND M*2) AND M?????2'),
+    'AND: Expressao3 deveria ser compatível');
+  CheckFalse(FEvalutor.Evaluate('Metodo2', '(Metodo1 AND Metodo2)'),
+    'AND: Expressao4 nao deveria ser compatível');
+end;
+
+procedure TAspectEval_Test.TestExpressionNot;
+begin
+  CheckFalse(FEvalutor.Evaluate('Metodo2', 'Metodo1 AND not Metodo2'),
+    'NOT: Expressao1 nao deveria ser compatível');
+  Check(FEvalutor.Evaluate('Metodo2', 'not Metodo1'),
+    'NOT: Expressao2 deveria ser compatível');
+  Check(FEvalutor.Evaluate('Metodo2', 'Not M?????1'),
+    'NOT: Expressao3 deveria ser compatível');
+  Check(FEvalutor.Evaluate('Metodo2', 'not (Metodo3 AND Metodo4)'),
+    'NOT: Expressao4 deveria ser compatível');
+  Check(FEvalutor.Evaluate('Metodo2', 'not (Metodo2 AND Metodo4)'),
+    'NOT: Expressao5 deveria ser compatível');
+end;
+
+procedure TAspectEval_Test.TestExpressionOr;
+begin
+  CheckFalse(FEvalutor.Evaluate('Metodo2', 'Metodo1 OR Metodo3'),
+    'NOT: Expressao1 nao deveria ser compatível');
+  Check(FEvalutor.Evaluate('Metodo2', 'Metodo1 or Met*'),
+    'NOT: Expressao2 deveria ser compatível');
+  Check(FEvalutor.Evaluate('Metodo2', 'Not M?????1'),
+    'NOT: Expressao3 deveria ser compatível');
+  CheckFalse(FEvalutor.Evaluate('Metodo4', 'not (Metodo3 OR Metodo4)'),
+    'NOT: Expressao4 nao deveria ser compatível');
+  Check(FEvalutor.Evaluate('Metodo3', 'not (Metodo2 or Metodo4)'),
+    'NOT: Expressao5 deveria ser compatível');
+end;
+
 initialization
-  TestFramework.RegisterTest('TAspectTypeProcedure_Tests Suite',
-    TAspectTypeProcedure_Test.Suite);
-  TestFramework.RegisterTest('TAspectTypeFunction_Tests Suite',
-    TAspectTypeFunction_Test.Suite);
+  TestFramework.RegisterTest('Aspect to procedures Suite',
+    TAspectProcedures_Test.Suite);
+  TestFramework.RegisterTest('Aspect to functions Suite',
+    TAspectFunctions_Test.Suite);
+  TestFramework.RegisterTest('Aspect evaluate expressions string Suite',
+    TAspectEval_Test.Suite);
 
 end.

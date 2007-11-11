@@ -20,6 +20,7 @@ type
     procedure TestGetType;
     procedure TestAddType;
     procedure TestAddRelation;
+    procedure TestClassInfoIterator;
     procedure TestRelationsIteratorByType;
     procedure TestRelationsIteratorByProperty;
     procedure TestCreateInstanceByGUID;
@@ -159,6 +160,24 @@ begin
     CheckEquals(RELATIONS_COUNT, Count,
       'Wrong number of relations on Iterator ByProperty');
   end;
+end;
+
+procedure TTypeServiceTests.TestClassInfoIterator;
+var
+  vIterator: IClassInfoIterator;
+  i: integer;
+begin
+  vIterator := TypeService.NewClassInfoIterator;
+  CheckNotNull(vIterator, 'ClassInfo Iterator not created');
+
+  i := 0;
+  while not vIterator.IsDone do
+  begin
+    Inc(i);
+    vIterator.Next;
+  end;
+  CheckEquals(FTypesCountOnSetup + CLASSES_COUNT, i,
+    'Wrong number of ClasseInfo on Iterator');
 end;
 
 procedure TTypeServiceTests.TestRelationsIteratorByProperty;

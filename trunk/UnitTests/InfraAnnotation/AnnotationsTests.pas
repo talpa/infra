@@ -4,9 +4,6 @@ interface
 
 uses
   TestFrameWork,
-  SysUtils,
-  InfraCommonIntf,InfraValueTypeIntf,
-  AnnotationsModel,
   AnnotationsModelIntf;
 
 type
@@ -22,6 +19,10 @@ type
   end;
 
 implementation
+
+uses
+  InfraCommonIntf,   
+  AnnotationsModel;
 
 { TAnnotationsTests }
 
@@ -77,6 +78,7 @@ begin
 end;
 
 initialization
-  TestFramework.RegisterTest('AnnotationsTests Suite', TAnnotationsTests.Suite);
+  TestFramework.RegisterTest('AnnotationsTests Suite', 
+    TAnnotationsTests.Suite);
 
 end.

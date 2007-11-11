@@ -1,26 +1,26 @@
 // Uncomment the following directive to create a console application
 // or leave commented to create a GUI application... 
 // {$APPTYPE CONSOLE}
-program InfraReflectTests;
+program InfraAspectTests;
 
 {$I Infra.Inc}
 
 uses
   {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}
   ApplicationContext,
-  TestFramework
+  TestFramework,
+  InfraAspect
   {$IFDEF LINUX}, QForms, QGUITestRunner
   {$ELSE}, Forms, GUITestRunner
   {$ENDIF},
   TextTestRunner,
-  ClassInfoTests in 'ClassInfoTests.pas',
-  ReflectModel in 'ReflectModel.pas',
-  ReflectModelIntf in 'ReflectModelIntf.pas',
-  TypeServiceTests in 'TypeServiceTests.pas',
-  PropertyInfoTests in 'PropertyInfoTests.pas',
-  MethodInfoTests in 'MethodInfoTests.pas';
+  AspectsTests in 'AspectsTests.pas',
+  AspectRegister in 'AspectRegister.pas',
+  AspectsClasses in 'AspectsClasses.pas',
+  AspectModelIntf in 'AspectModelIntf.pas',
+  AspectModel in 'AspectModel.pas';
 
-{$R *.RES}
+{$R *.res}
 
 begin
   Application.Initialize;

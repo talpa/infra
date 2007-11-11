@@ -8,16 +8,13 @@ uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
   Classes,
   SysUtils,
-  Types,
   InfraConsts,
   InfraBase,
   InfraCommonIntf,
-  InfraCommon;
+  InfraCommon,
+  InfraVMTUtil;
 
 type
-  TParams = array[0..50] of dword;
-  PParams = ^TParams;
-
   EInfraTypeRegisteredAlready = class(Exception);
 
   TMultiplicityInfo = class(TElement, IMultiplicityInfo)
@@ -86,6 +83,7 @@ type
       pClassImplementing: TInfraBaseObjectClass; const pFamilyID: TGUID;
       const pSuperClassInfo: IClassInfo = nil): IClassInfo;
     function GetRelations: IRelationInfoList;
+    function NewClassInfoIterator: IClassInfoIterator;
     function NewRelationsIterator(
       const pTypeInfo: IClassInfo): IRelationInfoIterator; overload;
     function NewRelationsIterator(
@@ -181,6 +179,7 @@ type
     FName: string;
   protected
     function GetDeclaringType: IClassInfo;
+    function GetFullName: string;
     function GetMemberType: TMemberType;
     function GetName: string;
     procedure SetDeclaringType(const Value: IClassInfo);
@@ -189,6 +188,7 @@ type
   public
     property DeclaringType: IClassInfo read GetDeclaringType
       write SetDeclaringType;
+    property FullName: string read GetFullName;
     property MemberType: TMemberType read GetMemberType write SetMemberType;
     property Name: string read GetName write SetName;
   end;
@@ -227,10 +227,13 @@ type
   protected
     function GetCallingConvention: TCallingConvention;
     function GetIsConstructor: Boolean;
+    function GetIsFunction: Boolean;
     function GetParameters: IParameterInfoList;
     function GetReturnType: IClassInfo;
     function Invoke(const pObj: IInfraInstance;
-      const pParameters: IInterfaceList): IInterface;
+      const pParameters: IInterfaceList): IInterface; overload;
+    function Invoke(pObj: TObject;
+      const pParameters: IInterfaceList): IInterface; overload;
     function AddParam(const pName: string;
       pParameterType: IClassInfo; pOptions: TParameterOptions = [];
       const pDefaultValue: IInterface = nil): IParameterInfo;
@@ -244,6 +247,7 @@ type
       pCallingConvention: TCallingConvention = ccRegister); reintroduce;
     property MethodPointer: Pointer read GetMethodPointer;
     property IsConstructor: Boolean read GetIsConstructor;
+    property IsFunction: Boolean read GetIsFunction;
     property Parameters: IParameterInfoList read GetParameters;
     property ReturnType: IClassInfo read GetReturnType;
     property CallingConvention: TCallingConvention read GetCallingConvention;
@@ -282,8 +286,8 @@ type
 implementation
 
 uses
-  List_ClassInfo, List_RelationInfo, List_ParameterInfo, List_MemberInfo,
-  InfraValueTypeIntf;
+  Types, List_ClassInfo, List_RelationInfo, List_ParameterInfo,
+  List_MemberInfo, InfraValueTypeIntf;
 
 { TMultiplicityInfo }
 
@@ -530,6 +534,11 @@ begin
   Result := FTypes;
 end;
 
+function TTypeService.NewClassInfoIterator: IClassInfoIterator;
+begin
+  Result := TClassInfoIterator.Create(Types);
+end;
+
 function TTypeService.NewRelationsIterator(
   const pTypeInfo: IClassInfo): IRelationInfoIterator;
 begin
@@ -734,12 +743,10 @@ begin
     PropertyToSearch := pName
   else
     PropertyToSearch := Copy(pName, 0, CommaPosition-1);
-
   if Assigned(pClassInfo) then
     PropertyInfo := pClassInfo.GetPropertyInfo(PropertyToSearch, True)
   else
     PropertyInfo := GetPropertyInfo(PropertyToSearch, True);
-
   Result := PropertyInfo.GetValue(Obj);
   if (PropertyInfo.Name <> pName) and Assigned(Result) then
     Result := GetProperty(Result as IElement,
@@ -841,6 +848,11 @@ begin
   Result := FName;
 end;
 
+function TMemberInfo.GetFullName: string;
+begin
+  Result := DeclaringType.Name + '.' + Name;
+end;
+
 procedure TMemberInfo.SetMemberType(Value: TMemberType);
 begin
   FMemberType := Value;
@@ -892,7 +904,6 @@ begin
     Result := nil;
 end;
 
-// *** Ver com solerman
 procedure TPropertyInfo.SetValue(const pObject, pValue: IInterface);
 var
   pParameters: IInterfaceList;
@@ -970,16 +981,22 @@ function TMethodInfo.Invoke(const pObj: IInfraInstance;
   const pParameters: IInterfaceList): IInterface;
 var
   Obj: TObject;
-  vStackParams: TParams;
 begin
   Obj := pObj.GetInstance;
   if Assigned(Obj) then
-  begin
-    FillChar(vStackParams, SizeOf(TParams), 0);
-    ParamsToDword(pParameters, vStackParams);
-    Result := InvokeRealMethod(Obj, @vStackParams);
-  end else
+    Result := Invoke(Obj, pParameters)
+  else
     Result := nil;
+end;
+
+function TMethodInfo.Invoke(pObj: TObject;
+  const pParameters: IInterfaceList): IInterface;
+var
+  vStackParams: TParams;
+begin
+  FillChar(vStackParams, SizeOf(TParams), 0);
+  ParamsToDword(pParameters, vStackParams);
+  Result := InvokeRealMethod(pObj, @vStackParams);
 end;
 
 procedure TMethodInfo.ParamsToDword(const pParams: IInterfaceList;
@@ -999,7 +1016,7 @@ end;
 function TMethodInfo.GetParamPointer(const Index: integer;
   const Param: IInterface): Pointer;
 var
-  pType: IInfraType;
+  pType: IInterface;
 begin
   if Parameters.Count <= Index then
     raise exception.Create('Parameter index out of bounds');
@@ -1061,6 +1078,11 @@ begin
     pop ebx                         // remove stack item ebx
     pop esp                         // remove stack item esp
   end;
+end;
+
+function TMethodInfo.GetIsFunction: Boolean;
+begin
+  Result := Assigned(FReturnType);
 end;
 
 { TParameterInfo }

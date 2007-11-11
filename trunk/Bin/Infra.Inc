@@ -2,7 +2,7 @@
   This diretive define if you need Gexpert Debug, so u can use SendDebug
   methods. GExperts can be found in: http://www.gexperts.org
  #################}
-{$DEFINE USE_GXDEBUG}
+{.$DEFINE USE_GXDEBUG}
 
 {#################
   This diretive define if you would like use FastMM to seek by leaks on your

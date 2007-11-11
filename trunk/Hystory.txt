@@ -1,3 +1,16 @@
+Revisão 44
++ Adidicionado InfraAspect de volta ao core;
++ Separada a parte de tratamento da VMT para ser usada pelo Aspect e pelo Reflect;
++ Criado testes unitários para Aspects e AspectEval;
++ Adicionado IsFunction em IMethodInfo, feito tambem um overload de Invoke para receber já um TObject;
++ Adicionado FullName em MemberInfo;
++ Adicionado IClassInfoIterator para iteragis pelas classes na reflexão, pode usar TypeService.NewClassInfoIterator;
++ Documentada units do InfraAspect, InfraHibernate;
+- Corrigido alguns métodos da reflexão de métodos para atender os aspectos;
+- corrigido caminho para o banco de dado dos teste do InfraHibernate;
+
+Revisões Elaboradas pelo Diogo;
+
 Revisão 24
 + Add TInfraBaseObject to put virtual constructor to enable create classes by reflection rightly;
 + Added TMemoryManagedObject.IsAnnotedWith;

@@ -22,6 +22,19 @@ type
     function ByName(const pName: string): IClassInfo;
   end;
 
+  TClassInfoIterator = class(TInterfacedObject, IClassInfoIterator)
+  private
+    FCurrentIndex: integer;
+    FList: IClassInfoList;
+  protected
+    function CurrentItem: IClassInfo;
+    procedure First; virtual;
+    function IsDone: Boolean; virtual;
+    procedure Next; virtual;
+  public
+    constructor Create(const List: IClassInfoList);
+  end;
+
   TClassInfoList = class(_ITERABLELIST_);
 
 implementation
@@ -88,6 +101,43 @@ destructor _ITERABLELIST_.Destroy;
 begin
   FreeAndNil(FItems);
   inherited;
+end;
+
+{ TClassInfoIterator }
+
+constructor TClassInfoIterator.Create(const List: IClassInfoList);
+begin
+  inherited Create;
+  FList := List;
+  First;
+end;
+
+function TClassInfoIterator.CurrentItem: IClassInfo;
+begin
+  if Assigned(FList) and (fCurrentIndex <> -1)
+    and (fCurrentIndex < FList.Count) then
+    Result := FList[fCurrentIndex]
+  else
+    Result := nil;
+end;
+
+procedure TClassInfoIterator.First;
+begin
+  if FList.Count > 0 then
+    fCurrentIndex := 0
+  else
+    fCurrentIndex := -1;
+end;
+
+function TClassInfoIterator.IsDone: Boolean;
+begin
+  Result := (fCurrentIndex < 0) or (fCurrentIndex >= FList.Count);
+end;
+
+procedure TClassInfoIterator.Next;
+begin
+  if (FList.Count > 0) and (FCurrentIndex < FList.Count) then
+    Inc(fCurrentIndex);
 end;
 
 end.

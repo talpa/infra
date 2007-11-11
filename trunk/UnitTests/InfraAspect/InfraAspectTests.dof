@@ -90,11 +90,11 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=
+OutputDir=..\bin
 UnitOutputDir=..\bin
 PackageDLLOutputDir=..\bin
 PackageDCPOutputDir=..\bin
-SearchPath=$(DELPHI)\Lib\Debug;..\bin
+SearchPath=..\bin;..\..\bin
 Packages=vcl;rtl;vclx;indy;dbrtl;dsnap;dsnapcon;vcldb;VclSmp;dbexpress;dbxcds;bdertl;vcldbx;vclie;adortl;ibxpress;dss;vclactnband;vclshlctrls;Rave50CLX;Rave50VCL;qrpt70;Calendario_d7;XPack;inet;xmlrtl;inetdbbde;inetdbxpress;inetdb;visualclx;visualdbclx;SpellersD_7;SpellersRT_7;DPK_JLPSay;RxCtl7;RxBDE7;RxDB7;webdsnap;FR7;FRIBX7;FRDBX7;Rz30Ctls70;Rz30DBCtls70;RLibWinD7vcl;Tee77;TeeUI77;TeeDB77;TeePro77;TeeGL77;TeeImage77;TeeLanguage77;teeqr;IOCore;IOIBX
 Conditionals=
 DebugSourceDirs=..\bin
@@ -134,6 +134,45 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
+[Excluded Packages]
+C:\Temp\dvExpressLayout\Bin\dclcxEditorsVCLD7.bpl=ExpressEditors Library 5 (VCL Edition) by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dclcxLibraryVCLD7.bpl=Express Cross Platform Library (VCL Edition) by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dxGDIPlusD7.bpl=ExpressGDI+ Library by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dxThemeD7.bpl=Express XP Theme Manager by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dclcxExtEditorsVCLD7.bpl=ExpressExtendedEditors Library 5 (VCL Edition) by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dcldxLayoutControlD7.bpl=ExpressLayout Control by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dxLayoutControlD7.bpl=ExpressLayout Control by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dxLayoutControlcxEditAdaptersD7.bpl=ExpressLayoutControl Adapters for ExpressEditors Library 5 by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dxComnD7.bpl=ExpressCommonLibrary by Developer Express Inc.
+[HistoryLists\hlDebugSourcePath]
+Count=2
+Item0=..\bin
+Item1=bin
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+[HistoryLists\hlSearchPath]
+Count=7
+Item0=..\bin;..\..\bin
+Item1=..\bin
+Item2=$(DELPHI)\Lib\Debug;..\bin;..\..\bin
+Item3=bin
+Item4=$(DELPHI)\Lib\Debug;bin
+Item5=$(DELPHI)\Lib\Debug;..\bin
+Item6=c:\infra\bin;bin
+[HistoryLists\hlUnitOutputDirectory]
+Count=2
+Item0=..\bin
+Item1=bin
+[HistoryLists\hlOutputDirectorry]
+Count=2
+Item0=..\bin
+Item1=bin
+[HistoryLists\hlBPLOutput]
+Count=2
+Item0=..\bin
+Item1=bin
+[HistoryLists\hlDCPOutput]
+Count=2
+Item0=..\bin
+Item1=bin
