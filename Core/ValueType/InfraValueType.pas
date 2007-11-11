@@ -192,9 +192,13 @@ type
   end;
 
   {! Classe ValueType para manter uma lista de outros ValueTypes }
-  TInfraList = class(TInfraType, IInfraList)
+  TInfraList = class(TInfraType, IInfraList, IInterfaceList)
   private
     FItems: TInfraCustomList;
+    {$HINTS OFF}
+    property InternalItems: TInfraCustomList read FItems
+      write FItems implements IInterfaceList;
+    {$HINTS ON}
   protected
     function Add(const Item: IInfraType): Integer;
     function Append(const Item: IInfraType): IInfraType;
@@ -405,7 +409,6 @@ end;
 function TInfraType.Clone: IInfraType;
 begin
   Result := TInfraType(ClassType.Create);
-
   if not IsNull then
     Result.Assign(Self);
 end;

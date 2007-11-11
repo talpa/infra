@@ -260,7 +260,6 @@ type
   TParameterOption = (poConst, poVar, poReturn);
   TParameterOptions = set of TParameterOption;
   TCallingConvention = (ccRegister, ccPascal, ccCdecl, ccStdcall, ccSafecall);
-  // *** deprecated TMethodResultKind = (mrkNone, mrkInteger, mrkInterface, mrkString);
 
   IMemberInfo = interface;
   IMethodInfo = interface;
@@ -461,6 +460,7 @@ type
   IMemberInfo = interface(IElement)
     ['{879C1FB0-9FBF-4CAB-A4AC-E3A769C50304}']
     function GetDeclaringType: IClassInfo;
+    function GetFullName: string;
     function GetMemberType: TMemberType;
     function GetName: string;
     procedure SetDeclaringType(const Value: IClassInfo);
@@ -468,6 +468,7 @@ type
     procedure SetName(const Value: string);
     property DeclaringType: IClassInfo read GetDeclaringType write
       SetDeclaringType;
+    property FullName: string read GetFullName;
     property MemberType: TMemberType read GetMemberType write SetMemberType;
     property Name: string read GetName write SetName;
   end;
@@ -488,19 +489,22 @@ type
       const pDefaultValue: IInterface = nil): IParameterInfo;
     function GetCallingConvention: TCallingConvention;
     function GetIsConstructor: Boolean;
+    function GetIsFunction: Boolean;
     function GetMethodPointer: Pointer;
     function GetParameters: IParameterInfoList;
     function GetReturnType: IClassInfo;
     function Invoke(const pObj: IInfraInstance;
-      const pParameters: IInterfaceList): IInterface;
+      const pParameters: IInterfaceList): IInterface; overload;
+    function Invoke(pObj: TObject;
+      const pParameters: IInterfaceList): IInterface; overload;
     property IsConstructor: Boolean read GetIsConstructor;
+    property IsFunction: Boolean read GetIsFunction;
     property MethodPointer: Pointer read GetMethodPointer;
     property Parameters: IParameterInfoList read GetParameters;
     property ReturnType: IClassInfo read GetReturnType;
     property CallingConvention: TCallingConvention read GetCallingConvention;
   end;
 
-  // *** ver com solerman a necessidade
   IConstructorInfo = interface(IMethodInfo)
     ['{E3A8CED1-0138-4CAA-BD83-75266DE95C8A}']
   end;
@@ -561,6 +565,14 @@ type
     property Source: IRelationEndInfo read GetSource;
   end;
 
+  IClassInfoIterator = interface(IInterface)
+    ['{F252D2F0-A40A-4F99-931F-3FD1262FAF67}']
+    function CurrentItem: IClassInfo; overload;
+    procedure First;
+    function IsDone: Boolean;
+    procedure Next;
+  end;
+
   IRelationInfoIterator = interface(IInterface)
     ['{110E3E80-B9FB-479C-A68C-5A9AFA7E54FE}']
     function CurrentItem: IRelationInfo;
@@ -577,6 +589,7 @@ type
       pClassImplementing: TInfraBaseObjectClass; const pFamilyID: TGUID;
       const pSuperClassInfo: IClassInfo = nil): IClassInfo;
     function GetRelations: IRelationInfoList;
+    function NewClassInfoIterator: IClassInfoIterator;
     function NewRelationsIterator(
       const TypeInfo: IClassInfo): IRelationInfoIterator; overload;
     function NewRelationsIterator(

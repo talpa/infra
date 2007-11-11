@@ -10,7 +10,7 @@ uses
 type
   TMethodInfoTests = class(TTestCase)
   private
-    FMockMethod: IClassInfo;
+    FMyMethodsClass: IClassInfo;
   protected
     procedure SetUp; override;
     procedure TearDown; override;
@@ -19,7 +19,9 @@ type
     procedure TestAddParam;
     procedure TestGetCallingConvention;
     procedure TestGetIsConstructor;
+    procedure TestGetIsFunction;
     procedure TestGetMethodPointer;
+    procedure TestGetMethodName;
     procedure TestGetParameters;
     procedure TestGetReturnType;
     procedure TestInvoke_Procedures;
@@ -41,161 +43,192 @@ uses
 procedure TMethodInfoTests.SetUp;
 begin
   inherited;
-  FMockMethod := TSetupModel.RegisterMockMethod;
+  FMyMethodsClass := TSetupModel.RegisterMyMethodsClass;
 end;
 
 procedure TMethodInfoTests.TearDown;
 begin
-  TSetupModel.RemoveTypeInfo(IMockMethod);
+  TSetupModel.RemoveTypeInfo(IMyMethodsClass);
   inherited;
 end;
 
 procedure TMethodInfoTests.TestAddParam;
 begin
-  CheckEquals(0, FMockMethod.GetMethodInfo('Constructor0').Parameters.Count,
+  CheckEquals(0, FMyMethodsClass.GetMethodInfo('Constructor0').Parameters.Count,
     'Constructor0 don''''t should be paramaters');
 
-  CheckEquals(1, FMockMethod.GetMethodInfo('Constructor1').Parameters.Count,
+  CheckEquals(1, FMyMethodsClass.GetMethodInfo('Constructor1').Parameters.Count,
     'Constructor1 should have 1 parameter');
 
   // *** Funões tem 1 parametro a mais que é o result. tem que ver como
   // *** ficará isso. Se vamos retornar apenas os verdadeiros parâmetros ou
   // *** deixamos como está.
 
-  CheckEquals(1, FMockMethod.GetMethodInfo('MethodFunc0').Parameters.Count,
+  CheckEquals(1, FMyMethodsClass.GetMethodInfo('MethodFunc0').Parameters.Count,
     'MethodFunc0 don''''t should be paramaters');
 
-  CheckEquals(2, FMockMethod.GetMethodInfo('MethodFunc1').Parameters.Count,
+  CheckEquals(2, FMyMethodsClass.GetMethodInfo('MethodFunc1').Parameters.Count,
     'MethodFunc1 should have 1 parameter');
 
-  CheckEquals(3, FMockMethod.GetMethodInfo('MethodFunc2').Parameters.Count,
+  CheckEquals(3, FMyMethodsClass.GetMethodInfo('MethodFunc2').Parameters.Count,
     'MethodFunc2 should have 2 parameters');
 
-  CheckEquals(4, FMockMethod.GetMethodInfo('MethodFunc3').Parameters.Count,
+  CheckEquals(4, FMyMethodsClass.GetMethodInfo('MethodFunc3').Parameters.Count,
     'MethodFunc3 should have 3 parameters');
 
-  CheckEquals(5, FMockMethod.GetMethodInfo('MethodFunc4').Parameters.Count,
+  CheckEquals(5, FMyMethodsClass.GetMethodInfo('MethodFunc4').Parameters.Count,
     'MethodFunc4 should have 4 parameters');
 
-  CheckEquals(6, FMockMethod.GetMethodInfo('MethodFunc5').Parameters.Count,
+  CheckEquals(6, FMyMethodsClass.GetMethodInfo('MethodFunc5').Parameters.Count,
     'MethodFunc5 should have 5 parameters');
 
-  CheckEquals(0, FMockMethod.GetMethodInfo('MethodProc0').Parameters.Count,
+  CheckEquals(0, FMyMethodsClass.GetMethodInfo('MethodProc0').Parameters.Count,
     'MethodProc0 don''''t should be paramaters');
 
-  CheckEquals(1, FMockMethod.GetMethodInfo('MethodProc1').Parameters.Count,
+  CheckEquals(1, FMyMethodsClass.GetMethodInfo('MethodProc1').Parameters.Count,
     'MethodProc1 should have 1 parameter');
 
-  CheckEquals(2, FMockMethod.GetMethodInfo('MethodProc2').Parameters.Count,
+  CheckEquals(2, FMyMethodsClass.GetMethodInfo('MethodProc2').Parameters.Count,
     'MethodProc2 should have 2 parameters');
 
-  CheckEquals(3, FMockMethod.GetMethodInfo('MethodProc3').Parameters.Count,
+  CheckEquals(3, FMyMethodsClass.GetMethodInfo('MethodProc3').Parameters.Count,
     'MethodProc3 should have 3 parameters');
 
-  CheckEquals(4, FMockMethod.GetMethodInfo('MethodProc4').Parameters.Count,
+  CheckEquals(4, FMyMethodsClass.GetMethodInfo('MethodProc4').Parameters.Count,
     'MethodProc4 should have 4 parameters');
 
-  CheckEquals(5, FMockMethod.GetMethodInfo('MethodProc5').Parameters.Count,
+  CheckEquals(5, FMyMethodsClass.GetMethodInfo('MethodProc5').Parameters.Count,
     'MethodProc5 should have 5 parameters');
 end;
 
 procedure TMethodInfoTests.TestGetCallingConvention;
 begin
-  CheckTrue(FMockMethod.GetMethodInfo('Constructor0').CallingConvention = ccRegister,
+  CheckTrue(FMyMethodsClass.GetMethodInfo('Constructor0').CallingConvention = ccRegister,
     'Constructor0 must have ccRegister conventionn');
 
-  CheckTrue(FMockMethod.GetMethodInfo('MethodFunc0').CallingConvention = ccRegister,
+  CheckTrue(FMyMethodsClass.GetMethodInfo('MethodFunc0').CallingConvention = ccRegister,
     'MethodFunc0 must have ccRegister convention');
 
-  CheckTrue(FMockMethod.GetMethodInfo('MethodProc0').CallingConvention = ccRegister,
+  CheckTrue(FMyMethodsClass.GetMethodInfo('MethodProc0').CallingConvention = ccRegister,
     'MethodProc0 must have ccRegister convention');
 end;
 
 procedure TMethodInfoTests.TestGetIsConstructor;
 begin
-  CheckTrue(FMockMethod.GetMethodInfo('Constructor0').IsConstructor,
+  CheckTrue(FMyMethodsClass.GetMethodInfo('Constructor0').IsConstructor,
     'Constructor0 should be a constructor');
 
-  CheckTrue(FMockMethod.GetMethodInfo('Constructor1').IsConstructor,
+  CheckTrue(FMyMethodsClass.GetMethodInfo('Constructor1').IsConstructor,
     'Constructor1 should be a constructor');
 
-  CheckFalse(FMockMethod.GetMethodInfo('MethodFunc0').IsConstructor,
+  CheckFalse(FMyMethodsClass.GetMethodInfo('MethodFunc0').IsConstructor,
     'MethodFunc0 cannot be a constructor');
 
-  CheckFalse(FMockMethod.GetMethodInfo('MethodProc0').IsConstructor,
+  CheckFalse(FMyMethodsClass.GetMethodInfo('MethodProc0').IsConstructor,
     'MethodProc0 cannot be a constructor');
+end;
+
+procedure TMethodInfoTests.TestGetIsFunction;
+begin
+  CheckTrue(FMyMethodsClass.GetMethodInfo('Constructor0').IsConstructor,
+    'Constructor0 should be a function');
+
+  CheckTrue(FMyMethodsClass.GetMethodInfo('MethodFunc0').IsFunction,
+    'MethodFunc0 should be a function');
+
+  CheckFalse(FMyMethodsClass.GetMethodInfo('MethodProc0').IsFunction,
+    'MethodProc0 should not be a function');
+end;
+
+procedure TMethodInfoTests.TestGetMethodName;
+begin
+  CheckEquals('TMyMethodsClass.MethodProc2',
+    FMyMethodsClass.GetMethodInfo('MethodProc2').FullName,
+    'Full name mismatch');
+
+  CheckEquals('TMyMethodsClass.MethodFunc0',
+    FMyMethodsClass.GetMethodInfo('MethodFunc0').FullName,
+    'Full name mismatch');
+
+  CheckEquals('TMyMethodsClass.Constructor0',
+    FMyMethodsClass.GetMethodInfo('Constructor0').FullName,
+    'Full name mismatch');
 end;
 
 procedure TMethodInfoTests.TestGetMethodPointer;
 begin
-  CheckMethodIsNotEmpty(FMockMethod.GetMethodInfo('Constructor0').MethodPointer);
-
-  CheckMethodIsNotEmpty(FMockMethod.GetMethodInfo('MethodProc0').MethodPointer);
-
-  CheckMethodIsNotEmpty(FMockMethod.GetMethodInfo('MethodFunc0').MethodPointer);
+  CheckMethodIsNotEmpty(
+    FMyMethodsClass.GetMethodInfo('Constructor0').MethodPointer);
+  CheckMethodIsNotEmpty(
+    FMyMethodsClass.GetMethodInfo('MethodProc0').MethodPointer);
+  CheckMethodIsNotEmpty(
+    FMyMethodsClass.GetMethodInfo('MethodFunc0').MethodPointer);
 end;
 
 procedure TMethodInfoTests.TestGetParameters;
 begin
-  CheckNotNull(FMockMethod.GetMethodInfo('MethodFunc0').Parameters,
+  CheckNotNull(FMyMethodsClass.GetMethodInfo('MethodFunc0').Parameters,
     'Error on getting MethodFunc0 parameters');
-  CheckNotNull(FMockMethod.GetMethodInfo('MethodFunc1').Parameters,
+  CheckNotNull(FMyMethodsClass.GetMethodInfo('MethodFunc1').Parameters,
     'Error on getting MethodFunc1 parameters');
-  CheckNotNull(FMockMethod.GetMethodInfo('MethodFunc2').Parameters,
+  CheckNotNull(FMyMethodsClass.GetMethodInfo('MethodFunc2').Parameters,
     'Error on getting MethodFunc2 parameters');
-  CheckNotNull(FMockMethod.GetMethodInfo('MethodFunc3').Parameters,
+  CheckNotNull(FMyMethodsClass.GetMethodInfo('MethodFunc3').Parameters,
     'Error on getting MethodFunc3 parameters');
-  CheckNotNull(FMockMethod.GetMethodInfo('MethodFunc4').Parameters,
+  CheckNotNull(FMyMethodsClass.GetMethodInfo('MethodFunc4').Parameters,
     'Error on getting MethodFunc4 parameters');
-  CheckNotNull(FMockMethod.GetMethodInfo('MethodFunc5').Parameters,
+  CheckNotNull(FMyMethodsClass.GetMethodInfo('MethodFunc5').Parameters,
     'Error on getting MethodFunc5 parameters');
 end;
 
 procedure TMethodInfoTests.TestGetReturnType;
 begin
-  CheckTrue(FMockMethod.GetMethodInfo('MethodFunc0').ReturnType =
+  CheckTrue(FMyMethodsClass.GetMethodInfo('MethodFunc0').ReturnType =
     TypeService.GetType(IInfraString),
     'MethodFunc0 must returns IInfraString');
 
-  CheckTrue(FMockMethod.GetMethodInfo('MethodFunc1').ReturnType =
+  CheckTrue(FMyMethodsClass.GetMethodInfo('MethodFunc1').ReturnType =
     TypeService.GetType(IInfraString),
     'MethodFunc1 must returns IInfraString');
 
-  CheckTrue(FMockMethod.GetMethodInfo('MethodFunc2').ReturnType =
+  CheckTrue(FMyMethodsClass.GetMethodInfo('MethodFunc2').ReturnType =
     TypeService.GetType(IInfraInteger),
     'MethodFunc2 must returns IInfraInteger');
 
-  CheckTrue(FMockMethod.GetMethodInfo('MethodFunc3').ReturnType =
+  CheckTrue(FMyMethodsClass.GetMethodInfo('MethodFunc3').ReturnType =
     TypeService.GetType(IInfraDateTime),
     'MethodFunc3 must returns IInfraDateTime');
 
-  CheckTrue(FMockMethod.GetMethodInfo('MethodFunc4').ReturnType =
+  CheckTrue(FMyMethodsClass.GetMethodInfo('MethodFunc4').ReturnType =
     TypeService.GetType(IInfraBoolean),
     'MethodFunc4 must returns IInfraBoolean');
 
-  CheckTrue(FMockMethod.GetMethodInfo('MethodFunc5').ReturnType =
+  CheckTrue(FMyMethodsClass.GetMethodInfo('MethodFunc5').ReturnType =
     TypeService.GetType(IInfraDouble),
     'MethodFunc5 must returns IInfraDouble');
 
-  CheckTrue(FMockMethod.GetMethodInfo('Constructor0').ReturnType = nil,
+  CheckTrue(FMyMethodsClass.GetMethodInfo('Constructor0').ReturnType = nil,
     'Constructor0 does not have return type');
 
-  CheckTrue(FMockMethod.GetMethodInfo('MethodProc0').ReturnType = nil,
+  CheckTrue(FMyMethodsClass.GetMethodInfo('MethodProc0').ReturnType = nil,
     'MethodProc0 does not have return type');
 end;
 
 procedure TMethodInfoTests.TestInvoke_Procedures;
 var
-  mm: IMockMethod;
+  mm: IMyMethodsClass;
+  fClassInfo: IClassInfo;
   fMethodInfo: IMethodInfo;
   fParams: IInterfaceList;
 begin
-  mm := TMockMethod.Create;
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodProc0');
+  fClassInfo := TypeService.GetType(IMyMethodsClass);
+
+  mm := TMyMethodsClass.Create;
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodProc0');
   fMethodInfo.Invoke(mm as IInfraInstance, nil);
   CheckEquals(cMessageProc0, mm.Message.AsString, 'Mismatch in MethodProc0');
 
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodProc1');
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodProc1');
   fParams := TInterfaceList.Create;
   fParams.Add(TInfraString.NewFrom('ValorP1'));
   fMethodInfo.Invoke(mm as IInfraInstance, fParams);
@@ -203,7 +236,7 @@ begin
     ['ValorP1']),
     mm.Message.AsString, 'Mismatch in MethodProc1');
 
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodProc2');
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodProc2');
   fParams := TInterfaceList.Create;
   fParams.Add(TInfraString.NewFrom('ValorP1'));
   fParams.Add(TInfraInteger.NewFrom(55));
@@ -212,7 +245,7 @@ begin
     ['ValorP1', 55]),
     mm.Message.AsString, 'Mismatch in MethodProc2');
 
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodProc3');
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodProc3');
   fParams := TInterfaceList.Create;
   fParams.Add(TInfraString.NewFrom('ValorP1'));
   fParams.Add(TInfraInteger.NewFrom(55));
@@ -222,7 +255,7 @@ begin
     ['ValorP1', 55, '30/3/2007 20:15:00']),
     mm.Message.AsString, 'Mismatch in MethodProc3');
 
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodProc4');
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodProc4');
   fParams := TInterfaceList.Create;
   fParams.Add(TInfraString.NewFrom('ValorP1'));
   fParams.Add(TInfraInteger.NewFrom(55));
@@ -233,7 +266,7 @@ begin
     ['ValorP1', 55, '30/3/2007 20:15:00', SysUtils.BoolToStr(True, False)]),
     mm.Message.AsString, 'Mismatch in MethodProc4');
 
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodProc5');
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodProc5');
   fParams := TInterfaceList.Create;
   fParams.Add(TInfraString.NewFrom('ValorP1'));
   fParams.Add(TInfraInteger.NewFrom(55));
@@ -249,20 +282,23 @@ end;
 
 procedure TMethodInfoTests.TestInvoke_Functions;
 var
-  mm: IMockMethod;
+  mm: IMyMethodsClass;
+  fClassInfo: IClassInfo;
   fMethodInfo: IMethodInfo;
   fParams: IInterfaceList;
   fResult: IInterface;
 begin
-  mm := TMockMethod.Create;
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodFunc0');
+  fClassInfo := TypeService.GetType(IMyMethodsClass);
+
+  mm := TMyMethodsClass.Create;
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodFunc0');
   CheckNotNull(fMethodInfo, 'MethodInfo MethodFunc0 Not found!');
   fResult := fMethodInfo.Invoke(mm as IInfraInstance, nil);
   CheckEquals(Format(cMessageFunc0,
     [(fResult as IInfraString).AsString]),
     mm.Message.AsString, 'Erro invoking MethodFunc0');
 
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodFunc1');
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodFunc1');
   CheckNotNull(fMethodInfo, 'MethodInfo MethodFunc1 Not found!');
   fParams := TInterfaceList.Create;
   fParams.Add(TInfraString.NewFrom('ValorP1'));
@@ -271,7 +307,7 @@ begin
     ['ValorP1', (fResult as IInfraString).AsString]),
     mm.Message.AsString, 'Erro invoking MethodFunc1');
 
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodFunc2');
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodFunc2');
   CheckNotNull(fMethodInfo, 'MethodInfo MethodFunc2 Not found!');
   fParams := TInterfaceList.Create;
   fParams.Add(TInfraString.NewFrom('ValorP1'));
@@ -281,7 +317,7 @@ begin
     ['ValorP1', 55, (fResult as IInfraInteger).AsInteger]),
     mm.Message.AsString, 'Erron invoking MethodFunc2');
 
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodFunc3');
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodFunc3');
   CheckNotNull(fMethodInfo, 'MethodInfo MethodFunc3 Not found!');
   fParams := TInterfaceList.Create;
   fParams.Add(TInfraString.NewFrom('ValorP1'));
@@ -293,7 +329,7 @@ begin
     DateTimeToStr((fResult as IInfraDateTime).AsDateTime)]),
     mm.Message.AsString, 'Erro invoking MethodFunc3');
 
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodFunc4');
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodFunc4');
   CheckNotNull(fMethodInfo, 'MethodInfo MethodFunc4 Not found!');
   fParams := TInterfaceList.Create;
   fParams.Add(TInfraString.NewFrom('ValorP1'));
@@ -307,7 +343,7 @@ begin
     SysUtils.BoolToStr((fResult as IInfraBoolean).AsBoolean, True)]),
     mm.Message.AsString, 'Mismatch in MethodFunc4');
 
-  fMethodInfo := TypeService.GetType(IMockMethod).GetMethodInfo('MethodFunc5');
+  fMethodInfo := fClassInfo.GetMethodInfo('MethodFunc5');
   CheckNotNull(fMethodInfo, 'MethodInfo MethodFunc5 Not found!');
   fParams := TInterfaceList.Create;
   fParams.Add(TInfraString.NewFrom('ValorP1'));
@@ -327,3 +363,4 @@ initialization
   TestFramework.RegisterTest('InfraReflectTests Suite', TMethodInfoTests.Suite);
 
 end.
+

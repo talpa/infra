@@ -16,7 +16,6 @@ type
   TPersistenceService = class(TInterfacedObject, IPersistenceService)
   private
     FConfiguration: IConfiguration;
-    FSessionFactory: ISessionFactory;
     function GetConfiguration: IConfiguration;
     function GetSessionFactory: ISessionFactory;
   public
@@ -30,6 +29,8 @@ type
     function GetProperties: TStrings;
     function GetPropertyItem(const pName: String): string;
     procedure SetPropertyItem(const pName: String; const Value: string);
+    procedure BindClasses;
+    function BuildSessionFactory: ISessionFactory;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -109,9 +110,7 @@ function TPersistenceService.GetSessionFactory: ISessionFactory;
 begin
   if not Assigned(FConfiguration) then
     raise Exception.Create('Configuration is empty');
-  if not Assigned(FSessionFactory) then
-    FSessionFactory := TSessionFactory.Create(Configuration);
-  Result := FSessionFactory;
+  Result := FConfiguration.BuildSessionFactory;
 end;
 
 { TConfiguration }
@@ -142,6 +141,18 @@ procedure TConfiguration.SetPropertyItem(const pName: String; const Value:
   string);
 begin
   FProperties.Values[pName] := Value;
+end;
+
+function TConfiguration.BuildSessionFactory: ISessionFactory;
+begin
+  BindClasses;
+  Result := TSessionFactory.Create(Self);
+end;
+
+procedure TConfiguration.BindClasses;
+begin
+  // criar todos os persistentclass aqui a partir da reflexão de classes
+  // que estiverem anotados com IEntity
 end;
 
 { TConnectionProvider }
@@ -240,7 +251,7 @@ end;
 constructor TSession.Create(pSessionFactory: ISessionFactory);
 begin
   inherited Create;
-
+  FSessionFactory := pSessionFactory;
 end;
 
 function TSession.GetConnection: IConnection;
@@ -285,6 +296,8 @@ begin
   FillObject(Result, vResultSet);
 end;
 
+// Retorna o nome da tabela, se nao houve anotação retorna o nome da classe por
+// padrão.
 function TLoader.GetEntityName(const pClassInfo: IClassInfo): string;
 var
   vEntity: IEntity;
@@ -295,6 +308,8 @@ begin
     Result := pClassInfo.Name;
 end;
 
+// Retorna o nome da coluna, se nao houve anotação retorna o nome da propriedade
+// por padrão.
 function TLoader.GetColumnName(const pPropertyInfo: IPropertyInfo): string;
 var
   vColumn: IColumn;
@@ -305,6 +320,8 @@ begin
     Result := pPropertyInfo.Name;
 end;
 
+// Retorna o nome da coluna que é chave primaria com base na propriedade anotada
+// como identificador.
 function TLoader.GetOIDColumnName(const pClassInfo: IClassInfo): string;
 var
   vPropIterator: IPropertyInfoIterator;
@@ -323,6 +340,7 @@ begin
   end;
 end;
 
+// gera uma instrução SQL de seleção simples
 function TLoader.GetSelectClause(const pClassInfo: IClassInfo;
   const pOID: IInfraType): string;
 begin
@@ -334,6 +352,8 @@ begin
       IntToStr((pOID as IInfraInteger).AsInteger);
 end;
 
+// Preenche as propriedades do objeto com base nos valores do registro atual
+// do resultset.
 function TLoader.FillObject(const pObject: IInfraType;
   const vResultSet: IResultSet): string;
 var
@@ -356,6 +376,7 @@ begin
   end;
 end;
 
+// Injeta o mecanismo de persistencia no Applicationcontext.
 procedure InjectPersitenceService;
 begin
   (ApplicationContext as IMemoryManagedObject).Inject(
@@ -366,3 +387,4 @@ initialization
   InjectPersitenceService;
 
 end.
+

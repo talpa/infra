@@ -136,9 +136,9 @@ end;
 
 procedure TClassInfoTests.TestFullName;
 begin
-  CheckEquals(FPersonInfo.FullName, 'Person',
+  CheckEquals(FPersonInfo.FullName, 'TPerson',
     'ClassInfo FullName incorrect to Person');
-  CheckEquals(FStudentInfo.FullName, 'Student',
+  CheckEquals(FStudentInfo.FullName, 'TStudent',
     'ClassInfo FullName incorrect to Student');
   // *** adicionar um CheckEquals para um objeto que tenha um fullname <> name
 end;
@@ -217,8 +217,8 @@ end;
 
 procedure TClassInfoTests.TestName;
 begin
-  CheckEquals(FPersonInfo.Name,'Person', 'Incorrect Person큦 Class Name');
-  CheckEquals(FStudentInfo.Name, 'Student', 'Incorrect Student큦 Class Name');
+  CheckEquals(FPersonInfo.Name, 'TPerson', 'Incorrect Person큦 Class Name');
+  CheckEquals(FStudentInfo.Name, 'TStudent', 'Incorrect Student큦 Class Name');
 end;
 
 procedure TClassInfoTests.TestOwner;
@@ -247,16 +247,26 @@ end;
 
 procedure TClassInfoTests.TestProperty;
 var
-  Nome : IInfraString;
-  Pessoa :  IPerson;
+  Value: IInfraString;
+  Pessoa:  IPerson;
 begin
   Pessoa := TPerson.Create;
   Pessoa.Name.AsString := 'Marcos';
   Pessoa.Email.AsString := 'mrbar2000@gmail.com';
-  Nome := FPersoninfo.GetProperty(Pessoa as IElement, 'Name') as IInfraString;
-  CheckEquals(Pessoa.Name.AsString, Nome.AsString, 'Wrong name큦 person getting by reflection');
-  Nome := FPersoninfo.GetProperty(Pessoa as IElement, 'Email') as IInfraString;
-  CheckEquals(Pessoa.Email.AsString, Nome.AsString, 'Wrong mail큦 person getting by reflection');
+  Value := FPersoninfo.GetProperty(Pessoa as IElement, 'Name') as IInfraString;
+  CheckEquals(Pessoa.Name.AsString, Value.AsString,
+    'Wrong person큦 name getting by reflection');
+  Value := FPersoninfo.GetProperty(Pessoa as IElement, 'Email') as IInfraString;
+  CheckEquals(Pessoa.Email.AsString, Value.AsString,
+    'Wrong person큦 mail getting by reflection');
+  Value := FPersoninfo.GetProperty(Pessoa as IElement,
+    'Address.Street') as IInfraString;
+  CheckEquals(Pessoa.Address.Street.AsString, Value.AsString,
+    'Wrong person''''s Address.Street getting by reflection');
+  Value := FPersoninfo.GetProperty(Pessoa as IElement,
+    'Address.Quarter') as IInfraString;
+  CheckEquals(Pessoa.Address.Quarter.AsString, Value.AsString,
+    'Wrong person''''s Address.Quarter getting by reflection');
 end;
 
 procedure TClassInfoTests.TestPropertyInfo;

@@ -48,7 +48,7 @@
     property Count: Integer read GetCount;
     property Items[Index: Integer]: _ITEM_INTF_ read GetItem write SetItem; default;
   public
-    constructor Create;
+    constructor Create; override;
     destructor Destroy; override;
 {$DEFINE SECOND_PASS}
 {$ELSE}

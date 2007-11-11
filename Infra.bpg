@@ -9,7 +9,8 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = Infra.bpl InfraHibernateTests.exe
+PROJECTS = Infra.bpl InfraAspectTests.exe InfraAnnotationTests.exe \
+  InfraHibernateTests.exe InfraReflectTests.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -17,7 +18,16 @@ default: $(PROJECTS)
 Infra.bpl: Core\Infra.dpk
   $(DCC)
 
+InfraAspectTests.exe: UnitTests\InfraAspect\InfraAspectTests.dpr
+  $(DCC)
+
+InfraAnnotationTests.exe: UnitTests\InfraAnnotation\InfraAnnotationTests.dpr
+  $(DCC)
+
 InfraHibernateTests.exe: UnitTests\InfraHibernate\InfraHibernateTests.dpr
+  $(DCC)
+
+InfraReflectTests.exe: UnitTests\InfraReflect\InfraReflectTests.dpr
   $(DCC)
 
 

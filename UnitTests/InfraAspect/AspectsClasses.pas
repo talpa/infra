@@ -1,46 +1,51 @@
-// FixUses
-unit u_AspectsType;
+unit AspectsClasses;
 
 interface
 
 uses
-  InfraInterfaces, AspectImpl;
+  Classes,
+  InfraCommonIntf,
+  InfraAspect;
 
 type
-  TAspect1 = class(TInfraAspectType)
-    procedure After(const Sender: IInfraElement;
-      const Params: IInfraList); override;
-    procedure Before(const Sender: IInfraElement;
-      const Params: IInfraList); override;
+  TAspect1 = class(TInfraAspect)
+    procedure After(const Sender: IElement;
+      const Params: IInterfaceList); override;
+    procedure Before(const Sender: IElement;
+      const Params: IInterfaceList); override;
   end;
 
-  TAspect2 = class(TInfraAspectType)
-    procedure After(const Sender: IInfraElement;
-      const Params: IInfraList); override;
-    procedure Before(const Sender: IInfraElement;
-      const Params: IInfraList); override;
+  TAspect2 = class(TInfraAspect)
+    procedure After(const Sender: IElement;
+      const Params: IInterfaceList); override;
+    procedure Before(const Sender: IElement;
+      const Params: IInterfaceList); override;
   end;
 
-  TAspect3 = class(TInfraAspectType)
-    function Around(const Sender: IInfraElement;
-      const Params: IInfraList): IInfraType; override;
-    procedure Before(const Sender: IInfraElement;
-      const Params: IInfraList); override;
+  TAspect3 = class(TInfraAspect)
+    function Around(const Sender: IElement;
+      const Params: IInterfaceList): IInterface; override;
+    procedure Before(const Sender: IElement;
+      const Params: IInterfaceList); override;
   end;
 
-  TAspect4 = class(TInfraAspectType)
-    function Around(const Sender: IInfraElement;
-      const Params: IInfraList): IInfraType; override;
-    procedure After(const Sender: IInfraElement;
-      const Params: IInfraList); override;
+  TAspect4 = class(TInfraAspect)
+    function Around(const Sender: IElement;
+      const Params: IInterfaceList): IInterface; override;
+    procedure After(const Sender: IElement;
+      const Params: IInterfaceList); override;
   end;
 
 implementation
 
 uses
-  SysUtils, u_GlobalTestList, SimpleTypeImpl;
+  SysUtils,
+  InfraValueTypeIntf,
+  InfraValueType,
+  InfraAspectIntf,
+  AspectModelIntf;
 
-function ParamsToString(const Params: IInfraList): string;
+function ParamsToString(const Params: IInterfaceList): string;
 var
   j: Integer;
   i: IInfraInteger;
@@ -64,8 +69,8 @@ end;
 
 { TAspect1 }
 
-procedure TAspect1.After(const Sender: IInfraElement;
-  const Params: IInfraList);
+procedure TAspect1.After(const Sender: IElement;
+  const Params: IInterfaceList);
 begin
   inherited;
   GlobalTestList.Add(Format(cMsgAdviceCalled,
@@ -73,8 +78,8 @@ begin
     Sender.TypeInfo.FullName, ParamsToString(Params)]));
 end;
 
-procedure TAspect1.Before(const Sender: IInfraElement;
-  const Params: IInfraList);
+procedure TAspect1.Before(const Sender: IElement;
+  const Params: IInterfaceList);
 begin
   inherited;
   GlobalTestList.Add(Format(cMsgAdviceCalled,
@@ -84,8 +89,8 @@ end;
 
 { TAspect2 }
 
-procedure TAspect2.After(const Sender: IInfraElement;
-  const Params: IInfraList);
+procedure TAspect2.After(const Sender: IElement;
+  const Params: IInterfaceList);
 begin
   inherited;
   GlobalTestList.Add(Format(cMsgAdviceCalled,
@@ -93,8 +98,8 @@ begin
     Sender.TypeInfo.FullName, ParamsToString(Params)]));
 end;
 
-procedure TAspect2.Before(const Sender: IInfraElement;
-  const Params: IInfraList);
+procedure TAspect2.Before(const Sender: IElement;
+  const Params: IInterfaceList);
 begin
   inherited;
   GlobalTestList.Add(Format(cMsgAdviceCalled,
@@ -104,8 +109,8 @@ end;
 
 { TAspect3 }
 
-function TAspect3.Around(const Sender: IInfraElement;
-  const Params: IInfraList): IInfraType;
+function TAspect3.Around(const Sender: IElement;
+  const Params: IInterfaceList): IInterface;
 begin
   Result := TInfraInteger.NewFrom(1000);
   GlobalTestList.Add(Format(cMsgAdviceAroundCalled,
@@ -114,7 +119,7 @@ begin
     IntToStr((Result as IInfraInteger).AsInteger), '']));
 end;
 
-procedure TAspect3.Before(const Sender: IInfraElement; const Params: IInfraList);
+procedure TAspect3.Before(const Sender: IElement; const Params: IInterfaceList);
 begin
   inherited;
   GlobalTestList.Add(Format(cMsgAdviceCalled,
@@ -124,8 +129,8 @@ end;
 
 { TAspect4 }
 
-function TAspect4.Around(const Sender: IInfraElement;
-  const Params: IInfraList): IInfraType;
+function TAspect4.Around(const Sender: IElement;
+  const Params: IInterfaceList): IInterface;
 begin
   GlobalTestList.Add(Format(cMsgAdviceAroundCalled,
     [ClassName, 'Around',
@@ -142,8 +147,8 @@ begin
   end;
 end;
 
-procedure TAspect4.After(const Sender: IInfraElement;
-  const Params: IInfraList);
+procedure TAspect4.After(const Sender: IElement;
+  const Params: IInterfaceList);
 begin
   inherited;
   GlobalTestList.Add(Format(cMsgAdviceCalled,

@@ -6,13 +6,12 @@ program InfraAnnotationTests;
 {$I Infra.Inc}
 
 uses
-  FastMM4,
+  {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}
   ApplicationContext,
-  TestFramework {$IFDEF LINUX},
-  QForms,
-  QGUITestRunner {$ELSE},
-  Forms,
-  GUITestRunner {$ENDIF},
+  TestFramework 
+  {$IFDEF LINUX}, QForms, QGUITestRunner
+  {$ELSE}, Forms, GUITestRunner 
+  {$ENDIF},
   TextTestRunner,
   AnnotationsTests in 'AnnotationsTests.pas',
   AnnotationsModel in 'AnnotationsModel.pas',

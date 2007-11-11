@@ -17,7 +17,7 @@ type
     class function RegisterStudent: IClassInfo;
     class procedure RegisterPersonAddressRelation(
       const Source: IClassInfo);
-    class function RegisterMockMethod: IClassInfo;
+    class function RegisterMyMethodsClass: IClassInfo;
     class procedure RemoveTypeInfo(ID: TGUID);
   end;
 
@@ -78,7 +78,7 @@ type
       write SetSchoolNumber;
   end;
 
-  TMockMethod = class(TInfraObject, IMockMethod)
+  TMyMethodsClass = class(TInfraObject, IMyMethodsClass)
   private
     FMessage: IInfraString;
     function GetMessage: IInfraString;
@@ -139,7 +139,7 @@ class function TSetupModel.RegisterPerson: IClassInfo;
 begin
   with TypeService do
   begin
-    Result := AddType(IPerson, 'Person', TPerson,
+    Result := AddType(IPerson, 'TPerson', TPerson,
       IInfraObject, GetType(IInfraObject));
     with Result do
     begin
@@ -161,7 +161,7 @@ class function TSetupModel.RegisterAddress: IClassInfo;
 begin
   with TypeService do
   begin
-    Result := AddType(IAddress, 'Address', TAddress,
+    Result := AddType(IAddress, 'TAddress', TAddress,
       IInfraObject, GetType(IInfraObject));
     with Result do
     begin
@@ -181,7 +181,7 @@ class function TSetupModel.RegisterStudent: IClassInfo;
 begin
   with TypeService do
   begin
-    Result := AddType(IStudent, 'Student', TStudent,
+    Result := AddType(IStudent, 'TStudent', TStudent,
     IInfraObject, GetType(IPerson));
     with Result do
       AddPropertyInfo('SchoolNumber', GetType(IInfraString),
@@ -220,43 +220,43 @@ begin
   end;
 end;
 
-class function TSetupModel.RegisterMockMethod: IClassInfo;
+class function TSetupModel.RegisterMyMethodsClass: IClassInfo;
 begin
   with TypeService do
   begin
-    Result := AddType(IMockMethod, 'MockMethod', TMockMethod,
+    Result := AddType(IMyMethodsClass, 'TMyMethodsClass', TMyMethodsClass,
       IInfraObject, GetType(IInfraObject));
     with Result do
     begin
-      AddConstructorInfo('Create',nil, @TMockMethod.Create);
+      AddConstructorInfo('Create',nil, @TMyMethodsClass.Create);
 
-      AddConstructorInfo('Constructor0', nil, @TMockMethod.Constructor0);
+      AddConstructorInfo('Constructor0', nil, @TMyMethodsClass.Constructor0);
 
-      with AddConstructorInfo('Constructor1', nil, @TMockMethod.Constructor1) do
+      with AddConstructorInfo('Constructor1', nil, @TMyMethodsClass.Constructor1) do
         AddParam('p1', GetType(IInfraString));
 
       AddPropertyInfo('Message', GetType(IInfraString),
-        @TMockMethod.GetMessage);
+        @TMyMethodsClass.GetMessage);
 
-      AddMethodInfo('MethodProc0', nil, @TMockMethod.MethodProc0);
+      AddMethodInfo('MethodProc0', nil, @TMyMethodsClass.MethodProc0);
 
-      with AddMethodInfo('MethodProc1', nil, @TMockMethod.MethodProc1) do
+      with AddMethodInfo('MethodProc1', nil, @TMyMethodsClass.MethodProc1) do
         AddParam('p1', GetType(IInfraString));
 
-      with AddMethodInfo('MethodProc2', nil, @TMockMethod.MethodProc2) do
+      with AddMethodInfo('MethodProc2', nil, @TMyMethodsClass.MethodProc2) do
       begin
         AddParam('p1', GetType(IInfraString));
         AddParam('p2', GetType(IInfraInteger));
       end;
 
-      with AddMethodInfo('MethodProc3', nil, @TMockMethod.MethodProc3) do
+      with AddMethodInfo('MethodProc3', nil, @TMyMethodsClass.MethodProc3) do
       begin
         AddParam('p1', GetType(IInfraString));
         AddParam('p2', GetType(IInfraInteger));
         AddParam('p3', GetType(IInfraDateTime));
       end;
 
-      with AddMethodInfo('MethodProc4', nil, @TMockMethod.MethodProc4) do
+      with AddMethodInfo('MethodProc4', nil, @TMyMethodsClass.MethodProc4) do
       begin
         AddParam('p1', GetType(IInfraString));
         AddParam('p2', GetType(IInfraInteger));
@@ -264,7 +264,7 @@ begin
         AddParam('p4', GetType(IInfraBoolean));
       end;
 
-      with AddMethodInfo('MethodProc5', nil, @TMockMethod.MethodProc5) do
+      with AddMethodInfo('MethodProc5', nil, @TMyMethodsClass.MethodProc5) do
       begin
         AddParam('p1', GetType(IInfraString));
         AddParam('p2', GetType(IInfraInteger));
@@ -274,17 +274,17 @@ begin
       end;
 
       with AddMethodInfo('MethodFunc0', nil,
-        @TMockMethod.MethodFunc0, GetType(IInfraString)) do
+        @TMyMethodsClass.MethodFunc0, GetType(IInfraString)) do
         AddParam('Result', GetType(IInfraString));
 
-      with AddMethodInfo('MethodFunc1', nil, @TMockMethod.MethodFunc1,
+      with AddMethodInfo('MethodFunc1', nil, @TMyMethodsClass.MethodFunc1,
         GetType(IInfraString)) do
       begin
         AddParam('p1', GetType(IInfraString));
         AddParam('Result', GetType(IInfraString));
       end;
 
-      with AddMethodInfo('MethodFunc2', nil, @TMockMethod.MethodFunc2,
+      with AddMethodInfo('MethodFunc2', nil, @TMyMethodsClass.MethodFunc2,
         GetType(IInfraInteger)) do
       begin
         AddParam('p1', GetType(IInfraString));
@@ -292,7 +292,7 @@ begin
         AddParam('Result', GetType(IInfraInteger));
       end;
 
-      with AddMethodInfo('MethodFunc3', nil, @TMockMethod.MethodFunc3,
+      with AddMethodInfo('MethodFunc3', nil, @TMyMethodsClass.MethodFunc3,
         GetType(IInfraDateTime)) do
       begin
         AddParam('p1', GetType(IInfraString));
@@ -301,7 +301,7 @@ begin
         AddParam('Result', GetType(IInfraDateTime));
       end;
 
-      with AddMethodInfo('MethodFunc4', nil, @TMockMethod.MethodFunc4,
+      with AddMethodInfo('MethodFunc4', nil, @TMyMethodsClass.MethodFunc4,
         GetType(IInfraBoolean)) do
       begin
         AddParam('p1', GetType(IInfraString));
@@ -311,7 +311,7 @@ begin
         AddParam('Result', GetType(IInfraBoolean));
       end;
 
-      with AddMethodInfo('MethodFunc5', nil, @TMockMethod.MethodFunc5,
+      with AddMethodInfo('MethodFunc5', nil, @TMyMethodsClass.MethodFunc5,
         GetType(IInfraDouble)) do
       begin
         AddParam('p1', GetType(IInfraString));
@@ -452,47 +452,47 @@ begin
   FSchoolNumber := Value;
 end;
 
-{ TMockMethod }
+{ TMyMethodsClass }
 
-constructor TMockMethod.Create;
+constructor TMyMethodsClass.Create;
 begin
   inherited Create;
 end;
 
-constructor TMockMethod.Constructor0;
+constructor TMyMethodsClass.Constructor0;
 begin
   FMessage := TInfraString.NewFrom('C0');
 end;
 
-constructor TMockMethod.Constructor1(p1: IInfraString);
+constructor TMyMethodsClass.Constructor1(p1: IInfraString);
 begin
   FMessage := TInfraString.NewFrom(Format('C1 - %p', [p1.AsString]));
 end;
 
-function TMockMethod.GetMessage: IInfraString;
+function TMyMethodsClass.GetMessage: IInfraString;
 begin
   Result := FMessage;
 end;
 
-procedure TMockMethod.InfraInitInstance;
+procedure TMyMethodsClass.InfraInitInstance;
 begin
   inherited;
   FMessage := AddProperty('Message') as IInfraString;
 end;
 
-function TMockMethod.MethodFunc0: IInfraString;
+function TMyMethodsClass.MethodFunc0: IInfraString;
 begin
   Result := TInfraString.NewFrom('TestWithoutParams');
   FMessage.AsString := Format(cMessageFunc0, [Result.AsString]);
 end;
 
-function TMockMethod.MethodFunc1(const p1: IInfraString): IInfraString;
+function TMyMethodsClass.MethodFunc1(const p1: IInfraString): IInfraString;
 begin
   Result := TInfraString.NewFrom('Test1Params');
   FMessage.AsString := Format(cMessageFunc1, [p1.AsString, Result.AsString]);
 end;
 
-function TMockMethod.MethodFunc2(const p1: IInfraString;
+function TMyMethodsClass.MethodFunc2(const p1: IInfraString;
   const p2: IInfraInteger): IInfraInteger;
 begin
   Result := TInfraInteger.NewFrom(55);
@@ -500,7 +500,7 @@ begin
     [p1.AsString, p2.AsInteger, Result.AsInteger]);
 end;
 
-function TMockMethod.MethodFunc3(const p1: IInfraString;
+function TMyMethodsClass.MethodFunc3(const p1: IInfraString;
   const p2: IInfraInteger; const p3: IInfraDateTime): IInfraDateTime;
 begin
   Result := TInfraDateTime.NewFrom(StrToDateTime('30/3/2007 15:20:12'));
@@ -509,7 +509,7 @@ begin
     DateTimeToStr(p3.AsDateTime), DateTimeToStr(Result.AsDateTime)]);
 end;
 
-function TMockMethod.MethodFunc4(const p1: IInfraString;
+function TMyMethodsClass.MethodFunc4(const p1: IInfraString;
   const p2: IInfraInteger; const p3: IInfraDateTime;
   const p4: IInfraBoolean): IInfraBoolean;
 begin
@@ -521,7 +521,7 @@ begin
     SysUtils.BoolToStr(Result.AsBoolean, True)]);
 end;
 
-function TMockMethod.MethodFunc5(const p1: IInfraString;
+function TMyMethodsClass.MethodFunc5(const p1: IInfraString;
   const p2: IInfraInteger; const p3: IInfraDateTime;
   const p4: IInfraBoolean; const p5: IInfraDouble): IInfraDouble;
 begin
@@ -531,25 +531,25 @@ begin
     SysUtils.BoolToStr(p4.AsBoolean, True), p5.AsDouble, Result.AsDouble]);
 end;
 
-procedure TMockMethod.MethodProc0;
+procedure TMyMethodsClass.MethodProc0;
 begin
   FMessage := TInfraString.NewFrom(cMessageProc0);
 end;
 
-procedure TMockMethod.MethodProc1(const p1: IInfraString);
+procedure TMyMethodsClass.MethodProc1(const p1: IInfraString);
 begin
   FMessage := TInfraString.NewFrom(
     Format(cMessageProc1, [p1.AsString]) );
 end;
 
-procedure TMockMethod.MethodProc2(const p1: IInfraString;
+procedure TMyMethodsClass.MethodProc2(const p1: IInfraString;
   const p2: IInfraInteger);
 begin
   FMessage := TInfraString.NewFrom(
     Format(cMessageProc2, [p1.AsString, p2.AsInteger]) );
 end;
 
-procedure TMockMethod.MethodProc3(const p1: IInfraString;
+procedure TMyMethodsClass.MethodProc3(const p1: IInfraString;
   const p2: IInfraInteger; const p3: IInfraDateTime);
 begin
   FMessage := TInfraString.NewFrom(
@@ -557,7 +557,7 @@ begin
       DateTimeToStr(p3.AsDateTime)]));
 end;
 
-procedure TMockMethod.MethodProc4(const p1: IInfraString;
+procedure TMyMethodsClass.MethodProc4(const p1: IInfraString;
   const p2: IInfraInteger; const p3: IInfraDateTime;
   const p4: IInfraBoolean);
 begin
@@ -566,7 +566,7 @@ begin
       DateTimeToStr(p3.AsDateTime), BoolToStr(p4.AsBoolean)]));
 end;
 
-procedure TMockMethod.MethodProc5(const p1: IInfraString;
+procedure TMyMethodsClass.MethodProc5(const p1: IInfraString;
   const p2: IInfraInteger; const p3: IInfraDateTime;
   const p4: IInfraBoolean; const p5: IInfraDouble);
 begin
@@ -576,3 +576,4 @@ begin
 end;
 
 end.
+

@@ -7,6 +7,7 @@ uses
   DB, SqlExpr;
 
 type
+  // Classe concreta de Conexão utilizando DBExpress (DBX)
   TDBXConnection = class(TElement, IConnection, IDBXConnection)
   private
     FConnection: TSQLConnection;
@@ -32,6 +33,7 @@ type
     function GetConverter(pFieldType: TFieldType): ITypeConverter;
   public
     constructor Create(pConnection: TSQLConnection); reintroduce;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -46,6 +48,11 @@ begin
   FConnection.Close;
 end;
 
+{
+  Cria um componente de conexão DBExpress e define alguns valores padrões.
+  -- Por enquanto utilizando interbase, mas isso deve ser alterado
+  futuramente --
+}
 constructor TDBXConnection.Create;
 begin
   inherited Create;
@@ -56,7 +63,7 @@ begin
     DriverName := 'Interbase';
     GetDriverFunc := 'getSQLDriverINTERBASE';
     LibraryName := 'dbexpint.dll';
-    VendorLib := 'gds32.dll';
+    VendorLib := 'fbclient.dll';
     with PersistenceService.Configuration do
     begin
       Params.Add('ServerCharSet=WIN1252');
@@ -82,17 +89,20 @@ begin
   inherited;
 end;
 
+// Cria um ResulSet e abre a instrução passada como parâmetro.
 function TDBXConnection.ExecuteQuery(const pSQL: String): IResultSet;
 begin
   Result := TDBXResultSet.Create(FConnection) as IResultSet;
   Result.Open(pSQL);
 end;
 
+// Executa a instrução passada como parâmetro diretamente no objeto connection.
 function TDBXConnection.ExecuteUpdate(const pSQL: String): Integer;
 begin
   Result := FConnection.ExecuteDirect(pSQL);
 end;
 
+// fecha o resultset
 function TDBXConnection.GetIsClosed: Boolean;
 begin
   Result := not FConnection.Connected;
@@ -100,27 +110,38 @@ end;
 
 { TDBXResultSet }
 
+// fecha o resultset
 procedure TDBXResultSet.Close;
 begin
   FQuery.Close;
 end;
 
+// Cria um dataset e seta sua conexão.
 constructor TDBXResultSet.Create(pConnection: TSQLConnection);
 begin
   FQuery := TSQLQuery.Create(nil);
   FQuery.SQLConnection := pConnection;
 end;
 
+destructor TDBXResultSet.Destroy;
+begin
+  FQuery.Free;
+  inherited;
+end;
+
+// verifica se chegou ao final do resultset
 function TDBXResultSet.EOF: Boolean;
 begin
   Result := FQuery.Eof;
 end;
 
+// vai para o primeiro item do resultset
 procedure TDBXResultSet.First;
 begin
   FQuery.First;
 end;
 
+// Retorna um infratype com o valor do campo passado como parâmetro
 function TDBXResultSet.GetValue(const FieldName: String): IInfraType;
 var
   vVariant: IInfraVariant;
@@ -131,6 +152,7 @@ begin
   Result := GetConverter(Field.DataType).ConvertToLeft(vVariant);
 end;
 
+// Retorna o conversor de variant adequado ao tipo de campo
 function TDBXResultSet.GetConverter(pFieldType: TFieldType): ITypeConverter;
 begin
   case pFieldType of
@@ -149,11 +171,13 @@ begin
   end;
 end;
 
+// vai para o proximo item do resultset
 procedure TDBXResultSet.Next;
 begin
   FQuery.Next;
 end;
 
+// Define e abre o dataset com a instrução SQL passada como parâmetro.
 procedure TDBXResultSet.Open(const pSQL: string);
 begin
   FQuery.SQL.Text := pSQL;

@@ -10,7 +10,7 @@ F=0
 G=1
 H=1
 I=1
-J=1
+J=0
 K=0
 L=1
 M=0
@@ -23,7 +23,7 @@ S=0
 T=0
 U=0
 V=1
-W=1
+W=0
 X=1
 Y=1
 Z=1
@@ -94,7 +94,7 @@ OutputDir=
 UnitOutputDir=..\bin
 PackageDLLOutputDir=..\bin
 PackageDCPOutputDir=..\bin
-SearchPath=$(DELPHI)\Lib\Debug;..\bin
+SearchPath=..\bin
 Packages=
 Conditionals=
 DebugSourceDirs=..\bin
@@ -134,29 +134,45 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
+[Excluded Packages]
+C:\Temp\dvExpressLayout\Bin\dclcxEditorsVCLD7.bpl=ExpressEditors Library 5 (VCL Edition) by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dclcxLibraryVCLD7.bpl=Express Cross Platform Library (VCL Edition) by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dxGDIPlusD7.bpl=ExpressGDI+ Library by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dxThemeD7.bpl=Express XP Theme Manager by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dclcxExtEditorsVCLD7.bpl=ExpressExtendedEditors Library 5 (VCL Edition) by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dcldxLayoutControlD7.bpl=ExpressLayout Control by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dxLayoutControlD7.bpl=ExpressLayout Control by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dxLayoutControlcxEditAdaptersD7.bpl=ExpressLayoutControl Adapters for ExpressEditors Library 5 by Developer Express Inc.
+C:\Temp\dvExpressLayout\Bin\dxComnD7.bpl=ExpressCommonLibrary by Developer Express Inc.
 [HistoryLists\hlDebugSourcePath]
 Count=2
 Item0=..\bin
-Item1=c:\Infra\bin
+Item1=bin
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=5
-Item0=$(DELPHI)\Lib\Debug;..\bin
+Count=7
+Item0=..\bin;..\..\bin
 Item1=..\bin
-Item2=$(DELPHI)\Lib\Debug
-Item3=$(DELPHI)\Lib\Debug;c:\Infra\bin
-Item4=c:\Infra\bin
+Item2=$(DELPHI)\Lib\Debug;..\bin;..\..\bin
+Item3=bin
+Item4=$(DELPHI)\Lib\Debug;bin
+Item5=$(DELPHI)\Lib\Debug;..\bin
+Item6=c:\infra\bin;bin
 [HistoryLists\hlUnitOutputDirectory]
-Count=1
+Count=2
 Item0=..\bin
+Item1=bin
 [HistoryLists\hlOutputDirectorry]
-Count=1
+Count=2
 Item0=..\bin
+Item1=bin
 [HistoryLists\hlBPLOutput]
-Count=1
+Count=2
 Item0=..\bin
+Item1=bin
 [HistoryLists\hlDCPOutput]
-Count=1
+Count=2
 Item0=..\bin
+Item1=bin

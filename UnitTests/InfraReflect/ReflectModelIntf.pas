@@ -50,7 +50,7 @@ type
     property Number: IInfraInteger read GetNumber write SetNumber;
   end;
 
-  IMockMethod = Interface
+  IMyMethodsClass = Interface
     ['{32E1DD21-2537-4A27-A3DE-481E85A8E246}']
     function GetMessage: IInfraString;
     function MethodFunc0: IInfraString;
