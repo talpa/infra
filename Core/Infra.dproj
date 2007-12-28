@@ -72,6 +72,20 @@
     <DelphiCompile Include="Infra.dpk">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
+    <DCCReference Include="Aspect\InfraAspect.pas" />
+    <DCCReference Include="Aspect\InfraAspectEval.pas" />
+    <DCCReference Include="Aspect\InfraAspectIntf.pas" />
+    <DCCReference Include="Aspect\InfraAspectUtil.pas" />
+    <DCCReference Include="Aspect\List_InterceptMethod.pas" />
+    <DCCReference Include="Aspect\List_JointPoint.pas" />
+    <DCCReference Include="C:\Documents and Settings\Diogo\dbexpress.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Diogo\dbrtl.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Diogo\designide.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Diogo\rtl.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Diogo\vcl.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Diogo\vclactnband.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Diogo\vclx.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Diogo\xmlrtl.dcp" />
     <DCCReference Include="Common\ApplicationContext.PAS" />
     <DCCReference Include="Common\InfraBase.pas" />
     <DCCReference Include="Common\InfraBasicList.pas" />
@@ -84,6 +98,7 @@
     <DCCReference Include="Common\InfraReference.pas" />
     <DCCReference Include="Common\InfraSingleton.pas" />
     <DCCReference Include="Common\InfraUtilIntf.pas" />
+    <DCCReference Include="Common\InfraVMTUtil.pas" />
     <DCCReference Include="Common\List_EventServiceItem.pas" />
     <DCCReference Include="Common\List_InjectedItem.pas" />
     <DCCReference Include="Common\List_Publisher.pas" />
@@ -91,10 +106,6 @@
     <DCCReference Include="Common\List_Subscription.pas" />
     <DCCReference Include="GUIBuilder\CustomizeScreen.pas" />
     <DCCReference Include="GUIBuilder\CustomizeScreenControl.pas" />
-    <DCCReference Include="GUIBuilder\dbexpress.dcp" />
-    <DCCReference Include="GUIBuilder\dbrtl.dcp" />
-    <DCCReference Include="GUIBuilder\DbxCommonDriver.dcp" />
-    <DCCReference Include="GUIBuilder\designide.dcp" />
     <DCCReference Include="GUIBuilder\GUIAnnotation.pas" />
     <DCCReference Include="GUIBuilder\GUIAnnotationIntf.pas" />
     <DCCReference Include="GUIBuilder\GUIAnnotationLoaderIntf.pas" />
@@ -107,10 +118,6 @@
     <DCCReference Include="GUIBuilder\List_GUIMapping.pas" />
     <DCCReference Include="GUIBuilder\List_Screen.pas" />
     <DCCReference Include="GUIBuilder\List_ScreenItem.pas" />
-    <DCCReference Include="GUIBuilder\rtl.dcp" />
-    <DCCReference Include="GUIBuilder\vcl.dcp" />
-    <DCCReference Include="GUIBuilder\vclx.dcp" />
-    <DCCReference Include="GUIBuilder\xmlrtl.dcp" />
     <DCCReference Include="LayoutManager\LayoutManager.dcr" />
     <DCCReference Include="LayoutManager\LayoutManager.dcr" />
     <DCCReference Include="LayoutManager\LayoutManager.pas" />

@@ -17,10 +17,11 @@ uses
   Model in 'Model.pas',
   ModelIntf in 'ModelIntf.pas',
   StdCtrls,
-  cxCalendar;
+  cxCalendar, cxTextEdit;
 
 var
   lPerson: IPerson;
+  lPerson2: IPerson;
   lPersonInfo: IClassInfo;
   lGUIPersonSimple: IScreen;
   lGUIPerson: IScreen;
@@ -34,11 +35,8 @@ begin
 
 
 
-
   //Data -----------------------------------------------------------------------
   lPerson := TPerson.Create;
-  lPersonInfo := lPerson.TypeInfo;
-
   lPerson.ID.AsInteger := 1;
   lPerson.Name.AsString := 'Diogo Augusto Pereira';
   lPerson.Email.AsString := 'diogoap82@gmail.com';
@@ -50,87 +48,99 @@ begin
   lPerson.Birthday.AsDateTime := 30280;
   lPerson.Active.AsBoolean := True;
   lPerson.Amount.AsDouble := 10000;
-  lPerson.Details.AsString := 'ded ekjdhkjdejdhkjedhejkd hekjdhekjd eh ' + #13 +
-    'dkjedh kjedhkje dhke dkje dhkje ddededej kljelkdj ekldj edde yt e ' + #13 +
-    'yty ttdkj ekljdeklj dkelj dklejdekldjekld jekldjekldje ddekljdeklj ekljdj';
-
+  lPerson.Details.AsString := 'Observações linha 1' + #13 +
+    'Observações linha 2' + #13 + 'Observações linha 3';
 
 
 
   //Simples --------------------------------------------------------------------
-  lGUIPersonSimple := (lPersonInfo.Annotate(IScreens) as IScreens).AddScreen('Cadastro de pessoas - Simples');
-  lGUIPersonSimple.Title.AsString := 'Cadastro de pessoas - Simples';
+  lPersonInfo := TypeService.GetType(IPerson);
+  lGUIPersonSimple := (lPersonInfo.Annotate(IScreens) as IScreens).
+    AddScreen('PersonSimple');
+  lGUIPersonSimple.Title.AsString := 'Cadastro de pessoas - Dados básicos';
   lGUIPersonSimple.CaptionPosition := lpAbove;
-  lGUIPersonSimple.HideProperties.Add('Email');
-  lGUIPersonSimple.HideProperties.Add('State');
-  lGUIPersonSimple.HideProperties.Add('Country');
-  lGUIPersonSimple.HideProperties.Add('Birthday');
-  lGUIPersonSimple.HideProperties.Add('Amount');
-  lGUIPersonSimple.HideProperties.Add('Details');
+  lGUIPersonSimple.ShowProperties.Add('ID');
+  lGUIPersonSimple.ShowProperties.Add('Name');
+  lGUIPersonSimple.ShowProperties.Add('Email');
+  lGUIPersonSimple.ShowProperties.Add('Birthday');
 
   lItem := lGUIPersonSimple.AddControl('ID');
+  lItem.Caption.AsString := 'Código';
   lItem.Width.AsInteger := 50;
 
   lItem := lGUIPersonSimple.AddControl('Name');
   lItem.Caption.AsString := 'Nome';
-  lItem.SetSize(TInfraInteger.NewFrom(30), TInfraInteger.NewFrom(300));
+  lItem.ItemWidthMeasureType := mtPercent;
+  lItem.ItemWidth.AsInteger := 100;
 
-  lItem := lGUIPersonSimple.AddControl('Address');
-  lItem.Caption.AsString := 'Endereço';
-  lItem.Width.AsInteger := 300;
+  lItem := lGUIPersonSimple.AddControl('Email');
+  lItem.ItemWidthMeasureType := mtPercent;
+  lItem.ItemWidth.AsInteger := 100;
 
+  lItem := lGUIPersonSimple.AddControl('Birthday');
+  lItem.Caption.AsString := 'Data de nascimento';
+  lItem.ControlClass := TcxDateEdit;
 
 
 
   //Completa -------------------------------------------------------------------
-  lGUIPerson := (lPersonInfo.Annotate(IScreens) as IScreens).AddScreen('Cadastro de pessoas');
+  lPersonInfo := TypeService.GetType(IPerson);
+  lGUIPerson := (lPersonInfo.Annotate(IScreens) as IScreens).AddScreen('Person');
   lGUIPerson.Title.AsString := 'Cadastro de pessoas';
-  lGUIPerson.CaptionPosition := lpLeft;
-  lGUIPerson.ItemLayout := laHorizontal;
 
   lItem := lGUIPerson.AddControl('ID');
+  lItem.Caption.AsString := 'Código';
   lItem.Width.AsInteger := 50;
 
   lItem := lGUIPerson.AddControl('Name');
   lItem.Caption.AsString := 'Nome';
-  lItem.SetSize(TInfraInteger.NewFrom(30), TInfraInteger.NewFrom(450));
+  lItem.ItemWidthMeasureType := mtPercent;
+  lItem.ItemWidth.AsInteger := 100;
 
   lItem := lGUIPerson.AddControl('Email');
-  lItem.ItemWidth.AsInteger := 500;
+  lItem.ItemWidthMeasureType := mtPercent;
+  lItem.ItemWidth.AsInteger := 100;
 
   lItem := lGUIPerson.AddControl('Address');
   lItem.Caption.AsString := 'Endereço';
-  lItem.Width.AsInteger := 500;
-  lItem.PutBefore := 'ID';
+  lItem.ItemWidthMeasureType := mtPercent;
+  lItem.ItemWidth.AsInteger := 100;
 
-  lItem := lGUIPerson.AddControl('City.Name');
-  lItem.Caption.AsString := 'Cidade - Nome';
-  lItem.Width.AsInteger := 300;
-  lItem.ControlClass := TComboBox;
+  lItem := lGUIPerson.AddControl('State');
+  lItem.Caption.AsString := 'Estado';
+  lItem.Width.AsInteger := 50;
 
-  lItem := lGUIPerson.AddControl('City.Population');
-  lItem.Caption.AsString := 'Cidade - População';
-  lItem.Width.AsInteger := 100;
-  lItem.PutBefore := 'Email';
+  lGUIPerson.AddControl('Country').Caption.AsString := 'País';
+  lGUIPerson.AddControl('Amount').Caption.AsString := 'Saldo';
+
+  lItem := lGUIPerson.AddControl('Active');
+  lItem.Caption.AsString := 'Ativo';
+  lItem.Width.AsInteger := 65;
 
   lItem := lGUIPerson.AddControl('Birthday');
   lItem.Caption.AsString := 'Data de nascimento';
   lItem.ControlClass := TcxDateEdit;
-  lItem.CaptionPosition := lpLeft;
-  lItem.PutBefore := 'Amount';
 
   lItem := lGUIPerson.AddControl('Details');
   lItem.Caption.AsString := 'Observações';
   lItem.ControlClass := TMemo;
-  lItem.ItemWidth.AsInteger := 500;
   lItem.ItemHeightMeasureType := mtPercent;
   lItem.ItemHeight.AsInteger := 35;
-  lItem.PutAfter := 'City.Name';
+  lItem.ItemWidthMeasureType := mtPercent;
+  lItem.ItemWidth.AsInteger := 100;
+
+  lItem := lGUIPerson.AddControl('City.Name');
+  lItem.Caption.AsString := 'Cidade - Nome';
+  lItem.Width.AsInteger := 200;
+  lItem.ControlClass := TComboBox;
+  lItem.PutAfter := 'Address';
+
 
 
 
 
   //Build ----------------------------------------------------------------------
+  //GUIService.RegisterGUIMapping(TcxTextEdit, IInfraString, 'Text');
   //GUIService.Build(lPerson, lGUIPersonSimple);
   GUIService.Build(lPerson, lGUIPerson);
   //GUIService.Build(lPerson);

@@ -112,11 +112,8 @@ begin
 
   FExecute := True;
 
-  if not DirectoryExists(ExtractFileDir(Application.ExeName) + '\Screens') then
-    CreateDir(ExtractFileDir(Application.ExeName) + '\Screens');
-
   lXMLLoader := TGUIAnnotationLoaderXML.Create;
-  lXMLLoader.FileName := ExtractFileDir(Application.ExeName) + '\Screens\' + GUI.Title + '.xml';
+  lXMLLoader.FileName := GUI.GetConfigurationFileName + '.xml';
   lXMLLoader.GUI := FGUIOriginal;
   lXMLLoader.Save;
 

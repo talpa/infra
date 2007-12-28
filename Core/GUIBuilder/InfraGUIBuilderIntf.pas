@@ -16,16 +16,20 @@ type
     ['{5E2DBC11-126E-4B75-9C2F-BAC58CCD88EA}']
     function GetBusinessObject: IInfraObject;
     function GetGUIControlList: IGUIControlList;
+    function GetName: string;
     function GetScreen: IScreen;
     function GetTitle: string;
     procedure SetBusinessObject(const Value: IInfraObject);
     procedure SetGUIControlList(const Value: IGUIControlList);
+    procedure SetName(const Value: string);
     procedure SetScreen(const Value: IScreen);
     procedure SetTitle(const Value: string);
     function Clone: IGUI;
     function FindGUIControl(pPropertyName : string): IGUIControl;
+    function GetConfigurationFileName: string;
     property BusinessObject: IInfraObject read GetBusinessObject write SetBusinessObject;
     property GUIControlList: IGUIControlList read GetGUIControlList write SetGUIControlList;
+    property Name: string read GetName write SetName;
     property Screen: IScreen read GetScreen write SetScreen;
     property Title: string read GetTitle write SetTitle;
   end;

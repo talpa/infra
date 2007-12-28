@@ -163,16 +163,12 @@ begin
   CreateLayoutManager;
 
   //Load XML
-  if not DirectoryExists(ExtractFileDir(Application.ExeName) + '\Screens') then
-    CreateDir(ExtractFileDir(Application.ExeName) + '\Screens');
-
   lXMLLoader := TGUIAnnotationLoaderXML.Create;
-  lXMLLoader.FileName := ExtractFileDir(Application.ExeName) + '\Screens\' + GUI.Title + '.xml';
+  lXMLLoader.FileName := GUI.GetConfigurationFileName + '.xml';
   lXMLLoader.GUI := GUI;
   lXMLLoader.Load;
 
-
-  //Caption := GUI.Title;
+  Caption := GUI.BusinessObject.TypeInfo.Name;
 
   It := GUI.GUIControlList.NewIterator;
 
@@ -455,7 +451,12 @@ begin
     Exit;
 
   if not pScreenItem.Caption.IsNull then
+  begin
     pItem.Caption := pScreenItem.Caption.AsString;
+
+    if pItem.ItemControl is TCheckBox then
+      (pItem.ItemControl as TCheckBox).Caption := pScreenItem.Caption.AsString;
+  end;
 
   if pScreenItem.CaptionPositionChanged then
     pItem.CaptionOptions.Position := pScreenItem.CaptionPosition;
