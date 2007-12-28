@@ -83,22 +83,34 @@ var
 begin
   with TypeService do
   begin
-    lPerson := AddType(IPerson, 'Person', TPerson, IInfraObject, GetType(IInfraObject));
+    lPerson := AddType(IPerson, 'Person', TPerson, IInfraObject,
+      GetType(IInfraObject));
 
     with lPerson do
     begin
       AddConstructorInfo('Create', nil, @TPerson.Create);
-      AddPropertyInfo('ID', GetType(IInfraInteger), @TPerson.GetID, @TPerson.SetID);
-      AddPropertyInfo('Name', GetType(IInfraString), @TPerson.GetName, @TPerson.SetName);
-      AddPropertyInfo('Email', GetType(IInfraString), @TPerson.GetEmail, @TPerson.SetEmail);
-      AddPropertyInfo('Address', GetType(IInfraString), @TPerson.GetAddress, @TPerson.SetAddress);
-      AddPropertyInfo('City', GetType(ICity), @TPerson.GetCity, @TPerson.SetCity);
-      AddPropertyInfo('State', GetType(IInfraString), @TPerson.GetState, @TPerson.SetState);
-      AddPropertyInfo('Country', GetType(IInfraString), @TPerson.GetCountry, @TPerson.SetCountry);
-      AddPropertyInfo('Birthday', GetType(IInfraDateTime), @TPerson.GetBirthday, @TPerson.SetBirthday);
-      AddPropertyInfo('Active', GetType(IInfraBoolean), @TPerson.GetActive, @TPerson.SetActive);
-      AddPropertyInfo('Amount', GetType(IInfraDouble), @TPerson.GetAmount, @TPerson.SetAmount);
-      AddPropertyInfo('Details', GetType(IInfraString), @TPerson.GetDetails, @TPerson.SetDetails);
+      AddPropertyInfo('ID', GetType(IInfraInteger),
+        @TPerson.GetID, @TPerson.SetID);
+      AddPropertyInfo('Name', GetType(IInfraString),
+        @TPerson.GetName, @TPerson.SetName);
+      AddPropertyInfo('Email', GetType(IInfraString),
+        @TPerson.GetEmail, @TPerson.SetEmail);
+      AddPropertyInfo('Address', GetType(IInfraString),
+        @TPerson.GetAddress, @TPerson.SetAddress);
+      AddPropertyInfo('City', GetType(ICity),
+        @TPerson.GetCity, @TPerson.SetCity);
+      AddPropertyInfo('State', GetType(IInfraString),
+        @TPerson.GetState, @TPerson.SetState);
+      AddPropertyInfo('Country', GetType(IInfraString),
+        @TPerson.GetCountry, @TPerson.SetCountry);
+      AddPropertyInfo('Birthday', GetType(IInfraDateTime),
+        @TPerson.GetBirthday, @TPerson.SetBirthday);
+      AddPropertyInfo('Active', GetType(IInfraBoolean),
+        @TPerson.GetActive, @TPerson.SetActive);
+      AddPropertyInfo('Amount', GetType(IInfraDouble),
+        @TPerson.GetAmount, @TPerson.SetAmount);
+      AddPropertyInfo('Details', GetType(IInfraString),
+        @TPerson.GetDetails, @TPerson.SetDetails);
     end;
   end;
 end;
@@ -114,8 +126,10 @@ begin
     with lCity do
     begin
       AddConstructorInfo('Create', nil, @TCity.Create);
-      AddPropertyInfo('Name', GetType(IInfraString), @TCity.GetName, @TCity.SetName);
-      AddPropertyInfo('Population', GetType(IInfraInteger), @TCity.GetPopulation, @TCity.SetPopulation);
+      AddPropertyInfo('Name', GetType(IInfraString),
+        @TCity.GetName, @TCity.SetName);
+      AddPropertyInfo('Population', GetType(IInfraInteger),
+        @TCity.GetPopulation, @TCity.SetPopulation);
     end;
   end;
 end;

@@ -49,8 +49,14 @@ var
   lGUIControl: IGUIControl;
   lScreenItem: IScreenItem;
 begin
-  if not FileExists(FileName)  then
+  if not DirectoryExists(ExtractFileDir(Application.ExeName) + '\Screens') then
+    CreateDir(ExtractFileDir(Application.ExeName) + '\Screens');
+
+  if not FileExists(FileName) then
     Exit;
+
+  if not Assigned(GUI.Screen) then
+    GUI.Screen := TScreen.Create;
 
   XMLDoc:= TXMLDocument.Create(Application);
 
@@ -187,6 +193,9 @@ var
 begin
   if Length(FileName) = 0 then
     raise Exception.Create('Invalid FileName');
+
+  if not DirectoryExists(ExtractFileDir(Application.ExeName) + '\Screens') then
+    CreateDir(ExtractFileDir(Application.ExeName) + '\Screens');
 
   XMLDoc:= CreateOleObject('Microsoft.XMLDOM') as IXMLDomDocument;
 

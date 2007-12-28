@@ -14,22 +14,27 @@ type
   private
     FBusinessObject: IInfraObject;
     FGUIControlList: IGUIControlList;
+    FName: string;
     FScreen: IScreen;
     FTitle: string;
     function GetBusinessObject: IInfraObject;
     function GetGUIControlList: IGUIControlList;
+    function GetName: string;
     function GetScreen: IScreen;
     function GetTitle: string;
     procedure SetBusinessObject(const Value: IInfraObject);
     procedure SetGUIControlList(const Value: IGUIControlList);
+    procedure SetName(const Value: string);
     procedure SetScreen(const Value: IScreen);
     procedure SetTitle(const Value: string);
   public
     constructor Create; override;
     function Clone: IGUI;
     function FindGUIControl(pPropertyName : string): IGUIControl;
+    function GetConfigurationFileName: string;    
     property BusinessObject: IInfraObject read GetBusinessObject write SetBusinessObject;
     property GUIControlList: IGUIControlList read GetGUIControlList write SetGUIControlList;
+    property Name: string read GetName write SetName;    
     property Screen: IScreen read GetScreen write SetScreen;
     property Title: string read GetTitle write SetTitle;
   end;
@@ -120,7 +125,7 @@ type
 implementation
 
 uses
-  List_GUIMapping;
+  List_GUIMapping, GUIAnnotation;
 
 { TGUI }
 
@@ -130,7 +135,12 @@ begin
 
   Result.BusinessObject := BusinessObject;
   Result.GUIControlList := GUIControlList.Clone;
-  Result.Screen := Screen.Clone; 
+
+  if Assigned(Screen) then  
+    Result.Screen := Screen.Clone
+  else
+    Result.Screen := TScreen.Create;
+
   Result.Title := Title;
 end;
 
@@ -166,9 +176,26 @@ begin
   Result := FBusinessObject;
 end;
 
+function TGUI.GetConfigurationFileName: string;
+begin
+  if Assigned(BusinessObject) then
+  begin
+    Result := ExtractFileDir(Application.ExeName) + '\Screens\' +
+      GUIDToString(BusinessObject.TypeInfo.TypeID);
+
+    if Assigned(Screen) and (Length(Screen.Name) > 0) then
+      Result := Result + '_' + Screen.Name;
+  end;
+end;
+
 function TGUI.GetGUIControlList: IGUIControlList;
 begin
   Result := FGUIControlList;
+end;
+
+function TGUI.GetName: string;
+begin
+  Result := FName;
 end;
 
 function TGUI.GetScreen: IScreen;
@@ -189,6 +216,11 @@ end;
 procedure TGUI.SetGUIControlList(const Value: IGUIControlList);
 begin
   FGUIControlList := Value;
+end;
+
+procedure TGUI.SetName(const Value: string);
+begin
+  FName := Value;
 end;
 
 procedure TGUI.SetScreen(const Value: IScreen);
@@ -468,6 +500,7 @@ var
 begin
   Result := TGUI.Create;
   Result.BusinessObject := pObject;
+  Result.Name := pObject.TypeInfo.Name;
   Result.Title := pObject.TypeInfo.Name;
   Result.Screen := pScreen;
 
@@ -513,6 +546,8 @@ begin
   //Get additional properties which were added in screen
   if Assigned(pScreen) then
   begin
+    Result.Name := pScreen.Name;
+
     ItScreenItem := pScreen.Items.NewIterator;
 
     while not ItScreenItem.IsDone do
@@ -550,10 +585,17 @@ end;
 
 procedure TInfraGUIService.RegisterGUIMapping(pControlClass: TControlClass;
   pTypeInfo: TGUID; pControlProperty: string);
+var
+  lGUIMapping: IGUIMapping;
 begin
-  if Assigned(GetGUIMapping(pTypeInfo)) then
-    raise Exception.Create('GUI mapping already registered for type: ' +
-      GUIDToString(pTypeInfo))
+  lGUIMapping := GetGUIMapping(pTypeInfo);
+
+  if Assigned(lGUIMapping) then
+  begin
+    lGUIMapping.ControlClass := pControlClass;
+    lGUIMapping.TypeInfo := pTypeInfo;
+    lGUIMapping.ControlProperty := pControlProperty;
+  end
   else
     GUIMappings.Add(TGUIMapping.Create(pControlClass, pTypeInfo, pControlProperty));
 end;
