@@ -17,6 +17,7 @@ type
     function GetCount: Integer;
     function GetItem(Index: integer): IInjectedItem;
     function IndexByGUID(const Item: TGUID): Integer;
+    function NewAnnotationIterator: IAnnotationsIterator;
     procedure Clear;
   public
     property Count: Integer read GetCount;
@@ -96,6 +97,11 @@ end;
 procedure TInjectedList.Clear;
 begin
   FItems.Clear;
+end;
+
+function TInjectedList.NewAnnotationIterator: IAnnotationsIterator;
+begin
+  Result := TAnnotationsIterator.Create(Self);
 end;
 
 { TAnnotationsIterator }

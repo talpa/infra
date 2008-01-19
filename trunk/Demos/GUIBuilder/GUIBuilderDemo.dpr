@@ -1,7 +1,9 @@
 program GUIBuilderDemo;
 
+{$I Infra.Inc}
+
 uses
-  FastMM4,
+  {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}
   ApplicationContext,
   Forms,
   SysUtils,
@@ -16,8 +18,7 @@ uses
   ExtCtrls,
   Model in 'Model.pas',
   ModelIntf in 'ModelIntf.pas',
-  StdCtrls,
-  cxCalendar, cxTextEdit;
+  StdCtrls, ComCtrls;
 
 var
   lPerson: IPerson;

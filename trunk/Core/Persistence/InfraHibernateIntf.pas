@@ -6,6 +6,8 @@ uses
   Classes, InfraCommonIntf, InfraValueTypeIntf;
 
 type
+  // Tipo de heranca
+  TInheritanceType = (itSINGLE_TABLE, itJOINED, itTABLE_PER_CLASS);
   // Nivel de isolamento de uma transação
   TTransactionIsolation = (tiNone, tiReadCommit, tiReadUnCommitted,
     tiReadCommitted, tiRepeatableRead, Serializable);
@@ -32,6 +34,21 @@ type
     function GetSessionFactory: ISessionFactory;
     property Configuration: IConfiguration read GetConfiguration;
     property SessionFactory: ISessionFactory read GetSessionFactory;
+  end;
+
+  { Responsável por retornar informações do mapeamento de acordo
+    com o que foi anotado no ClassInfo, em suas propriedades ou métodos.
+    Caso nao tenha havido determinada anotação o HibPersistentClass já
+    retorna algum valor padrão }
+  IHibPersistentClass = interface(IMemoryManagedObject)
+    ['{45E8AD80-7543-4A99-A19F-71FFC53D61DF}']
+    function GetEntityName: string;
+    function GetOIDColumnName: string;
+    // *** function GetEntityPersister: IEntityPersister;
+    function GetColumnName(const pPropertyInfo: IPropertyInfo): string;
+    function GetEntityTypeInfo: IClassInfo;
+    procedure SetEntityTypeInfo(const Value: IClassInfo);
+    property EntityTypeInfo: IClassInfo read GetEntityTypeInfo write SetEntityTypeInfo;
   end;
 
   {

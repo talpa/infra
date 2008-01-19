@@ -1,7 +1,3 @@
-// rever typeinfo
-// Remover TInfraMethod. nao será mais necessário, nao tiro agora por que o
-// command do mvp ainda usa ele.
-
 unit InfraValueType;
 
 interface
@@ -274,18 +270,6 @@ type
     procedure InfraInitInstance; override;
   end;
 
-  {! Classe ValueType para representação dos métodos do ValueType InfraObject }
-  TInfraMethod = class(TInfraType, IInfraMethod)
-  private
-    procedure IInfraMethod.Execute = InternalExecute;
-  protected
-    FResult: IInfraType;
-    function GetResult: IInfraType;
-    procedure InternalExecute(const Parameters: IInfraList); virtual;
-    procedure Execute(const Parameters: IInfraList = nil); virtual;
-    property Result: IInfraType read GetResult;
-  end;
-
   {! Classe ValueType para criação enumeration }
   TInfraEnumeration = class(TInfraType, IInfraEnumeration)
   private
@@ -472,7 +456,7 @@ end;
 
 procedure TInfraString.SetAsString(const Value: string);
 begin
-  if (Value <> FValue) or (IsNull) then
+  if (Value <> FValue) or IsNull then
   begin
     FValue := Value;
     Changed;
@@ -513,7 +497,7 @@ end;
 
 procedure TInfraDouble.SetAsDouble(const Value: Double);
 begin
-  if (Value <> FValue) or (IsNull) then
+  if (Value <> FValue) or IsNull then
   begin
     FValue := Value;
     Changed;
@@ -556,7 +540,7 @@ end;
 
 procedure TInfraVariant.SetAsVariant(const Value: Variant);
 begin
-  if (Value <> FValue) or (IsNull) then
+  if (Value <> FValue) or IsNull then
   begin
     FValue := Value;
     Changed;
@@ -598,7 +582,7 @@ end;
 
 procedure TInfraInteger.SetAsInteger(const Value: Integer);
 begin
-  if (Value <> FValue) or (IsNull)  then
+  if (Value <> FValue) or IsNull then
   begin
     FValue := Value;
     Changed;
@@ -629,7 +613,7 @@ end;
 
 procedure TInfraBoolean.SetAsBoolean(Value: boolean);
 begin
-  if (Value <> FValue) or (IsNull) then
+  if (Value <> FValue) or IsNull then
   begin
     FValue := Value;
     Changed;
@@ -645,7 +629,7 @@ end;
 
 procedure TInfraDateTime.SetAsDateTime(Value: TDateTime);
 begin
-  if (Value <> FValue) or (IsNull) then
+  if (Value <> FValue) or IsNull then
   begin
     FValue := Value;
     Changed;
@@ -659,7 +643,7 @@ end;
 
 procedure TInfraDateTime.SetAsDate(Value: TDateTime);
 begin
-  if (Value <> FValue) or (IsNull) then
+  if (Value <> FValue) or IsNull then
   begin
     FValue := Value;
     Changed;
@@ -673,7 +657,7 @@ end;
 
 procedure TInfraDateTime.SetAsTime(Value: TDateTime);
 begin
-  if (Value <> FValue) or (IsNull)  then
+  if (Value <> FValue) or IsNull then
   begin
     FValue := Value;
     Changed;
@@ -726,7 +710,7 @@ end;
 
 procedure TInfraDate.SetAsDate(Value: TDateTime);
 begin
-  if (Value <> FValue) or (IsNull) then
+  if (Value <> FValue) or IsNull then
   begin
     FValue := Value;
     Changed;
@@ -756,7 +740,7 @@ end;
 
 procedure TInfraTime.SetAsTime(Value: TDateTime);
 begin
-  if (Value <> FValue) or (IsNull) then
+  if (Value <> FValue) or IsNull then
   begin
     FValue := Value;
     Changed;
@@ -1040,23 +1024,6 @@ procedure TInfraObject.InfraInitInstance;
 begin
   inherited;
   // do nothing here, just on descendents!
-end;
-
-{ TInfraMethod }
-
-procedure TInfraMethod.Execute(const Parameters: IInfraList = nil);
-begin
-  // do nothing here, just on descendents!
-end;
-
-function TInfraMethod.GetResult: IInfraType;
-begin
-  Result := FResult;
-end;
-
-procedure TInfraMethod.InternalExecute(const Parameters: IInfraList);
-begin
-  Execute(Parameters);
 end;
 
 { TInfraEnumeration }

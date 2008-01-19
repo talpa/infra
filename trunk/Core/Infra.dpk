@@ -95,6 +95,27 @@ contains
   InfraAspectUtil in 'Aspect\InfraAspectUtil.pas',
   List_InterceptMethod in 'Aspect\List_InterceptMethod.pas',
   List_JointPoint in 'Aspect\List_JointPoint.pas',
-  InfraVMTUtil in 'Common\InfraVMTUtil.pas';
+  InfraVMTUtil in 'Common\InfraVMTUtil.pas',
+  InfraCommand in 'MVP\InfraCommand.pas',
+  InfraInteractor in 'MVP\InfraInteractor.pas',
+  InfraModel in 'MVP\InfraModel.pas',
+  InfraMVPIntf in 'MVP\InfraMVPIntf.pas',
+  InfraMVPRegister in 'MVP\InfraMVPRegister.pas',
+  InfraPresenter in 'MVP\InfraPresenter.pas',
+  InfraRenderer in 'MVP\InfraRenderer.pas',
+  InfraSelection in 'MVP\InfraSelection.pas',
+  InfraView in 'MVP\InfraView.pas',
+  List_MVPView in 'MVP\List_MVPView.pas',
+  List_Presenter in 'MVP\List_Presenter.pas',
+  List_View in 'MVP\List_View.pas',
+  InfraFriendClasses in 'MVP\VCL\InfraFriendClasses.pas',
+  InfraMVPVCLIntf in 'MVP\VCL\InfraMVPVCLIntf.pas',
+  InfraVCLCommand in 'MVP\VCL\InfraVCLCommand.pas',
+  InfraVCLEvents in 'MVP\VCL\InfraVCLEvents.pas',
+  InfraVCLInteractor in 'MVP\VCL\InfraVCLInteractor.pas',
+  InfraVCLPresenter in 'MVP\VCL\InfraVCLPresenter.pas',
+  InfraVCLRenderer in 'MVP\VCL\InfraVCLRenderer.pas',
+  InfraVCLView in 'MVP\VCL\InfraVCLView.pas',
+  List_VCLMenuItem in 'MVP\VCL\List_VCLMenuItem.pas';
 
 end.

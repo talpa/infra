@@ -25,9 +25,6 @@ begin
     AddType(IInfraInteger, 'InfraInteger', TInfraInteger, IInfraType);
     AddType(IInfraList, 'InfraList', TInfraList, IInfraType);
     AddType(IInfraMap, 'InfraMap', TInfraMap, IInfraType);
-    AddType(IInfraMethod, 'InfraMethod', TInfraMethod, IInfraType);
-    AddType(IInfraPrimitiveMethod, 'InfraPrimitiveMethod', TInfraMethod,
-      IInfraType);
     AddType(IInfraNativeObject, 'InfraNativeObject', TInfraNativeObject,
       IInfraType);
     AddType(IInfraObject, 'InfraObject', TInfraObject, IInfraType);

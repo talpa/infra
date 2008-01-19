@@ -1,3 +1,20 @@
+Revisão 46
++ Alterada rotina de injeção, agora nao precisa fazer mas cast ao registrar servicos do infra ou qualquer outro objeto;
++ InfraAnnotation ganhou os métodos: overload de Annotate, isAnnotationPresent (IsAnnotedWith removido), GetAnnotation, GetAnnotations
++ Adicionado política de Retenção (rpClass, rpInstance) e agora podem ser criadas on Demmand;
++ InjectedList agora pode retornar um AnnotationIterator;
++ IClassInfo ganhou IsAnnotation e RetentionPolicy;
++ InfraReflection (TypeService) agora possui função AddAnnotation;
++ Criada classe THibPersistentClass responsável por conhecer o mapeamento a partir das anotações;
++ Métodos de TLoader que liam o mapeamento foram movidos para o THibPersistentClass;
++ Adiciona set TInheritanceType para saber a estratégia de herança mapeada;
++ Adicionados novos testes para InfraAnnotations;
++ Alterada forma de reflexão do InfraHibernate, para usar uma unit à parte;
+
+Revisão 45
++ Adicionada função para pegar o arquivo de configuração XML das telas;
++ Uma GUI agora possui uma propriedade Name e GetConfigurationFileName;
+
 Revisão 44
 + Adidicionado InfraAspect de volta ao core;
 + Separada a parte de tratamento da VMT para ser usada pelo Aspect e pelo Reflect;

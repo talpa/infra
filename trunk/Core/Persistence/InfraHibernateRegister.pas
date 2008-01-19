@@ -18,9 +18,9 @@ begin
   with TypeService do
   begin
     AddType(IDBXConnection, 'DBXConnection', TDBXConnection, IElement);
-    AddType(IEntity, 'Entity', TEntity, IElement);
-    AddType(IColumn, 'Column', TColumn, IElement);
-    AddType(IID, 'ID', TID, IElement);
+    AddAnnotation(IEntity, 'Entity', TEntity, IElement);
+    AddAnnotation(IColumn, 'Column', TColumn, IElement);
+    AddAnnotation(IID, 'ID', TID, IElement);
   end;
 end;
 
