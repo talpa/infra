@@ -76,7 +76,7 @@ end;
 class function TSetupModel.RegisterVersion: IClassInfo;
 begin
   with TypeService do
-    Result := AddType(IVersion, 'Version', TVersion, IElement,
+    Result := AddAnnotation(IVersion, 'Version', TVersion, IElement,
       GetType(IElement));
 end;
 

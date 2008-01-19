@@ -491,7 +491,7 @@ end;
 procedure InjectAspectService;
 begin
   (ApplicationContext as IMemoryManagedObject).Inject(
-    IInfraAspectService, TInfraAspectService.Create as IInfraAspectService);
+    IInfraAspectService, TInfraAspectService.Create);
 end;
 
 initialization

@@ -9,14 +9,16 @@ uses
   {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}
   ApplicationContext,
   TestFramework,
-  InfraHibernate
-  {$IFDEF LINUX}, QForms, QGUITestRunner
-  {$ELSE}, Forms, GUITestRunner
-  {$ENDIF},
+  InfraHibernate {$IFDEF LINUX},
+  QForms,
+  QGUITestRunner {$ELSE},
+  Forms,
+  GUITestRunner {$ENDIF},
   TextTestRunner,
   HibernateModel in 'HibernateModel.pas',
   HibernateModelIntf in 'HibernateModelIntf.pas',
-  HibernateTests in 'HibernateTests.pas';
+  HibernateTests in 'HibernateTests.pas',
+  HibernateModelReflex in 'HibernateModelReflex.pas';
 
 {$R *.RES}
 

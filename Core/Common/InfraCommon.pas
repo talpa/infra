@@ -14,15 +14,25 @@ type
     IInfraInstance)
   private
     FInjectedList: IInjectedList;
+    function CreateAndInjectAnnotation(
+      const pClassInfo: IClassInfo): IInterface;
   protected
     function GetInjectedList: IInjectedList;
     function GetInstance: TObject;
     procedure InfraInitInstance; virtual;
     function Inject(const pID: TGUID; const pItem: IInterface;
       pIsAnnotation: boolean = False): IInjectedItem;
-    function Annotate(const pID: TGUID): IInterface;
     function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
-    function IsAnnotedWith(const pID: TGUID): Boolean;
+    // Anota o elemento a partir do tipo de anotação.
+    function Annotate(const pID: TGUID): IInterface; overload;
+    // Anota o elemento a partir do tipo do metadata da anotação.
+    function Annotate(const pClassInfo: IClassInfo): IInterface; overload;
+    // Retorna verdadeiro se o tipo de anotação está presente neste elemento
+    function isAnnotationPresent(const pID: TGUID): Boolean;
+    // Retorna a anotação se a mesma foi anotada no elemento, senão null.
+    function GetAnnotation(const pID: TGUID): IInterface;
+    // Retorna um iterator para todas as anotações existentes no elemento.
+    function GetAnnotations: IAnnotationsIterator;
     property InjectedList: IInjectedList read GetInjectedList;
     {$IFDEF SEE_REFCOUNT}
     function GetRefCount: integer;
@@ -150,20 +160,44 @@ begin
   Result := FInjectedList;
 end;
 
+{
+  Qualquer objeto infra aceita interfaces injetadas (sejam anotações ou não)
+  Quando o programa verifica se o objeto atual suporta uma interface ou faz-se
+  cast com "As" o delphi chama este método.
+  Aqui primeiro verificamos se existe uma injeção da interface passada,
+  se houver, testamos ainda se ela está instanciada e a retorna.
+  Se nao está instanciada devemos verificar se é uma anotação por instancia
+  e então instanciamos a mesma e a retornamos. Caso contrário chamamos este
+  mesmo método no pai.
+}
 function TMemoryManagedObject.QueryInterface(const IID: TGUID;
   out Obj): HResult;
 var
   i: integer;
+  vClassInfo: IClassInfo;
 begin
   if not Assigned(FInjectedList) then
     Result := inherited Queryinterface(IID, Obj)
   else
   begin
     i := FInjectedList.IndexByGUID(IID);
-    if i <> -1 then
+    if (i <> -1) then
     begin
-      IInterface(Obj) := FInjectedList.Item[i].InjectedInterface;
-      Result := 0;
+      if Assigned(FInjectedList.Item[i].InjectedInterface) then
+      begin
+        IInterface(Obj) := FInjectedList.Item[i].InjectedInterface;
+        Result := 0;
+      end else
+      begin
+        vClassInfo := TypeService.GetType(IID, True);
+        if vClassInfo.IsAnnotation
+          and (vClassInfo.RetentionPolice = rpInstance) then
+        begin
+          IInterface(Obj) := CreateAndInjectAnnotation(vClassInfo);
+          Result := 0;
+        end else
+          Result := inherited Queryinterface(IID, Obj);
+      end;
     end else
       Result := inherited Queryinterface(IID, Obj);
   end;
@@ -191,30 +225,63 @@ function TMemoryManagedObject.Inject(const pID: TGUID;
   const pItem: IInterface; pIsAnnotation: boolean = False): IInjectedItem;
 var
   Index: integer;
+  vItem: IInterface;
 begin
-  Index := InjectedList.Add(pID, pItem);
+  Supports(pItem, pId, vItem);
+  Index := InjectedList.Add(pID, vItem);
   Result := FInjectedList.Item[Index];
   Result.IsAnnotation := pIsAnnotation;
 end;
 
+// Retorna a instância da anotação ou nil dependendo da política de retenção,
+// a partir da interface de metadata.
 function TMemoryManagedObject.Annotate(const pID: TGUID): IInterface;
 var
-  pAnnotationClassInfo: IClassInfo;
+  vClassInfo: IClassInfo;
 begin
-  if not Supports(Self, pID) then
-  begin
-    pAnnotationClassInfo := TypeService.GetType(pID, True);
-    if Supports(TypeService.CreateInstance(pAnnotationClassInfo),
-      pID, Result) then
-      Inject(pID, Result, True);
-  end else
-    Result := Self as IInterface;
+  vClassInfo := TypeService.GetType(pID, True);
+  Result := Annotate(vClassInfo);
 end;
 
-function TMemoryManagedObject.IsAnnotedWith(const pID: TGUID): Boolean;
+// Retorna a instância da anotação ou nil dependendo da política de retenção,
+// a partir do objeto metadata.
+function TMemoryManagedObject.Annotate(const pClassInfo: IClassInfo): IInterface;
+begin
+  if not pClassInfo.IsAnnotation then
+    Raise Exception.Create('Id: '+
+      GuidToString(pClassInfo.TypeID)+' not is an Annotation');
+  if (pClassInfo.RetentionPolice = rpClass) then
+    Result := TypeService.CreateInstance(pClassInfo) as IInterface
+  else
+    Result := nil;
+  Inject(pClassInfo.TypeID, Result, True);
+end;
+
+// Cria e injeta uma anotação, OnDemand
+function TMemoryManagedObject.CreateAndInjectAnnotation(
+  const pClassInfo: IClassInfo): IInterface;
+begin
+  if not pClassInfo.IsAnnotation then
+    Raise Exception.Create('Id: '+
+      GuidToString(pClassInfo.TypeID)+' not is an Annotation');
+  Result := TypeService.CreateInstance(pClassInfo) as IInterface;
+  Inject(pClassInfo.TypeID, Result, True);
+end;
+
+function TMemoryManagedObject.isAnnotationPresent(const pID: TGUID): Boolean;
 begin
   Result := Assigned(FInjectedList)
     and (FInjectedList.IndexByGUID(pID) <> -1);
+end;
+
+function TMemoryManagedObject.GetAnnotation(const pID: TGUID): IInterface;
+begin
+  Supports(Self, pID, Result);
+end;
+
+function TMemoryManagedObject.GetAnnotations: IAnnotationsIterator;
+begin
+  Result := FInjectedList.NewAnnotationIterator;
 end;
 
 { TElement }
@@ -274,4 +341,3 @@ finalization
   {$ENDIF}
 
 end.
-

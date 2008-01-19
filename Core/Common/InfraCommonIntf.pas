@@ -10,6 +10,8 @@ uses
   InfraConsts;
 
 type
+  TRetentionPolice = (rpNone, rpClass, rpInstance);
+
   IMemoryManagedObject = interface;
   IInfraEventService = interface;
   IInfraReferenceService = interface;
@@ -66,22 +68,24 @@ type
     function GetCount: Integer;
     function GetItem(Index: Integer): IInjectedItem;
     function IndexByGUID(const Item: TGUID): Integer;
+    function NewAnnotationIterator: IAnnotationsIterator;
     procedure Clear;
     property Count: Integer read GetCount;
     property Item[Index: Integer]: IInjectedItem read GetItem; default;
   end;
-
-  // Base Classes
 
   IMemoryManagedObject = interface(IInterface)
     ['{B70BB062-6298-4EF7-9CCB-9BFF732EC0CD}']
     {$IFDEF SEE_REFCOUNT}
     function GetRefCount: integer;
     {$ENDIF}
+    function Annotate(const pID: TGUID): IInterface; overload;
+    function Annotate(const pClassInfo: IClassInfo): IInterface; overload;
+    function isAnnotationPresent(const pID: TGUID): Boolean;
+    function GetAnnotation(const pID: TGUID): IInterface;
+    function GetAnnotations: IAnnotationsIterator;
     function Inject(const pID: TGUID; const pItem: IInterface;
       pIsAnnotation: boolean = False): IInjectedItem;
-    function Annotate(const pID: TGUID): IInterface;
-    function IsAnnotedWith(const pID: TGUID): Boolean;
     function GetInjectedList: IInjectedList;
     property InjectedList: IInjectedList read GetInjectedList;
   end;
@@ -430,7 +434,10 @@ type
     function GetPropertyInfo(const pName: String;
       ThrowException: Boolean = False): IPropertyInfo;
     function GetSuperClass: IClassInfo;
+    function GetRetentionPolice: TRetentionPolice;
     function IsSubClassOf(const Value: IClassInfo): Boolean;
+    function GetIsAnnotation: Boolean;
+    procedure SetRetentionPolice(const Value: TRetentionPolice);
     procedure SetClassFamily(const Family: TGUID);
     procedure SetTypeID(const Value: TGUID);
     procedure SetImplClass(Value: TInfraBaseObjectClass);
@@ -455,6 +462,9 @@ type
     property Name: string read GetName write SetName;
     property Owner: IClassInfo read GetOwner write SetOwner;
     property SuperClass: IClassInfo read GetSuperClass write SetSuperClass;
+    property RetentionPolice: TRetentionPolice read GetRetentionPolice
+      write SetRetentionPolice;
+    property IsAnnotation: Boolean read GetIsAnnotation;
   end;
 
   IMemberInfo = interface(IElement)
@@ -585,6 +595,10 @@ type
     ['{93190314-B32A-4C57-B28E-478C99DEE0BA}']
     function CreateInstance(ClassID: TGUID): IElement; overload;
     function CreateInstance(const ClassInfo: IClassInfo): IElement; overload;
+    function AddAnnotation(const pTypeID: TGUID;
+      const pTypeName: string; pClassImplementing: TInfraBaseObjectClass;
+      const pFamilyID: TGUID; const pSuperClassInfo: IClassInfo = nil;
+      pRetention: TRetentionPolice = rpClass): IClassInfo;
     function AddType(const pTypeID: TGUID; const pTypeName: string;
       pClassImplementing: TInfraBaseObjectClass; const pFamilyID: TGUID;
       const pSuperClassInfo: IClassInfo = nil): IClassInfo;

@@ -23,6 +23,20 @@ type
     property SessionFactory: ISessionFactory read GetSessionFactory;
   end;
 
+  THibPersistentClass = class(TMemoryManagedObject, IHibPersistentClass)
+  private
+    FEntityTypeInfo: IClassInfo;
+    function GetEntityName: string;
+    // *** function GetEntityPersister: IEntityPersister;
+    function GetOIDColumnName: string;
+    function GetColumnName(const pPropertyInfo: IPropertyInfo): string;
+    procedure CheckEntityTypeInfo;
+    function GetEntityTypeInfo: IClassInfo;
+    procedure SetEntityTypeInfo(const Value: IClassInfo);
+  public
+    property EntityTypeInfo: IClassInfo read GetEntityTypeInfo write SetEntityTypeInfo;
+  end;
+
   TConfiguration = class(TElement, IConfiguration)
   private
     FProperties: TStrings;
@@ -81,15 +95,15 @@ type
 
   TLoader = class(TElement, ILoader)
   private
+    FPersistentClass: IHibPersistentClass;
     function FillObject(const pObject: IInfraType;
       const vResultSet: IResultSet): string;
-    function GetEntityName(const pClassInfo: IClassInfo): string;
-    function GetOIDColumnName(const pClassInfo: IClassInfo): string;
-    function GetColumnName(const pPropertyInfo: IPropertyInfo): string;
-    function GetSelectClause(const pClassInfo: IClassInfo;
+    function GetSelectClause(const pEntityTypeInfo: IClassInfo;
       const pOID: IInfraType): string;
     function Load(const pTypeID: TGUID; const pSession: ISession;
       const pOID: IInfraType): IInfraType;
+  public
+    constructor Create; override;
   end;
 
 implementation
@@ -151,7 +165,7 @@ end;
 
 procedure TConfiguration.BindClasses;
 begin
-  // criar todos os persistentclass aqui a partir da reflexão de classes
+  // criar todos os HibPersistentClass aqui a partir da reflexão de classes
   // que estiverem anotados com IEntity
 end;
 
@@ -220,14 +234,14 @@ end;
 
 function TSessionFactory.GetDialect: IDialect;
 var
-  vTypeInfo: IClassInfo;
+  vEntityTypeInfo: IClassInfo;
 begin
-  vTypeInfo := nil;
+  vEntityTypeInfo := nil;
   if not Assigned(FDialect) then
     with TypeService do
     begin
-      vTypeInfo := GetType(FConfiguration.PropertyItem['Dialect'], True);
-      FDialect := CreateInstance(vTypeInfo) as IDialect;
+      vEntityTypeInfo := GetType(FConfiguration.PropertyItem['Dialect'], True);
+      FDialect := CreateInstance(vEntityTypeInfo) as IDialect;
     end;
   Result := FDialect;
 end;
@@ -282,74 +296,31 @@ end;
 function TLoader.Load(const pTypeID: TGUID; const pSession: ISession;
   const pOID: IInfraType): IInfraType;
 var
-  vClassInfo: IClassInfo;
+  vEntityTypeInfo: IClassInfo;
   sSelectClause: string;
   vResultSet: IResultSet;
 begin
   with TypeService do
   begin
-    vClassInfo := GetType(pTypeID, True);
-    Result := CreateInstance(vClassInfo) as IInfraType;
+    vEntityTypeInfo := GetType(pTypeID, True);
+    Result := CreateInstance(vEntityTypeInfo) as IInfraType;
   end;
-  sSelectClause := GetSelectClause(vClassInfo, pOID);
+  FPersistentClass.EntityTypeInfo := vEntityTypeInfo;
+  sSelectClause := GetSelectClause(vEntityTypeInfo, pOID);
   vResultSet := pSession.Connection.ExecuteQuery(sSelectClause);
   FillObject(Result, vResultSet);
 end;
 
-// Retorna o nome da tabela, se nao houve anotação retorna o nome da classe por
-// padrão.
-function TLoader.GetEntityName(const pClassInfo: IClassInfo): string;
-var
-  vEntity: IEntity;
-begin
-  if Supports(pClassInfo, IEntity, vEntity) then
-    Result := vEntity.Name
-  else
-    Result := pClassInfo.Name;
-end;
-
-// Retorna o nome da coluna, se nao houve anotação retorna o nome da propriedade
-// por padrão.
-function TLoader.GetColumnName(const pPropertyInfo: IPropertyInfo): string;
-var
-  vColumn: IColumn;
-begin
-  if Supports(pPropertyInfo, IColumn, vColumn) then
-    Result := vColumn.Name
-  else
-    Result := pPropertyInfo.Name;
-end;
-
-// Retorna o nome da coluna que é chave primaria com base na propriedade anotada
-// como identificador.
-function TLoader.GetOIDColumnName(const pClassInfo: IClassInfo): string;
-var
-  vPropIterator: IPropertyInfoIterator;
-  vPropertyInfo: IPropertyInfo;
-begin
-  vPropIterator := pClassInfo.GetProperties;
-  while not vPropIterator.IsDone do
-  begin
-    vPropertyInfo := vPropIterator.CurrentItem;
-    if Supports(vPropertyInfo, IID) then
-    begin
-      Result := GetColumnName(vPropertyInfo);
-      Break;
-    end;
-    vPropIterator.Next;
-  end;
-end;
-
 // gera uma instrução SQL de seleção simples
-function TLoader.GetSelectClause(const pClassInfo: IClassInfo;
+function TLoader.GetSelectClause(const pEntityTypeInfo: IClassInfo;
   const pOID: IInfraType): string;
 begin
   Result :=
     ' SELECT *' +
-    ' FROM ' + GetEntityName(pClassInfo) +
+    ' FROM ' + FPersistentClass.GetEntityName +
     ' WHERE ' +
-      GetOIDColumnName(pClassInfo) + ' = ' +
-      IntToStr((pOID as IInfraInteger).AsInteger);
+    FPersistentClass.GetOIDColumnName + ' = ' +
+    IntToStr((pOID as IInfraInteger).AsInteger);
 end;
 
 // Preenche as propriedades do objeto com base nos valores do registro atual
@@ -369,22 +340,97 @@ begin
     begin
       vPropertyInfo := vPropIterator.CurrentItem;
       vAttribute := vPropertyInfo.GetValue(pObject) as IInfraType;
-      vAttribute.Assign(
-        vResultSet.GetValue( GetColumnName(vPropertyInfo) ) );
+      vAttribute.Assign(vResultSet.GetValue(
+        FPersistentClass.GetColumnName(vPropertyInfo)));
       vPropIterator.Next;
     end;
   end;
 end;
 
+constructor TLoader.Create;
+begin
+  inherited Create;
+  FPersistentClass := THibPersistentClass.Create;
+end;
+
+{ THibPersistentClass }
+
+procedure THibPersistentClass.CheckEntityTypeInfo;
+begin
+  if not Assigned(FEntityTypeInfo) then
+    Raise Exception.Create('Classinfo should be filled.');
+end;
+
+function THibPersistentClass.GetEntityTypeInfo: IClassInfo;
+begin
+  Result := FEntityTypeInfo;
+end;
+
+// Retorna o nome da coluna, se nao houve anotação retorna por padrão
+// o nome da propriedade.
+function THibPersistentClass.GetColumnName(
+  const pPropertyInfo: IPropertyInfo): string;
+var
+  vColumn: IColumn;
+begin
+  if Supports(pPropertyInfo, IColumn, vColumn) then
+    Result := vColumn.Name
+  else
+    Result := pPropertyInfo.Name;
+end;
+
+// Retorna o nome da tabela, se nao houve anotação retorna o nome da classe por
+// padrão.
+function THibPersistentClass.GetEntityName: string;
+var
+  vEntity: IEntity;
+begin
+  CheckEntityTypeInfo;
+  if Supports(FEntityTypeInfo, IEntity, vEntity) then
+    Result := vEntity.Name
+  else
+    Result := FEntityTypeInfo.Name;
+end;
+
+// Retorna o nome da coluna que é chave primaria com base na propriedade anotada
+// como identificador.
+function THibPersistentClass.GetOIDColumnName: string;
+var
+  vPropIterator: IPropertyInfoIterator;
+  vPropertyInfo: IPropertyInfo;
+begin
+  CheckEntityTypeInfo;
+  vPropIterator := FEntityTypeInfo.GetProperties;
+  while not vPropIterator.IsDone do
+  begin
+    vPropertyInfo := vPropIterator.CurrentItem;
+    if Supports(vPropertyInfo, IID) then
+    begin
+      Result := GetColumnName(vPropertyInfo);
+      Break;
+    end;
+    vPropIterator.Next;
+  end;
+end;
+
+procedure THibPersistentClass.SetEntityTypeInfo(const Value: IClassInfo);
+begin
+  FEntityTypeInfo := Value;
+end;
+
+// *** function THibPersistentClass.GetEntityPersister: IEntityPersister;
+//begin
+//
+//end;
+
 // Injeta o mecanismo de persistencia no Applicationcontext.
 procedure InjectPersitenceService;
 begin
   (ApplicationContext as IMemoryManagedObject).Inject(
-    IPersistenceService, TPersistenceService.Create as IPersistenceService);
+    IPersistenceService, TPersistenceService.Create);
 end;
 
 initialization
   InjectPersitenceService;
 
 end.
-

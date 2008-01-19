@@ -79,6 +79,10 @@ type
     FTypes: IClassInfoList;
     function CreateInstance(ClassID: TGUID): IElement; overload;
     function CreateInstance(const ClassInfo: IClassInfo): IElement; overload;
+    function AddAnnotation(const pTypeID: TGUID;
+      const pTypeName: string; pClassImplementing: TInfraBaseObjectClass;
+      const pFamilyID: TGUID; const pSuperClassInfo: IClassInfo = nil;
+      pRetention: TRetentionPolice = rpClass): IClassInfo;
     function AddType(const pTypeID: TGUID; const pTypeName: string;
       pClassImplementing: TInfraBaseObjectClass; const pFamilyID: TGUID;
       const pSuperClassInfo: IClassInfo = nil): IClassInfo;
@@ -114,6 +118,7 @@ type
     FSuperClass: IClassInfo;
     FMembers: IMemberInfoList;
     FOwner: IClassInfo;
+    FRetentionPolice: TRetentionPolice;
     function AddPropertyInfo(const pName: string; const pType: IClassInfo;
       pGetterMethod: Pointer; pSetterMethod: Pointer = nil): IPropertyInfo;
     function AddMethodInfo(const pName: string;
@@ -160,6 +165,9 @@ type
     procedure SetSuperClass(const Value: IClassInfo);
     function GetAllMethods: IMethodInfoIterator;
     function FindPropertyInfo(const pName: string): IPropertyInfo;
+    function GetRetentionPolice: TRetentionPolice;
+    procedure SetRetentionPolice(const Value: TRetentionPolice);
+    function GetIsAnnotation: Boolean;
   public
     constructor Create; override;
     property ClassFamily: TGUID read GetClassFamily write SetClassFamily;
@@ -170,6 +178,9 @@ type
     property Name: string read GetName write SetName;
     property Owner: IClassInfo read GetOwner write SetOwner;
     property SuperClass: IClassInfo read GetSuperClass write SetSuperClass;
+    property RetentionPolice: TRetentionPolice read GetRetentionPolice
+      write SetRetentionPolice;
+    property IsAnnotation: Boolean read GetIsAnnotation;
   end;
 
   TMemberInfo = class(TElement, IMemberInfo)
@@ -551,12 +562,25 @@ begin
   Result := TRelationInfoIterator.Create(Relations, pPropertyInfo);
 end;
 
+function TTypeService.AddAnnotation(const pTypeID: TGUID;
+  const pTypeName: string; pClassImplementing: TInfraBaseObjectClass;
+  const pFamilyID: TGUID; const pSuperClassInfo: IClassInfo = nil;
+  pRetention: TRetentionPolice = rpClass): IClassInfo;
+begin
+  if pRetention = rpNone then
+    raise Exception.Create('Annotation''''s Retention Police mismatch!');
+  Result := AddType(pTypeID, pTypeName, pClassImplementing, pFamilyID,
+    pSuperClassInfo);
+  Result.RetentionPolice := pRetention;
+end;
+
 { TClassInfo }
 
 constructor TClassInfo.create;
 begin
   inherited Create;
   FMembers := TMemberInfoList.Create;
+  FRetentionPolice := rpNone;
 end;
 
 function TClassInfo.AddConstructorInfo(const pName: string;
@@ -824,6 +848,21 @@ procedure TClassInfo.SetTypeID(const Value: TGUID);
 begin
   if not IsEqualGUID(Value, FTypeID) then
     FTypeID := Value;
+end;
+
+function TClassInfo.GetRetentionPolice: TRetentionPolice;
+begin
+  Result := FRetentionPolice;
+end;
+
+procedure TClassInfo.SetRetentionPolice(const Value: TRetentionPolice);
+begin
+  FRetentionPolice := Value;
+end;
+
+function TClassInfo.GetIsAnnotation: Boolean;
+begin
+  Result := FRetentionPolice in [rpClass, rpInstance];
 end;
 
 { TMemberInfo }

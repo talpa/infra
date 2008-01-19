@@ -7,7 +7,8 @@ uses
 
 type
   IAddress = interface;
-  
+
+  // Interface para uma classe pessoa
   IPerson = interface
     ['{52768039-C8B4-4E31-BA9B-E765951454A8}']
     procedure SetAddress(const Value: IAddress);
@@ -26,6 +27,7 @@ type
       write SetBirthday;
   end;
 
+  // Interface para uma classe estudante
   IStudent = interface(IPerson)
     ['{996D9565-F487-4766-B2F9-F37BEB74AE2F}']
     function GetSchoolNumber: IInfraString;
@@ -34,6 +36,7 @@ type
       write SetSchoolNumber;
   end;
 
+  // Interface para uma classe endereço
   IAddress = interface
     ['{844C021B-8D73-4CC9-867A-9553BAA0F0A2}']
     function GetCity: IInfraString;
@@ -50,32 +53,7 @@ type
     property Number: IInfraInteger read GetNumber write SetNumber;
   end;
 
-  IMockMethod = Interface
-    ['{32E1DD21-2537-4A27-A3DE-481E85A8E246}']
-    function GetMessage: IInfraString;
-    function MethodFunc0: IInfraString;
-    function MethodFunc1(const p1: IInfraString): IInfraString;
-    function MethodFunc2(const p1: IInfraString;
-      const p2:IInfraInteger): IInfraInteger;
-    function MethodFunc3(const p1: IInfraString; const p2:IInfraInteger;
-      const p3: IInfraDateTime): IInfraDateTime;
-    function MethodFunc4(const p1: IInfraString; const p2:IInfraInteger;
-      const p3: IInfraDateTime; const p4: IInfraBoolean): IInfraBoolean;
-    function MethodFunc5(const p1: IInfraString; const p2:IInfraInteger;
-      const p3: IInfraDateTime; const p4: IInfraBoolean;
-      const p5: IInfraDouble): IInfraDouble;
-    procedure MethodProc0;
-    procedure MethodProc1(const p1: IInfraString);
-    procedure MethodProc2(const p1: IInfraString; const p2:IInfraInteger);
-    procedure MethodProc3(const p1: IInfraString; const p2:IInfraInteger;
-      const p3: IInfraDateTime);
-    procedure MethodProc4(const p1: IInfraString; const p2:IInfraInteger;
-      const p3: IInfraDateTime; const p4: IInfraBoolean);
-    procedure MethodProc5(const p1: IInfraString; const p2:IInfraInteger;
-      const p3: IInfraDateTime; const p4: IInfraBoolean; const p5: IInfraDouble);
-    property Message: IInfraString read GetMessage;
-  end;
-
+  // Uma interface de anotação
   IVersion = Interface
     ['{E0853981-6E95-4D98-9AD8-F363BB345F90}']
     function GetVersionNumber: IInfraString;

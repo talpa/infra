@@ -14,6 +14,7 @@ type
     FName: IInfraString;
     FInitialBalance: IInfraDouble;
     FCurrentBalance: IInfraDouble;
+  protected
     function GetAccountNumber: IInfraString;
     function GetName: IInfraString;
     function GetInitialBalance: IInfraDouble;
@@ -23,7 +24,6 @@ type
     procedure SetInitialBalance(const value: IInfraDouble);
     procedure SetCurrentBalance(const value: IInfraDouble);
     function GetID: IInfraInteger;
-  protected
     property ID: IInfraInteger read GetID;
     property AccountNumber: IInfraString read GetAccountNumber
       write SetAccountNumber;
@@ -40,38 +40,6 @@ implementation
 
 uses
   MapperAnnotationIntf;
-
-function RegisterAccountOnReflection: IClassInfo;
-var
-  vPropInfo: IPropertyInfo;
-  vColumn: IColumn;
-begin
-  with TypeService do
-  begin
-    with AddType(IAccount, 'Account', TAccount,
-      IInfraObject, GetType(IInfraObject)) do
-    begin
-
-      vPropInfo := AddPropertyInfo('ID', GetType(IInfraInteger), @TAccount.GetID);
-      // anotação para persistencia
-      vPropInfo.Annotate(IID);
-
-
-      vPropInfo := AddPropertyInfo('Name', GetType(IInfraString),
-        @TAccount.GetName, @TAccount.SetName);
-      // anotação para persistencia
-      vColumn := vPropInfo.Annotate(IColumn) as IColumn;
-      vColumn.Name := 'ACCOUNTNAME';
-
-      AddPropertyInfo('AccountNumber', GetType(IInfraString),
-        @TAccount.GetAccountNumber, @TAccount.SetAccountNumber);
-      AddPropertyInfo('InitialBalance', GetType(IInfraDouble),
-        @TAccount.GetInitialBalance, @TAccount.SetInitialBalance);
-      AddPropertyInfo('CurrentBalance', GetType(IInfraDouble),
-        @TAccount.GetCurrentBalance, @TAccount.SetCurrentBalance);
-    end;
-  end;
-end;
 
 { TAccount }
 
@@ -129,8 +97,5 @@ procedure TAccount.SetCurrentBalance(const Value: IInfraDouble);
 begin
   FCurrentBalance := Value;
 end;
-
-initialization
-  RegisterAccountOnReflection;
 
 end.

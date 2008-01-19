@@ -603,7 +603,7 @@ end;
 procedure InjectGUIService;
 begin
   (ApplicationContext as IMemoryManagedObject).Inject(
-    IInfraGUIService, TInfraGUIService.Create as IInfraGUIService);
+    IInfraGUIService, TInfraGUIService.Create);
 end;
 
 procedure RegisterGUIMappings;
