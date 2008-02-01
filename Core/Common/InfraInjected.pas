@@ -11,7 +11,7 @@ uses
   InfraCommon;
 
 type
-  TInjectedItem = class(TMemoryManagedObject,
+  TInjectedItem = class(TBaseElement,
     IInjectedItem)
   private
     FID: TGUID;

@@ -12,7 +12,7 @@ type
 
   IGUIControlList = interface;
 
-  IGUI = interface(IMemoryManagedObject)
+  IGUI = interface(IBaseElement)
     ['{5E2DBC11-126E-4B75-9C2F-BAC58CCD88EA}']
     function GetBusinessObject: IInfraObject;
     function GetGUIControlList: IGUIControlList;
@@ -34,7 +34,7 @@ type
     property Title: string read GetTitle write SetTitle;
   end;
 
-  IGUIControl = interface(IMemoryManagedObject)
+  IGUIControl = interface(IBaseElement)
     ['{048C693A-63AD-46E1-B84B-94B5A8D1BB18}']
     function GetControl: TControl;
     function GetControlClass: TControlClass;
@@ -74,7 +74,7 @@ type
     procedure Next;
   end;
 
-  IGUIControlListBase = interface(IMemoryManagedObject)
+  IGUIControlListBase = interface(IBaseElement)
     ['{126083E3-1000-4256-8EF0-4326AA3256E6}']
     function Add(const Item: IGUIControl): Integer;
     function First: IGUIControl;
@@ -96,7 +96,7 @@ type
     function Clone: IGUIControlList;
   end;
 
-  IGUIMapping = interface(IMemoryManagedObject)
+  IGUIMapping = interface(IBaseElement)
     ['{24153D00-151F-4762-A833-DA2E8D4B492C}']
     function GetControlClass: TControlClass;
     function GetControlProperty: string;
@@ -117,7 +117,7 @@ type
     procedure Next;
   end;
 
-  IGUIMappingList = interface(IMemoryManagedObject)
+  IGUIMappingList = interface(IBaseElement)
     ['{F10C6886-A282-4691-A5E2-9F5FD5003554}']
     function Add(const Item: IGUIMapping): Integer;
     function First: IGUIMapping;
@@ -134,7 +134,7 @@ type
     property Items[Index: Integer]: IGUIMapping read GetItem write SetItem; default;
   end;
 
-  IInfraGUIService = interface(IMemoryManagedObject)
+  IInfraGUIService = interface(IBaseElement)
     ['{99444446-6E4E-4BC3-B282-4119FFE4EBF9}']
     function GetGUIMappings: IGUIMappingList;
     procedure Build(pObject: IInfraObject; pScreen: IScreen = nil);

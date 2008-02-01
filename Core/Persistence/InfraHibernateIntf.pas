@@ -40,7 +40,7 @@ type
     com o que foi anotado no ClassInfo, em suas propriedades ou métodos.
     Caso nao tenha havido determinada anotação o HibPersistentClass já
     retorna algum valor padrão }
-  IHibPersistentClass = interface(IMemoryManagedObject)
+  IHibPersistentClass = interface(IBaseElement)
     ['{45E8AD80-7543-4A99-A19F-71FFC53D61DF}']
     function GetEntityName: string;
     function GetOIDColumnName: string;
@@ -166,9 +166,32 @@ type
     ['{63DCA0BF-0224-4335-B905-2593E5C89460}']
   end;
 
+  // Conexão concreta para driver usando ZEOS
+  IZeosConnection = interface(IConnection)
+    ['{1E8B196E-926A-41D8-A5AB-CC9760CAEBFD}']
+  end;
+
   // ResultSet concreto para driver usando DBX
   IDBXResultSet = interface(IResultSet)
     ['{F2A3128A-F9C0-4B07-952D-003CAA5C7AB5}']
+  end;
+
+  // ResultSet concreto para driver usando ZEOS
+  IZeosResultSet = interface(IResultSet)
+    ['{33515232-FE60-4C8F-A65D-40B775159DC8}']
+  end;
+
+  IEntityPersister  = interface(IInterface)
+    ['{C589237F-0BD5-4FCD-90E9-0423C9EA5ECD}']
+    // metodo Load que vai delegar para o TLoader
+    function Load(const pTypeID: TGUID; const pSession: ISession;
+      const pOID: IInfraType): IInfraType;
+  end;
+
+  // Map de EntityPersisters
+  IEntityPersisters = interface(IBaseElement)
+    ['{D12A7D8D-8FD1-40D5-9AC0-21C8FE1B921C}']
+    // *** acho que está faltando os métodos e propriedades
   end;
 
 function PersistenceService: IPersistenceService;
@@ -181,3 +204,4 @@ begin
 end;
 
 end.
+

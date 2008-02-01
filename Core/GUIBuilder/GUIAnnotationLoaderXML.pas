@@ -9,7 +9,7 @@ uses
 
 type
 
-  TGUIAnnotationLoaderXML = class(TMemoryManagedObject, IGUIAnnotationLoader)
+  TGUIAnnotationLoaderXML = class(TBaseElement, IGUIAnnotationLoader)
   private
     FFileName: string;
     FGUI: IGUI;

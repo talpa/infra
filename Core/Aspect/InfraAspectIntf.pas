@@ -92,7 +92,7 @@ type
 
   { Service to mantain the intercepted joint points and execute the
     aspects so that the program's flow reach some these joint points }
-  IInfraAspectService = interface(IMemoryManagedObject)
+  IInfraAspectService = interface(IBaseElement)
     ['{F1C7615D-BE6A-4638-ADF4-34528CB0CE9E}']
     // Find and Register a Aspect to all Joint Points matching with Expression
     procedure AddPointCut(const Expression: string; pAspectClass: TClass);

@@ -9,7 +9,7 @@ uses
   InfraMVPIntf, InfraBasicList, InfraCommon, InfraCommonIntf;
 
 type
-  _ITERABLELIST_BASE_ = TMemoryManagedObject;
+  _ITERABLELIST_BASE_ = TBaseElement;
   _ITERABLELIST_INTF_ = IViewList;
   _ITEM_INTF_ = IView;
   _ITERATOR_INTF_ = IInfraIterator;

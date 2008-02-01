@@ -10,7 +10,7 @@ uses
 
 type
 
-  TGUI = class(TMemoryManagedObject, IGUI)
+  TGUI = class(TBaseElement, IGUI)
   private
     FBusinessObject: IInfraObject;
     FGUIControlList: IGUIControlList;
@@ -39,7 +39,7 @@ type
     property Title: string read GetTitle write SetTitle;
   end;
 
-  TGUIControl = class(TMemoryManagedObject, IGUIControl)
+  TGUIControl = class(TBaseElement, IGUIControl)
   private
     FControl: TControl;
     FControlClass: TControlClass;
@@ -81,7 +81,7 @@ type
     property ScreenItem: IScreenItem read GetScreenItem write SetScreenItem;
   end;
 
-  TGUIMapping = class(TMemoryManagedObject, IGUIMapping)
+  TGUIMapping = class(TBaseElement, IGUIMapping)
   private
     FControlClass: TControlClass;
     FControlProperty: string;
@@ -101,7 +101,7 @@ type
       pControlProperty: string = ''); reintroduce;
   end;
 
-  TInfraGUIService = class(TMemoryManagedObject, IInfraGUIService)
+  TInfraGUIService = class(TBaseElement, IInfraGUIService)
   private
     FGUIMappings: IGUIMappingList;
     function FindGUIControl(pGUIControlList: IGUIControlList;
@@ -602,7 +602,7 @@ end;
 
 procedure InjectGUIService;
 begin
-  (ApplicationContext as IMemoryManagedObject).Inject(
+  (ApplicationContext as IBaseElement).Inject(
     IInfraGUIService, TInfraGUIService.Create);
 end;
 

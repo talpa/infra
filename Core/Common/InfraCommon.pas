@@ -9,30 +9,16 @@ uses
   InfraBase, InfraCommonIntf;
 
 type
-  TMemoryManagedObject = class(TInfraBaseObject, IInterface,
-    IMemoryManagedObject, IInfraReferenceKeeper,
-    IInfraInstance)
+  TBaseElement = class(TInfraBaseObject, IInterface,
+    IBaseElement, IInfraReferenceKeeper, IInfraInstance)
   private
     FInjectedList: IInjectedList;
-    function CreateAndInjectAnnotation(
-      const pClassInfo: IClassInfo): IInterface;
   protected
     function GetInjectedList: IInjectedList;
     function GetInstance: TObject;
     procedure InfraInitInstance; virtual;
-    function Inject(const pID: TGUID; const pItem: IInterface;
-      pIsAnnotation: boolean = False): IInjectedItem;
+    function Inject(const pID: TGUID; const pItem: IInterface): IInjectedItem;
     function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
-    // Anota o elemento a partir do tipo de anotação.
-    function Annotate(const pID: TGUID): IInterface; overload;
-    // Anota o elemento a partir do tipo do metadata da anotação.
-    function Annotate(const pClassInfo: IClassInfo): IInterface; overload;
-    // Retorna verdadeiro se o tipo de anotação está presente neste elemento
-    function isAnnotationPresent(const pID: TGUID): Boolean;
-    // Retorna a anotação se a mesma foi anotada no elemento, senão null.
-    function GetAnnotation(const pID: TGUID): IInterface;
-    // Retorna um iterator para todas as anotações existentes no elemento.
-    function GetAnnotations: IAnnotationsIterator;
     property InjectedList: IInjectedList read GetInjectedList;
     {$IFDEF SEE_REFCOUNT}
     function GetRefCount: integer;
@@ -48,9 +34,9 @@ type
     destructor Destroy; override;
   end;
 
-  TMemoryManagedObjectClass = class of TMemoryManagedObject;
+  TBaseElementClass = class of TBaseElement;
 
-  TElement = class(TMemoryManagedObject, IElement,
+  TElement = class(TBaseElement, IElement,
     IInfraPublisher, ISubscriber, IInfraFilter)
   private
     FPublisher: IInfraPublisher;
@@ -98,9 +84,9 @@ begin
 end;
 {$ENDIF}
 
-{ TMemoryManagedObject }
+{ TBaseElement }
 
-procedure TMemoryManagedObject.AfterConstruction;
+procedure TBaseElement.AfterConstruction;
 begin
   {$IFDEF INFRA_LEAKOBJECTS}
   InfraLeakObjects.Add(Self);
@@ -113,19 +99,19 @@ begin
   FRefCount := 0;
 end;
 
-procedure TMemoryManagedObject.InfraInitInstance;
+procedure TBaseElement.InfraInitInstance;
 begin
   // nothing. inplemented on descedents.
 end;
 
-procedure TMemoryManagedObject.BeforeDestruction;
+procedure TBaseElement.BeforeDestruction;
 begin
   inherited;
   // Obs: See coments on AfterConstruction
   FRefCount := Low(Integer);
 end;
 
-destructor TMemoryManagedObject.Destroy;
+destructor TBaseElement.Destroy;
 begin
   {$IFDEF INFRA_CLASSNAMEDESTROYED}
   SendDebug('<<< '+Self.ClassName);
@@ -140,20 +126,20 @@ begin
 end;
 
 {$IFDEF TEST_REFCOUNT}
-function TMemoryManagedObject._AddRef: Integer;
+function TBaseElement._AddRef: Integer;
 begin
   Result := inherited _AddRef;
   SendDebug(Format('ADDREF:  %s.RefCount = %d', [ClassName, RefCount]));
 end;
 
-function TMemoryManagedObject._Release: Integer;
+function TBaseElement._Release: Integer;
 begin
   SendDebug(Format('RELEASE: %s.RefCount = %d', [ClassName, RefCount-1]));
   Result := inherited _Release;
 end;
 {$ENDIF}
 
-function TMemoryManagedObject.GetInjectedList: IInjectedList;
+function TBaseElement.GetInjectedList: IInjectedList;
 begin
   if not Assigned(FInjectedList) then
     FInjectedList := TInjectedList.Create(Self);
@@ -170,11 +156,10 @@ end;
   e então instanciamos a mesma e a retornamos. Caso contrário chamamos este
   mesmo método no pai.
 }
-function TMemoryManagedObject.QueryInterface(const IID: TGUID;
+function TBaseElement.QueryInterface(const IID: TGUID;
   out Obj): HResult;
 var
   i: integer;
-  vClassInfo: IClassInfo;
 begin
   if not Assigned(FInjectedList) then
     Result := inherited Queryinterface(IID, Obj)
@@ -188,41 +173,32 @@ begin
         IInterface(Obj) := FInjectedList.Item[i].InjectedInterface;
         Result := 0;
       end else
-      begin
-        vClassInfo := TypeService.GetType(IID, True);
-        if vClassInfo.IsAnnotation
-          and (vClassInfo.RetentionPolice = rpInstance) then
-        begin
-          IInterface(Obj) := CreateAndInjectAnnotation(vClassInfo);
-          Result := 0;
-        end else
-          Result := inherited Queryinterface(IID, Obj);
-      end;
+        Result := inherited Queryinterface(IID, Obj);
     end else
       Result := inherited Queryinterface(IID, Obj);
   end;
 end;
 
-function TMemoryManagedObject.GetInstance: TObject;
+function TBaseElement.GetInstance: TObject;
 begin
   Result := Self;
 end;
 
-procedure TMemoryManagedObject.SetReference(var Ref: IInterface;
+procedure TBaseElement.SetReference(var Ref: IInterface;
   const Value: IInterface);
 begin
   ReferenceService.SetReference(Self, Ref, Value);
 end;
 
 {$IFDEF SEE_REFCOUNT}
-function TMemoryManagedObject.GetRefCount: integer;
+function TBaseElement.GetRefCount: integer;
 begin
   Result := FRefCount;
 end;
 {$ENDIF}
 
-function TMemoryManagedObject.Inject(const pID: TGUID;
-  const pItem: IInterface; pIsAnnotation: boolean = False): IInjectedItem;
+function TBaseElement.Inject(const pID: TGUID;
+  const pItem: IInterface): IInjectedItem;
 var
   Index: integer;
   vItem: IInterface;
@@ -230,58 +206,7 @@ begin
   Supports(pItem, pId, vItem);
   Index := InjectedList.Add(pID, vItem);
   Result := FInjectedList.Item[Index];
-  Result.IsAnnotation := pIsAnnotation;
-end;
-
-// Retorna a instância da anotação ou nil dependendo da política de retenção,
-// a partir da interface de metadata.
-function TMemoryManagedObject.Annotate(const pID: TGUID): IInterface;
-var
-  vClassInfo: IClassInfo;
-begin
-  vClassInfo := TypeService.GetType(pID, True);
-  Result := Annotate(vClassInfo);
-end;
-
-// Retorna a instância da anotação ou nil dependendo da política de retenção,
-// a partir do objeto metadata.
-function TMemoryManagedObject.Annotate(const pClassInfo: IClassInfo): IInterface;
-begin
-  if not pClassInfo.IsAnnotation then
-    Raise Exception.Create('Id: '+
-      GuidToString(pClassInfo.TypeID)+' not is an Annotation');
-  if (pClassInfo.RetentionPolice = rpClass) then
-    Result := TypeService.CreateInstance(pClassInfo) as IInterface
-  else
-    Result := nil;
-  Inject(pClassInfo.TypeID, Result, True);
-end;
-
-// Cria e injeta uma anotação, OnDemand
-function TMemoryManagedObject.CreateAndInjectAnnotation(
-  const pClassInfo: IClassInfo): IInterface;
-begin
-  if not pClassInfo.IsAnnotation then
-    Raise Exception.Create('Id: '+
-      GuidToString(pClassInfo.TypeID)+' not is an Annotation');
-  Result := TypeService.CreateInstance(pClassInfo) as IInterface;
-  Inject(pClassInfo.TypeID, Result, True);
-end;
-
-function TMemoryManagedObject.isAnnotationPresent(const pID: TGUID): Boolean;
-begin
-  Result := Assigned(FInjectedList)
-    and (FInjectedList.IndexByGUID(pID) <> -1);
-end;
-
-function TMemoryManagedObject.GetAnnotation(const pID: TGUID): IInterface;
-begin
-  Supports(Self, pID, Result);
-end;
-
-function TMemoryManagedObject.GetAnnotations: IAnnotationsIterator;
-begin
-  Result := FInjectedList.NewAnnotationIterator;
+  Result.IsAnnotation := False;
 end;
 
 { TElement }

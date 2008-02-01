@@ -9,10 +9,10 @@ uses
   Classes, InfraCommon, InfraCommonIntf;
 
 type
-  TInjectedList = class(TMemoryManagedObject, IInjectedList)
+  TInjectedList = class(TBaseElement, IInjectedList)
   private
     FItems: IInterfaceList;
-    FOwner: IMemoryManagedObject;
+    FOwner: IBaseElement;
     function Add(const ID: TGUID; const pObject: IInterface): Integer;
     function GetCount: Integer;
     function GetItem(Index: integer): IInjectedItem;
@@ -22,7 +22,7 @@ type
   public
     property Count: Integer read GetCount;
     property Item[Index: integer]: IInjectedItem read GetItem; default;
-    constructor Create(const AOwner: IMemoryManagedObject); reintroduce;
+    constructor Create(const AOwner: IBaseElement); reintroduce;
     destructor Destroy; override;
   end;
 
@@ -46,7 +46,7 @@ uses
 
 { TInjectedList }
 
-constructor TInjectedList.Create(const AOwner: IMemoryManagedObject);
+constructor TInjectedList.Create(const AOwner: IBaseElement);
 begin
   inherited Create;
   FItems := TInterfaceList.Create;

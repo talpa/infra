@@ -15,7 +15,7 @@ type
   {$DEFINE EQUAL_VALUE_DEFAULT}
   {.$DEFINE INVALID_INDEX_DEFAULT Implementing Here}
   {$DEFINE INVALID_VALUE_DEFAULT}
-  _ITERABLELIST_BASE_ = TMemoryManagedObject;// List's Class Base
+  _ITERABLELIST_BASE_ = TBaseElement;// List's Class Base
   _ITERABLELIST_INTF_ = IInfraEventServiceItems;  // List's Interface Implementing
   _ITERATOR_INTF_ = IInterface;                   // List's Interface Implementing
   _INDEX_ = TGUID;                                // List's Item Index ===>>> TGUID

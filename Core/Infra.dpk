@@ -116,6 +116,7 @@ contains
   InfraVCLPresenter in 'MVP\VCL\InfraVCLPresenter.pas',
   InfraVCLRenderer in 'MVP\VCL\InfraVCLRenderer.pas',
   InfraVCLView in 'MVP\VCL\InfraVCLView.pas',
-  List_VCLMenuItem in 'MVP\VCL\List_VCLMenuItem.pas';
+  List_VCLMenuItem in 'MVP\VCL\List_VCLMenuItem.pas',
+  List_EntityPersister in 'Persistence\List_EntityPersister.pas';
 
 end.

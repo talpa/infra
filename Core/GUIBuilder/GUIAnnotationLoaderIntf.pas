@@ -7,7 +7,7 @@ uses
 
 type
 
-  IGUIAnnotationLoader = interface(IMemoryManagedObject)
+  IGUIAnnotationLoader = interface(IBaseElement)
     ['{A40720CD-3117-40BD-AC5E-1911D326C339}']
     procedure Load;
     procedure Save;

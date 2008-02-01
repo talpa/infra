@@ -109,7 +109,21 @@ type
     constructor Create;
   end;
 
-  TClassInfo = class(TElement, IClassInfo)
+  TReflectElement = class(TElement, IReflectElement)
+  protected
+    // Anota o elemento a partir do tipo de anotação.
+    function Annotate(const pID: TGUID): IInterface; overload;
+    // Anota o elemento a partir do tipo do metadata da anotação.
+    function Annotate(const pClassInfo: IClassInfo): IInterface; overload;
+    // Retorna verdadeiro se o tipo de anotação está presente neste elemento
+    function isAnnotationPresent(const pID: TGUID): Boolean;
+    // Retorna a anotação se a mesma foi anotada no elemento, senão null.
+    function GetAnnotation(const pID: TGUID): IInterface;
+    // Retorna um iterator para todas as anotações existentes no elemento.
+    function GetAnnotations: IAnnotationsIterator;
+  end;
+
+  TClassInfo = class(TReflectElement, IClassInfo)
   private
     FClassFamily: TGUID;
     FTypeID: TGUID;
@@ -183,7 +197,7 @@ type
     property IsAnnotation: Boolean read GetIsAnnotation;
   end;
 
-  TMemberInfo = class(TElement, IMemberInfo)
+  TMemberInfo = class(TReflectElement, IMemberInfo)
   private
     FDeclaringType: IClassInfo;
     FMemberType: TMemberType;
@@ -572,6 +586,47 @@ begin
   Result := AddType(pTypeID, pTypeName, pClassImplementing, pFamilyID,
     pSuperClassInfo);
   Result.RetentionPolice := pRetention;
+end;
+
+{ TReflectElement }
+
+// Retorna a instância da anotação ou nil dependendo da política de retenção,
+// a partir da interface de metadata.
+function TReflectElement.Annotate(const pID: TGUID): IInterface;
+var
+  vClassInfo: IClassInfo;
+begin
+  vClassInfo := TypeService.GetType(pID, True);
+  Result := Annotate(vClassInfo);
+end;
+
+// Retorna a instância da anotação ou nil dependendo da política de retenção,
+// a partir do objeto metadata.
+function TReflectElement.Annotate(
+  const pClassInfo: IClassInfo): IInterface;
+begin
+  if not pClassInfo.IsAnnotation then
+    Raise Exception.Create('Id: '+
+      GuidToString(pClassInfo.TypeID)+' not is an Annotation');
+  Result := TypeService.CreateInstance(pClassInfo) as IInterface;
+  with Inject(pClassInfo.TypeID, Result) do
+    IsAnnotation := True;
+end;
+
+function TReflectElement.GetAnnotation(const pID: TGUID): IInterface;
+begin
+  Supports(Self, pID, Result);
+end;
+
+function TReflectElement.GetAnnotations: IAnnotationsIterator;
+begin
+  Result := InjectedList.NewAnnotationIterator;
+end;
+
+function TReflectElement.isAnnotationPresent(const pID: TGUID): Boolean;
+begin
+  Result := Assigned(InjectedList)
+    and (InjectedList.IndexByGUID(pID) <> -1);
 end;
 
 { TClassInfo }

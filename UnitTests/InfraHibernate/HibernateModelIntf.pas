@@ -7,7 +7,7 @@ uses
 
 type
   IAccount = interface
-    ['{52768039-C8B4-4E31-BA9B-E765951454A8}']
+    ['{3D7930FB-0473-4DAE-844B-66B613DD5DB0}']
     function GetAccountNumber: IInfraString;
     function GetName: IInfraString;
     function GetInitialBalance: IInfraDouble;

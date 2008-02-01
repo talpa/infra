@@ -11,7 +11,7 @@ uses
   InfraCommon;
 
 type
-  TInfraEvent = class(TMemoryManagedObject, IInfraEvent, IInfraEventType)
+  TInfraEvent = class(TBaseElement, IInfraEvent, IInfraEventType)
   private
     FSource: IElement;
   protected
@@ -24,7 +24,7 @@ type
     constructor Create(const Sender: IElement; Guid: TGUID); reintroduce; overload;
   end;
 
-  TInfraEventServiceItem = class(TMemoryManagedObject,
+  TInfraEventServiceItem = class(TBaseElement,
     IInfraEventServiceItem)
   private
     FEventType: TGUID;
@@ -40,7 +40,7 @@ type
     property Subscriptions: ISubscriptionList read GetSubscriptions;
   end;
 
-  TInfraEventService = class(TMemoryManagedObject, IInfraEventService)
+  TInfraEventService = class(TBaseElement, IInfraEventService)
   private
     FItems: IInfraEventServiceItems;
   protected
@@ -72,7 +72,7 @@ type
     constructor Create(const Controller: IElement); reintroduce;
   end;
 
-  TSubscription = class(TMemoryManagedObject, ISubscription)
+  TSubscription = class(TBaseElement, ISubscription)
   private
     FSubscriber: ISubscriber;
     function GetSubscriber: ISubscriber;

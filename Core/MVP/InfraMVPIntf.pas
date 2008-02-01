@@ -48,7 +48,7 @@ type
 
   // Views
 
-  IViewList = interface(IMemoryManagedObject)
+  IViewList = interface(IBaseElement)
     ['{E00030D0-6185-41A8-B234-1240566A14C2}']
     function Add(const Item: IView): Integer;
     function GetCount: Integer;
@@ -88,7 +88,7 @@ type
 
   // Presenters
 
-  IPresenterList = interface(IMemoryManagedObject)
+  IPresenterList = interface(IBaseElement)
     ['{E00030D0-6185-41A8-B234-1240566A14C2}']
     function Add(const Item: IPresenter): Integer;
     function Append(const Item: IPresenter): IPresenter;

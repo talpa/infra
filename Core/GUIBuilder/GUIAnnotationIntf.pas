@@ -61,7 +61,7 @@ type
     procedure Next;
   end;
 
-  IScreenItemListBase = interface(IMemoryManagedObject)
+  IScreenItemListBase = interface(IBaseElement)
     ['{00D52CFB-9FE3-4AD0-BB94-D71B87399A36}']
     function Add(const Item: IScreenItem): Integer;
     function First: IScreenItem;
@@ -168,7 +168,7 @@ type
     procedure Next;
   end;
 
-  IScreenList = interface(IMemoryManagedObject)
+  IScreenList = interface(IBaseElement)
     ['{E3D036D3-A837-4728-80B5-38116987FB4D}']
     function Add(const Item: IScreen): Integer;
     function First: IScreen;

@@ -12,7 +12,7 @@ uses
   InfraCommon;
 
 type
-  _ITERABLELIST_BASE_ = TMemoryManagedObject;
+  _ITERABLELIST_BASE_ = TBaseElement;
   _ITERABLELIST_INTF_ = IScreenItemListBase;
   _ITEM_INTF_ = IScreenItem;
   _ITERATOR_INTF_ = IScreenItemIterator;

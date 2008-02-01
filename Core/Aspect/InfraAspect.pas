@@ -58,7 +58,7 @@ type
     Esta classe mapeia um método a um aspecto. Objetos deste tipo são criados
     usando o AspectService.AddPointCut.
   }
-  TInfraJointPoint = class(TMemoryManagedObject, IInfraJointPoint)
+  TInfraJointPoint = class(TBaseElement, IInfraJointPoint)
   private
     FAspectClass: TClass;
     FMethodInfo: IMethodInfo;
@@ -116,7 +116,7 @@ type
         da classe
       - uma lista de jointpoints
   }
-  TInfraAspectService = class(TMemoryManagedObject, IInfraAspectService)
+  TInfraAspectService = class(TBaseElement, IInfraAspectService)
   private
     FInterceptedStack: IInterceptedStack;
     FJointPoints: IInfraJointPoints;
@@ -490,7 +490,7 @@ end;
 // Access Violations.
 procedure InjectAspectService;
 begin
-  (ApplicationContext as IMemoryManagedObject).Inject(
+  (ApplicationContext as IBaseElement).Inject(
     IInfraAspectService, TInfraAspectService.Create);
 end;
 

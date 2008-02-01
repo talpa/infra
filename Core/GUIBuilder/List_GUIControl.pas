@@ -12,7 +12,7 @@ uses
   InfraCommon;
 
 type
-  _ITERABLELIST_BASE_ = TMemoryManagedObject;
+  _ITERABLELIST_BASE_ = TBaseElement;
   _ITERABLELIST_INTF_ = IGUIControlListBase;
   _ITEM_INTF_ = IGUIControl;
   _ITERATOR_INTF_ = IGUIControlIterator;

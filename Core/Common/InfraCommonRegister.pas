@@ -14,7 +14,7 @@ procedure RegisterOnReflection;
 begin
   with TypeService do
   begin
-    AddType(IMemoryManagedObject, 'MemoryManagedObject', TMemoryManagedObject,
+    AddType(IBaseElement, 'BaseElement', TBaseElement,
       IInterface);
     AddType(IElement, 'Element', TElement, IInterface);
   end;

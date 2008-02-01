@@ -86,7 +86,7 @@ var
 begin
   with TypeService do
   begin
-    SomeType := GetType(IMemoryManagedObject);
+    SomeType := GetType(IBaseElement);
     CheckNotNull(SomeType, 'Cannot get type by GUID');
 
     SomeType := GetType('InfraObject');
@@ -225,3 +225,4 @@ initialization
     TTypeServiceTests.Suite);
 
 end.
+

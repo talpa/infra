@@ -95,7 +95,7 @@ UnitOutputDir=..\bin
 PackageDLLOutputDir=..\bin
 PackageDCPOutputDir=..\bin
 SearchPath=..\bin;..\..\bin
-Packages=vcl;rtl;vclx;indy;dbrtl;dsnap;dsnapcon;vcldb;VclSmp;dbexpress;dbxcds;bdertl;vcldbx;vclie;adortl;ibxpress;dss;vclactnband;vclshlctrls;Rave50CLX;Rave50VCL;qrpt70;Calendario_d7;XPack;inet;xmlrtl;inetdbbde;inetdbxpress;inetdb;visualclx;visualdbclx;SpellersD_7;SpellersRT_7;DPK_JLPSay;RxCtl7;RxBDE7;RxDB7;webdsnap;FR7;FRIBX7;FRDBX7;Rz30Ctls70;Rz30DBCtls70;RLibWinD7vcl;Tee77;TeeUI77;TeeDB77;TeePro77;TeeGL77;TeeImage77;TeeLanguage77;teeqr;IOCore;IOIBX
+Packages=vcl;rtl;vclx;indy;dbrtl;dsnap;dsnapcon;vcldb;VclSmp;dbexpress;dbxcds;bdertl;vcldbx;vclie;adortl;ibxpress;dss;vclactnband;vclshlctrls;Rave50CLX;Rave50VCL;qrpt;Calendario_d7;XPack;inet;xmlrtl;inetdbbde;inetdbxpress;inetdb;visualclx;visualdbclx;SpellersD_7;SpellersRT_7;DPK_JLPSay;RxCtl7;RxBDE7;RxDB7;webdsnap;FR7;FRIBX7;FRDBX7;Rz30Ctls70;Rz30DBCtls70;RLibWinD7vcl;Tee77;TeeUI77;TeeDB77;TeePro77;TeeGL77;TeeImage77;TeeLanguage77;teeqr;IOCore;IOIBX
 Conditionals=
 DebugSourceDirs=..\bin
 UsePackages=0
@@ -135,6 +135,8 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 [Excluded Packages]
+C:\Projetos\DynApp\_Outros\Validation\ValidationProviderD10.bpl=Validation Provider
+c:\arquivos de programas\borland\delphi7\Bin\dcldss70.bpl=Borland Decision Cube Components
 C:\Temp\dvExpressLayout\Bin\dclcxEditorsVCLD7.bpl=ExpressEditors Library 5 (VCL Edition) by Developer Express Inc.
 C:\Temp\dvExpressLayout\Bin\dclcxLibraryVCLD7.bpl=Express Cross Platform Library (VCL Edition) by Developer Express Inc.
 C:\Temp\dvExpressLayout\Bin\dxGDIPlusD7.bpl=ExpressGDI+ Library by Developer Express Inc.

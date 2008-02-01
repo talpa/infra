@@ -6,7 +6,7 @@ program InfraHibernateTests;
 {$I Infra.Inc}
 
 uses
-  {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}
+  FastMM4,
   ApplicationContext,
   TestFramework,
   InfraHibernate {$IFDEF LINUX},
