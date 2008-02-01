@@ -49,7 +49,7 @@ Type
     property Updatable: Boolean read GetUpdatable write SetUpdatable;
   end;
 
-  ICollumns = interface(IMemoryManagedObject)
+  ICollumns = interface(IBaseElement)
     ['{3B6F6AE0-EB84-47F2-A009-172D235C26A4}']
   end;
 
@@ -60,3 +60,4 @@ Type
 implementation
 
 end.
+

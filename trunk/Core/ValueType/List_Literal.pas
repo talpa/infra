@@ -12,7 +12,7 @@ uses
   InfraBasicList;
 
 type
-  // *** Estava _ITERABLELIST_BASE_ = TMemoryManagedObject;
+  // *** Estava _ITERABLELIST_BASE_ = TBaseElement;
   _ITERABLELIST_BASE_ = TElement;
   _ITERABLELIST_INTF_ = IInfraLiteralList;
   _ITEM_INTF_ = IInfraLiteral;

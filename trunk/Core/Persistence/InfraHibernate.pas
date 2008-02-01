@@ -23,7 +23,7 @@ type
     property SessionFactory: ISessionFactory read GetSessionFactory;
   end;
 
-  THibPersistentClass = class(TMemoryManagedObject, IHibPersistentClass)
+  THibPersistentClass = class(TBaseElement, IHibPersistentClass)
   private
     FEntityTypeInfo: IClassInfo;
     function GetEntityName: string;
@@ -34,7 +34,8 @@ type
     function GetEntityTypeInfo: IClassInfo;
     procedure SetEntityTypeInfo(const Value: IClassInfo);
   public
-    property EntityTypeInfo: IClassInfo read GetEntityTypeInfo write SetEntityTypeInfo;
+    property EntityTypeInfo: IClassInfo read GetEntityTypeInfo
+      write SetEntityTypeInfo;
   end;
 
   TConfiguration = class(TElement, IConfiguration)
@@ -83,9 +84,14 @@ type
   private
     FConnection: IConnection;
     FSessionFactory: ISessionFactory;
+    FPersistentClass: IHibPersistentClass;
     function GetConnection: IConnection;
     function GetSessionFactory: ISessionFactory;
-    function Load(const pTypeID: TGUID; const pOID: IInfraType): IInfraType;
+    function Load(const pTypeID: TGUID;
+      const pOID: IInfraType): IInfraType; overload;
+    // *** TSession (3)
+    function Load(const pObj: IInfraType;
+      const pOID: IInfraType): IInfraType; overload;
     procedure SetConnection(const Value: IConnection);
   public
     constructor Create(pSessionFactory: ISessionFactory); reintroduce;
@@ -95,6 +101,7 @@ type
 
   TLoader = class(TElement, ILoader)
   private
+    // *** FPersistentClass tem de ser removido com a entrada do EntityPersister
     FPersistentClass: IHibPersistentClass;
     function FillObject(const pObject: IInfraType;
       const vResultSet: IResultSet): string;
@@ -104,6 +111,16 @@ type
       const pOID: IInfraType): IInfraType;
   public
     constructor Create; override;
+  end;
+
+  // *** TEntityPersister (0)
+  TEntityPersister = class(TInterfacedObject, IEntityPersister)
+  private
+    FLoader: ILoader;
+    function Load(const pTypeID: TGUID; const pSession: ISession;
+      const pOID: IInfraType): IInfraType;
+  public
+    constructor Create;
   end;
 
 implementation
@@ -266,6 +283,8 @@ constructor TSession.Create(pSessionFactory: ISessionFactory);
 begin
   inherited Create;
   FSessionFactory := pSessionFactory;
+  // *** FPersistentClass tem de ser removido com a entrada do EntityPersister
+  FPersistentClass := THibPersistentClass.Create;
 end;
 
 function TSession.GetConnection: IConnection;
@@ -282,8 +301,16 @@ function TSession.Load(const pTypeID: TGUID; const pOID: IInfraType): IInfraType
 var
   vLoader: ILoader;
 begin
+  // *** Tem de pegar o EntityPersister na Factory e chamar o Load do mesmo.
   vLoader := TLoader.Create;
   Result := vLoader.Load(pTypeID, Self, pOID);
+  {  // *** nao pode criar um entitypersister vazio...
+    Result := vEntityPersister.Load(pTypeID, Self, pOID);  }
+end;
+
+function TSession.Load(const pObj, pOID: IInfraType): IInfraType;
+begin
+  // *** TSession (3)
 end;
 
 procedure TSession.SetConnection(const Value: IConnection);
@@ -305,6 +332,7 @@ begin
     vEntityTypeInfo := GetType(pTypeID, True);
     Result := CreateInstance(vEntityTypeInfo) as IInfraType;
   end;
+  // *** FPersistentClass tem de ser removido com a entrada do EntityPersister
   FPersistentClass.EntityTypeInfo := vEntityTypeInfo;
   sSelectClause := GetSelectClause(vEntityTypeInfo, pOID);
   vResultSet := pSession.Connection.ExecuteQuery(sSelectClause);
@@ -315,6 +343,7 @@ end;
 function TLoader.GetSelectClause(const pEntityTypeInfo: IClassInfo;
   const pOID: IInfraType): string;
 begin
+  // *** FPersistentClass tem de ser removido com a entrada do EntityPersister
   Result :=
     ' SELECT *' +
     ' FROM ' + FPersistentClass.GetEntityName +
@@ -423,10 +452,26 @@ end;
 //
 //end;
 
+{ TEntityPersister }
+
+constructor TEntityPersister.Create;
+begin
+  inherited;
+  // *** deveria haver uma lista de loaders em algum lugar para poder 
+  // *** ser reutilizado por mais de um entitypersister
+  FLoader := TLoader.Create;
+end;
+
+function TEntityPersister.Load(const pTypeID: TGUID;
+  const pSession: ISession; const pOID: IInfraType): IInfraType;
+begin
+  Result := FLoader.Load(pTypeID, pSession, pOID);
+end;
+
 // Injeta o mecanismo de persistencia no Applicationcontext.
 procedure InjectPersitenceService;
 begin
-  (ApplicationContext as IMemoryManagedObject).Inject(
+  (ApplicationContext as IBaseElement).Inject(
     IPersistenceService, TPersistenceService.Create);
 end;
 
@@ -434,3 +479,4 @@ initialization
   InjectPersitenceService;
 
 end.
+

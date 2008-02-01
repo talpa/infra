@@ -1469,7 +1469,7 @@ end;
 
 procedure InjectMVPMapperService;
 begin
-  (ApplicationContext as IMemoryManagedObject).Inject(
+  (ApplicationContext as IBaseElement).Inject(
     IMVPMapperService, TMVPMapperService.Create);
 end;
 

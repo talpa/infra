@@ -11,7 +11,7 @@ uses
   InfraCommon;
 
 type
-  _ITERABLELIST_BASE_ = TMemoryManagedObject;
+  _ITERABLELIST_BASE_ = TBaseElement;
   _ITERABLELIST_INTF_ = IMemberInfoList;
   _ITEM_INTF_ = IMemberInfo;
   _ITERATOR_INTF_ = IInfraIterator;

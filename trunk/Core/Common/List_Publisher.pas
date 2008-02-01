@@ -12,7 +12,7 @@ uses
   InfraNotify;
 
 type
-  _ITERABLELIST_BASE_ = TMemoryManagedObject;
+  _ITERABLELIST_BASE_ = TBaseElement;
   _ITERABLELIST_INTF_ = IInfraPublisherList;
   _ITEM_INTF_ = IInfraPublisher;
   _ITERATOR_INTF_ = IInfraIterator;

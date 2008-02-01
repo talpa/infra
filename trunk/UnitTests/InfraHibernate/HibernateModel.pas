@@ -38,9 +38,6 @@ type
 
 implementation
 
-uses
-  MapperAnnotationIntf;
-
 { TAccount }
 
 procedure TAccount.InfraInitInstance;

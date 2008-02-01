@@ -10,21 +10,21 @@ uses
 
 type
   TApplicationContext = class(TInterfacedObject, IApplicationContext,
-    IMemoryManagedObject, IInterface)
+    IBaseElement, IInterface)
   private
-    FElement: IMemoryManagedObject;
+    FElement: IBaseElement;
     FEventService: IInfraEventService;
     FReferenceService: IInfraReferenceService;
     FTypeService: ITypeService;
   protected
-    function GetElement: IMemoryManagedObject;
+    function GetElement: IBaseElement;
     function GetEventService: IInfraEventService;
     function GetReferenceService: IInfraReferenceService;
     function GetTypeService: ITypeService;
     function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
     procedure ShutDown;
-    property Element: IMemoryManagedObject read GetElement
-      implements IMemoryManagedObject;
+    property Element: IBaseElement read GetElement
+      implements IBaseElement;
     property EventService: IInfraEventService read GetEventService;
     property ReferenceService: IInfraReferenceService read GetReferenceService;
     property TypeService: ITypeService 
@@ -47,10 +47,10 @@ uses
 
 { TApplicationContext }
 
-function TApplicationContext.GetElement: IMemoryManagedObject;
+function TApplicationContext.GetElement: IBaseElement;
 begin
   if not Assigned(FElement) then 
-    FElement := TMemoryManagedObject.Create;
+    FElement := TBaseElement.Create;
   Result := FElement;
 end;
 
@@ -109,3 +109,4 @@ initialization
   RegisterAllOnReflection;
 
 end.
+

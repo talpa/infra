@@ -12,7 +12,7 @@ uses
   InfraCommon;
 
 type
-  _STACK_BASE_ = TMemoryManagedObject;
+  _STACK_BASE_ = TBaseElement;
   _STACK_BASE_INTF_ = IInterceptedStack;
   _ITEM_INTF_ = IInterceptedStackItem;
   _ITERATOR_INTF_ = IInfraIterator;               // Iterator's Interface

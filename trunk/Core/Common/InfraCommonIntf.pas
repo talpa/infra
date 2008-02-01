@@ -12,7 +12,7 @@ uses
 type
   TRetentionPolice = (rpNone, rpClass, rpInstance);
 
-  IMemoryManagedObject = interface;
+  IBaseElement = interface;
   IInfraEventService = interface;
   IInfraReferenceService = interface;
   IInfraPublisher = interface;
@@ -27,12 +27,12 @@ type
 
   IApplicationContext = interface(IInterface)
     ['{E0C9C9AC-1555-4A14-B576-AEDB09A170AE}']
-    function GetElement: IMemoryManagedObject;
+    function GetElement: IBaseElement;
     function GetEventService: IInfraEventService;
     function GetReferenceService: IInfraReferenceService;
     function GetTypeService: ITypeService;
     procedure ShutDown;
-    property Element: IMemoryManagedObject read GetElement;
+    property Element: IBaseElement read GetElement;
     property EventService: IInfraEventService read GetEventService;
     property ReferenceService: IInfraReferenceService read GetReferenceService;
     property TypeService: ITypeService read GetTypeService;
@@ -74,23 +74,17 @@ type
     property Item[Index: Integer]: IInjectedItem read GetItem; default;
   end;
 
-  IMemoryManagedObject = interface(IInterface)
+  IBaseElement = interface(IInterface)
     ['{B70BB062-6298-4EF7-9CCB-9BFF732EC0CD}']
     {$IFDEF SEE_REFCOUNT}
     function GetRefCount: integer;
     {$ENDIF}
-    function Annotate(const pID: TGUID): IInterface; overload;
-    function Annotate(const pClassInfo: IClassInfo): IInterface; overload;
-    function isAnnotationPresent(const pID: TGUID): Boolean;
-    function GetAnnotation(const pID: TGUID): IInterface;
-    function GetAnnotations: IAnnotationsIterator;
-    function Inject(const pID: TGUID; const pItem: IInterface;
-      pIsAnnotation: boolean = False): IInjectedItem;
+    function Inject(const pID: TGUID; const pItem: IInterface): IInjectedItem;
     function GetInjectedList: IInjectedList;
     property InjectedList: IInjectedList read GetInjectedList;
   end;
 
-  IElement = interface(IMemoryManagedObject)
+  IElement = interface(IBaseElement)
     ['{82045917-1413-4752-ADFB-16A8B26D93B8}']
     function GetPublisher: IInfraPublisher;
     function GetTypeInfo: IClassInfo;
@@ -120,6 +114,10 @@ type
       const Value: IInterface);
   end;
 
+  IReflect = interface
+    ['{00FF9AF3-26A8-45EB-9103-4E3973F5AC61}']
+  end;
+
   // Notify
 
   TSubscriberInform = procedure (const Event: IInfraEvent) of object;
@@ -132,7 +130,7 @@ type
     procedure Publish(const Event: IInfraEvent);
   end;
 
-  IInfraPublisherList = interface(IMemoryManagedObject)
+  IInfraPublisherList = interface(IBaseElement)
     ['{3744A0C5-DB23-400F-9861-A075BF49DF21}']
     function Add(const Item: IInfraPublisher): Integer;
     function First: IInfraPublisher;
@@ -155,7 +153,7 @@ type
     function Apply(const Event: IInfraEvent): Boolean;
   end;
 
-  ISubscription = interface(IMemoryManagedObject)
+  ISubscription = interface(IBaseElement)
     ['{00154BC2-A64D-45B4-9C3E-4915C39B565B}']
     function GetSubscriber: ISubscriber;
     procedure Publish(const Event: IInfraEvent);
@@ -178,7 +176,7 @@ type
     property Subscriber: ISubscriber read GetSubscriber;
   end;
 
-  ISubscriptionList = interface(IMemoryManagedObject)
+  ISubscriptionList = interface(IBaseElement)
     ['{CAFB19B6-91E5-45D7-BCE9-709794C1840E}']
     function Add(const Item: ISubscription): Integer;
     function First: ISubscription;
@@ -207,7 +205,7 @@ type
     property Source: IElement read GetSource write SetSource;
   end;
 
-  IInfraEventServiceItem = interface(IMemoryManagedObject)
+  IInfraEventServiceItem = interface(IBaseElement)
     ['{54D2EDC8-299F-4055-9438-4B32CBF51D20}']
     function GetEventType: TGUID;
     function GetPublishers: IInfraPublisherList;
@@ -271,7 +269,7 @@ type
   IParameterInfo = interface;
   IParameterInfoList = interface;
 
-  IClassInfoList = interface(IMemoryManagedObject)
+  IClassInfoList = interface(IBaseElement)
     ['{A9E10732-7BED-4FC1-BCD2-556721330485}']
     function Add(const Item: IClassInfo): Integer;
     function First: IClassInfo;
@@ -315,7 +313,7 @@ type
     procedure Next;
   end;
 
-  IMemberInfoList = interface(IMemoryManagedObject)
+  IMemberInfoList = interface(IBaseElement)
     ['{A8439100-8F79-4693-A30C-04823B557769}']
     function Add(const Item: IMemberInfo): Integer;
     function First: IMemberInfo;
@@ -336,7 +334,7 @@ type
       write SetItem; default;
   end;
 
-  IPropertyInfoList = interface(IMemoryManagedObject)
+  IPropertyInfoList = interface(IBaseElement)
     ['{86FED90A-06AC-4CB5-8BB8-2ECB78FA8A25}']
     function Add(const Item: IPropertyInfo): Integer;
     function First: IPropertyInfo;
@@ -353,7 +351,7 @@ type
       write SetItem; default;
   end;
 
-  IMethodInfoList = interface(IMemoryManagedObject)
+  IMethodInfoList = interface(IBaseElement)
     ['{EA1C173B-0079-4F53-819E-851A24C3798E}']
     function Add(const Item: IMethodInfo): Integer;
     function First: IMethodInfo;
@@ -370,7 +368,7 @@ type
       write SetItem; default;
   end;
 
-  IParameterInfoList = interface(IMemoryManagedObject)
+  IParameterInfoList = interface(IBaseElement)
     ['{E587DA28-2D36-4C37-AAA3-7817B9F8095E}']
     function Add(const Item: IParameterInfo): Integer;
     function First: IParameterInfo;
@@ -387,7 +385,7 @@ type
       write SetItem; default;
   end;
 
-  IRelationInfoList = interface(IMemoryManagedObject)
+  IRelationInfoList = interface(IBaseElement)
     ['{4C0735B1-779C-4E57-8799-89FC9727ED78}']
     function Add(const Item: IRelationInfo): Integer;
     function First: IRelationInfo;
@@ -404,7 +402,16 @@ type
       write SetItem; default;
   end;
 
-  IClassInfo = interface(IElement)
+  IReflectElement = interface(IElement)
+    ['{CF16B242-DA09-482A-9DB7-DB2DD7330A94}']
+    function Annotate(const pID: TGUID): IInterface; overload;
+    function Annotate(const pClassInfo: IClassInfo): IInterface; overload;
+    function isAnnotationPresent(const pID: TGUID): Boolean;
+    function GetAnnotation(const pID: TGUID): IInterface;
+    function GetAnnotations: IAnnotationsIterator;
+  end;
+
+  IClassInfo = interface(IReflectElement)
     ['{FCD45266-7AE7-4EB3-9F51-4CD22F3C7B4B}']
     function AddPropertyInfo(const pName: string; const pType: IClassInfo;
       pGetterMethod: Pointer; pSetterMethod: Pointer = nil): IPropertyInfo;
@@ -467,7 +474,7 @@ type
     property IsAnnotation: Boolean read GetIsAnnotation;
   end;
 
-  IMemberInfo = interface(IElement)
+  IMemberInfo = interface(IReflectElement)
     ['{879C1FB0-9FBF-4CAB-A4AC-E3A769C50304}']
     function GetDeclaringType: IClassInfo;
     function GetFullName: string;
@@ -519,7 +526,7 @@ type
     ['{E3A8CED1-0138-4CAA-BD83-75266DE95C8A}']
   end;
 
-  IParameterInfo = interface(IMemoryManagedObject)
+  IParameterInfo = interface(IBaseElement)
     ['{13334830-727F-4BB4-85DA-54EFE7673508}']
     function GetDefaultValue: IInterface;
     function GetIsOptional: boolean;
@@ -539,7 +546,7 @@ type
     property Position: integer read GetPosition;
   end;
 
-  IMultiplicityInfo = interface(IMemoryManagedObject)
+  IMultiplicityInfo = interface(IBaseElement)
     ['{8E7BD210-2649-4F16-B19A-BEFD4CF2BC9F}']
     function GetLower: TRelationLimit;
     function GetUpper: TRelationLimit;
@@ -549,7 +556,7 @@ type
     property Upper: TRelationLimit read GetUpper write SetUpper;
   end;
 
-  IRelationEndInfo = interface(IMemoryManagedObject)
+  IRelationEndInfo = interface(IBaseElement)
     ['{F10A3702-1303-4FB1-B9F4-AB504866C1C5}']
     function GetPropertyInfo: IPropertyInfo;
     function GetMultiplicity: IMultiplicityInfo;
@@ -561,7 +568,7 @@ type
     property OtherEnd: IRelationEndInfo read GetOtherEnd;
   end;
 
-  IRelationInfo = interface(IMemoryManagedObject)
+  IRelationInfo = interface(IBaseElement)
     ['{6249107B-0C3F-4246-87C0-C9D92E2106F6}']
     function GetDestination: IRelationEndInfo;
     function GetContainerInfo: IClassInfo;

@@ -144,12 +144,3 @@ C:\Temp\dvExpressLayout\Bin\dcldxLayoutControlD7.bpl=ExpressLayout Control by De
 C:\Temp\dvExpressLayout\Bin\dxLayoutControlD7.bpl=ExpressLayout Control by Developer Express Inc.
 C:\Temp\dvExpressLayout\Bin\dxLayoutControlcxEditAdaptersD7.bpl=ExpressLayoutControl Adapters for ExpressEditors Library 5 by Developer Express Inc.
 C:\Temp\dvExpressLayout\Bin\dxComnD7.bpl=ExpressCommonLibrary by Developer Express Inc.
-[HistoryLists\hlDebugSourcePath]
-Count=1
-Item0=..\..\bin
-[HistoryLists\hlUnitAliases]
-Count=1
-Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
-[HistoryLists\hlSearchPath]
-Count=1
-Item0=..\..\bin

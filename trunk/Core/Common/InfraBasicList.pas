@@ -14,7 +14,7 @@ type
     function NewIterator: IInfraIterator;
   end;
 
-  TInfraCustomListIterator = class(TMemoryManagedObject, IInfraIterator)
+  TInfraCustomListIterator = class(TBaseElement, IInfraIterator)
   private
     FCurrentIndex: Integer;
     FList: IInterfaceList;
