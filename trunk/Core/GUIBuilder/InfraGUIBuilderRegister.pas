@@ -19,7 +19,7 @@ begin
     AddType(IScreenControl, 'ScreenControl', TScreenControl, IScreenItem);
     AddType(IScreenGroup, 'ScreenGroup', TScreenGroup, IScreenItem);
     AddType(IScreen, 'Screen', TScreen, IElement);
-    AddType(IScreens, 'Screens', TScreens, IElement);
+    AddAnnotation(IScreens, 'Screens', TScreens, IElement);
   end;
 end;
 
