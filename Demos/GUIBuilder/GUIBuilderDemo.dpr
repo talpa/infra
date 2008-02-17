@@ -80,7 +80,7 @@ begin
 
   lItem := lGUIPersonSimple.AddControl('Birthday');
   lItem.Caption.AsString := 'Data de nascimento';
-  lItem.ControlClass := TcxDateEdit;
+//  lItem.ControlClass := TcxDateEdit;
 
 
 
@@ -120,7 +120,7 @@ begin
 
   lItem := lGUIPerson.AddControl('Birthday');
   lItem.Caption.AsString := 'Data de nascimento';
-  lItem.ControlClass := TcxDateEdit;
+//  lItem.ControlClass := TcxDateEdit;
 
   lItem := lGUIPerson.AddControl('Details');
   lItem.Caption.AsString := 'Observações';
@@ -138,11 +138,9 @@ begin
 
 
 
-
-
   //Build ----------------------------------------------------------------------
   //GUIService.RegisterGUIMapping(TcxTextEdit, IInfraString, 'Text');
-  //GUIService.Build(lPerson, lGUIPersonSimple);
+  GUIService.Build(lPerson, lGUIPersonSimple);
   GUIService.Build(lPerson, lGUIPerson);
-  //GUIService.Build(lPerson);
+  GUIService.Build(lPerson);
 end.
