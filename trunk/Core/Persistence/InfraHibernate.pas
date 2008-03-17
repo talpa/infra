@@ -2,14 +2,13 @@ unit InfraHibernate;
 
 interface
 
-{$I Infra.Inc}
+{$I InfraPersistence.Inc}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
-  {TStrings}
-  Classes,
-  {Infra}
-  InfraCommon, InfraCommonIntf, InfraValueTypeIntf,
+  {TStrings} Classes,
+  {Zeos} ZDbcIntfs,
+  {Infra} InfraBase, InfraCommon, InfraCommonIntf, InfraValueTypeIntf,
   InfraHibernateIntf;
 
 type
@@ -23,22 +22,21 @@ type
     property SessionFactory: ISessionFactory read GetSessionFactory;
   end;
 
-  THibPersistentClass = class(TBaseElement, IHibPersistentClass)
+  TPersistentClass = class(TBaseElement, IPersistentClass)
   private
     FEntityTypeInfo: IClassInfo;
     function GetEntityName: string;
-    // *** function GetEntityPersister: IEntityPersister;
-    function GetOIDColumnName: string;
     function GetColumnName(const pPropertyInfo: IPropertyInfo): string;
     procedure CheckEntityTypeInfo;
     function GetEntityTypeInfo: IClassInfo;
     procedure SetEntityTypeInfo(const Value: IClassInfo);
+    function IsIdentifierColumn(const pPropertyInfo: IPropertyInfo): boolean;
   public
     property EntityTypeInfo: IClassInfo read GetEntityTypeInfo
       write SetEntityTypeInfo;
   end;
 
-  TConfiguration = class(TElement, IConfiguration)
+  TConfiguration = class(TBaseElement, IConfiguration)
   private
     FProperties: TStrings;
     function GetProperties: TStrings;
@@ -54,79 +52,117 @@ type
       write SetPropertyItem;
   end;
 
-  TConnectionProvider = class(TElement, IConnectionProvider)
+  TConnectionProvider = class(TBaseElement, IConnectionProvider)
   private
     FConfiguration: IConfiguration;
     procedure Close;
-    procedure CloseConnection(const pConnection: IConnection);
+    procedure CloseConnection(const pConnection: IZConnection);
     procedure Configure;
-    function GetConnection: IConnection;
+    function GetConnection: IZConnection;
   public
     constructor Create(const pConfig: IConfiguration); reintroduce;
   end;
 
-  TSessionFactory = class(TElement, ISessionFactory)
+  TSessionFactory = class(TBaseElement, ISessionFactory)
   private
     FConfiguration: IConfiguration;
     FConnectionProvider: IConnectionProvider;
     FDialect: IDialect;
+    FEntityPersisters: IEntityPersisters;
     function GetConnectionProvider: IConnectionProvider;
     function GetDialect: IDialect;
     function OpenSession: ISession; overload;
-    function OpenSession(const pConnection: IConnection): ISession; overload;
+    function OpenSession(const pConnection: IZConnection): ISession; overload;
+    function GetEntityPersister(const pEntityID: TGUID): IEntityPersister;
   public
     constructor Create(pConfig: IConfiguration); reintroduce;
     property ConnectionProvider: IConnectionProvider read GetConnectionProvider;
     property Dialect: IDialect read GetDialect;
   end;
 
-  TSession = class(TElement, ISession)
+  TSession = class(TBaseElement, ISession, IInternalSession)
   private
-    FConnection: IConnection;
+    FConnection: IZConnection;
     FSessionFactory: ISessionFactory;
-    FPersistentClass: IHibPersistentClass;
-    function GetConnection: IConnection;
+    function FireLoad(const pEntityID: TGUID; const pOID: IInfraType;
+      const pInstanceToLoad: IInfraType = nil): IInfraType;
+  protected
+    // ISession
+    function GetConnection: IZConnection;
     function GetSessionFactory: ISessionFactory;
-    function Load(const pTypeID: TGUID;
+    function Load(const pEntityID: TGUID;
       const pOID: IInfraType): IInfraType; overload;
-    // *** TSession (3)
-    function Load(const pObj: IInfraType;
+    function Load(const pInstanceToLoad: IInfraType;
       const pOID: IInfraType): IInfraType; overload;
-    procedure SetConnection(const Value: IConnection);
+    procedure SetConnection(const Value: IZConnection);
+    function CreateCriteria(const pTypeID: TGUID): ICriteria; overload;
+    function CreateCriteria(const pTypeInfo: IClassInfo): ICriteria; overload;
+    property Connection: IZConnection read GetConnection write SetConnection;
+    property SessionFactory: ISessionFactory read GetSessionFactory;
+    // IInternalSession
+    function List(const Criteria: ICriteria): IInfraList;
   public
     constructor Create(pSessionFactory: ISessionFactory); reintroduce;
-    property Connection: IConnection read GetConnection write SetConnection;
-    property SessionFactory: ISessionFactory read GetSessionFactory;
   end;
 
-  TLoader = class(TElement, ILoader)
+  TEntityLoader = class(TBaseElement, IEntityLoader)
   private
-    // *** FPersistentClass tem de ser removido com a entrada do EntityPersister
-    FPersistentClass: IHibPersistentClass;
-    function FillObject(const pObject: IInfraType;
-      const vResultSet: IResultSet): string;
-    function GetSelectClause(const pEntityTypeInfo: IClassInfo;
-      const pOID: IInfraType): string;
-    function Load(const pTypeID: TGUID; const pSession: ISession;
-      const pOID: IInfraType): IInfraType;
+    FEntityPersister: IEntityPersister;
+    function DoQuery(const pSession: ISession; const pOID,
+      pOptionalInstance: IInfraType): IInfraList;
+    function GetRowFromResultSet(const pOID: IInfraType;
+      const pOptionalInstance: IInfraType;
+      const pResultSet: IZResultSet): IInfraType;
+    function Load(const pOID: IInfraType; const pOptionalInstance: IInfraType;
+      const pSession: ISession): IInfraType;
+    procedure InitializeEntity(const pObject: IInfraType;
+      const pResultSet: IZResultSet);
+    procedure SetPropertyFromResultSet(const pAttribute: IInfraType;
+      const pResultSet: IZResultSet; pIndex: Integer);
   public
-    constructor Create; override;
+    constructor Create(const pPersister: IEntityPersister); Reintroduce;
   end;
 
-  // *** TEntityPersister (0)
-  TEntityPersister = class(TInterfacedObject, IEntityPersister)
+  TEntityPersister = class(TBaseElement, IEntityPersister)
   private
-    FLoader: ILoader;
-    function Load(const pTypeID: TGUID; const pSession: ISession;
-      const pOID: IInfraType): IInfraType;
+    FPersistentClass: IPersistentClass;
+    FIdentifierColumns: IMemberInfoList;
+    FColumns: IMemberInfoList;
+    FAllColumns: IMemberInfoList;
+    FEntityLoader: IEntityLoader;
+    FSessionFactory: ISessionFactory;
+    FSQLSnapshotSelectString: string;
+    function GetPersistentClass: IPersistentClass;
+    function GetSQLSnapshotSelectString: string;
+    function GetColumnName(const pPropertyInfo: IPropertyInfo): string;
+    function ConcretePropertySelectFragment: string;
+    procedure LoadColumns;
+    function getIdentifierColumnNames: TStrings;
+    function GenerateSnapshotSelectString: string;
+    function GetAllColumns: IMemberInfoList;
+  protected
+    function Load(const pOID: IInfraType; const pOptionalInstance: IInfraType;
+      const pSession: ISession): IInfraType;
+    function Instantiate(const pOID: IInfraType): IInfraType;
+    property PersistentClass: IPersistentClass read GetPersistentClass;
+    property SQLSnapshotSelectString: string read GetSQLSnapshotSelectString;
   public
-    constructor Create;
+    constructor Create(const pEntityInfo: IClassInfo;
+      const pSessionFactory: ISessionFactory); reintroduce;
   end;
 
 implementation
 
 uses
-  SysUtils, MapperAnnotationIntf;
+  SysUtils, List_MemberInfo, MapperAnnotationIntf, List_EntityPersister, InfraConsts,
+  List_Criterion, InfraValueType, InfraCriteria, InfraSQLBuilder;
+
+// *** acho que nao precisamos desta classe
+type
+  TConnectionStringBuilder = class
+    class function BuildConnectionString(
+      const pConfiguration: IConfiguration): String;
+  end;
 
 { TPersistenceService }
 
@@ -142,6 +178,19 @@ begin
   if not Assigned(FConfiguration) then
     raise Exception.Create('Configuration is empty');
   Result := FConfiguration.BuildSessionFactory;
+end;
+
+{ TConnectionStringBuilder }
+
+class function TConnectionStringBuilder.BuildConnectionString(
+  const pConfiguration: IConfiguration): String;
+begin
+  Result :=
+    'zdbc:' + pConfiguration.PropertyItem['protocol'] +
+    '://' + pConfiguration.PropertyItem['hostname'] +
+    '/' + pConfiguration.PropertyItem['database'] +
+    '?username=' + pConfiguration.PropertyItem['username'] +
+    ';password=' + pConfiguration.PropertyItem['password'];
 end;
 
 { TConfiguration }
@@ -182,7 +231,7 @@ end;
 
 procedure TConfiguration.BindClasses;
 begin
-  // criar todos os HibPersistentClass aqui a partir da reflexão de classes
+  // criar todos os PersistentClass aqui a partir da reflexão de classes
   // que estiverem anotados com IEntity
 end;
 
@@ -205,7 +254,7 @@ begin
   // - remove todas as conexões do pool
 end;
 
-procedure TConnectionProvider.CloseConnection(const pConnection: IConnection);
+procedure TConnectionProvider.CloseConnection(const pConnection: IZConnection);
 begin
   // quando tiver pool:
   // - procura a conexão na lista e remove o mesmo
@@ -220,19 +269,13 @@ begin
   //   Environment.ConnectionDriver
 end;
 
-function TConnectionProvider.GetConnection: IConnection;
-var
-  vClassInfo: IClassInfo;
+function TConnectionProvider.GetConnection: IZConnection;
 begin
   // quando tiver pool:
   // - verifica se há alguma conexão livre na lista trava e retorna esta conexão
   //   senao cria uma e a retorna.
-  with TypeService do
-  begin
-    vClassInfo := GetType(
-      FConfiguration.PropertyItem['ConnectionClass'], True);
-    Result := CreateInstance(vClassInfo) as IConnection;
-  end;
+  Result := DriverManager.GetConnection(
+    TConnectionStringBuilder.BuildConnectionString(FConfiguration));
 end;
 
 { TSessionFactory }
@@ -242,6 +285,7 @@ begin
   inherited Create;
   FConfiguration := pConfig;
   FConnectionProvider := TConnectionProvider.Create(pConfig);
+  FEntityPersisters := TEntityPersisters.Create;
 end;
 
 function TSessionFactory.GetConnectionProvider: IConnectionProvider;
@@ -250,9 +294,15 @@ begin
 end;
 
 function TSessionFactory.GetDialect: IDialect;
+{
 var
   vEntityTypeInfo: IClassInfo;
+}
 begin
+  Result := nil;
+  {
+  // *** Por enquanto vamos retornar nil no Dialect, depois teria de
+  // *** descomentar o codigo abaixo.
   vEntityTypeInfo := nil;
   if not Assigned(FDialect) then
     with TypeService do
@@ -261,17 +311,37 @@ begin
       FDialect := CreateInstance(vEntityTypeInfo) as IDialect;
     end;
   Result := FDialect;
+  }
 end;
 
 function TSessionFactory.OpenSession: ISession;
 var
-  vConnection: IConnection;
+  vConnection: IZConnection;
 begin
   vConnection := ConnectionProvider.GetConnection;
   Result := OpenSession(vConnection);
 end;
 
-function TSessionFactory.OpenSession(const pConnection: IConnection): ISession;
+// ### No hibernate:
+// Todos os EntityPersister são criados e adicionados em uma matriz no
+// construtor desta classe.
+function TSessionFactory.GetEntityPersister(
+  const pEntityID: TGUID): IEntityPersister;
+begin
+  Result := FEntityPersisters[pEntityID];
+  if not Assigned(Result) then
+  begin
+    // *** Criar as subclasses de entitypersister e carregar o apropriado
+    // *** com base no mapeamento. Será criado um dos Entitypersisters abaixo:
+    // *** SingleTableEntityPersister (padrão), UnionSubclassEntityPersister,
+    // *** ou JoinedSubclassEntityPersister.
+    Result := TEntityPersister.Create(
+      TypeService.GetType(pEntityID, True), Self);
+    FEntityPersisters.Add(pEntityID, Result);
+  end;
+end;
+
+function TSessionFactory.OpenSession(const pConnection: IZConnection): ISession;
 begin
   Result := TSession.Create(Self);
   Result.Connection := pConnection;
@@ -283,11 +353,9 @@ constructor TSession.Create(pSessionFactory: ISessionFactory);
 begin
   inherited Create;
   FSessionFactory := pSessionFactory;
-  // *** FPersistentClass tem de ser removido com a entrada do EntityPersister
-  FPersistentClass := THibPersistentClass.Create;
 end;
 
-function TSession.GetConnection: IConnection;
+function TSession.GetConnection: IZConnection;
 begin
   Result := FConnection;
 end;
@@ -297,107 +365,198 @@ begin
   Result := FSessionFactory;
 end;
 
-function TSession.Load(const pTypeID: TGUID; const pOID: IInfraType): IInfraType;
+function TSession.Load(const pEntityID: TGUID;
+  const pOID: IInfraType): IInfraType;
+begin
+  Result := FireLoad(pEntityID, pOID);
+end;
+
+function TSession.Load(const pInstanceToLoad: IInfraType;
+  const pOID: IInfraType): IInfraType;
+begin
+  Result := FireLoad(NullGUID, pOid, pInstanceToLoad);
+end;
+
+function TSession.FireLoad(const pEntityID: TGUID; const pOID: IInfraType;
+  const pInstanceToLoad: IInfraType = nil): IInfraType;
 var
-  vLoader: ILoader;
+  vEntityPersister: IEntityPersister;
 begin
-  // *** Tem de pegar o EntityPersister na Factory e chamar o Load do mesmo.
-  vLoader := TLoader.Create;
-  Result := vLoader.Load(pTypeID, Self, pOID);
-  {  // *** nao pode criar um entitypersister vazio...
-    Result := vEntityPersister.Load(pTypeID, Self, pOID);  }
+  with FSessionFactory do
+    if Assigned(pInstanceToLoad) then
+      vEntityPersister := GetEntityPersister(pInstanceToLoad.TypeInfo.TypeID)
+    else
+      vEntityPersister := GetEntityPersister(pEntityID);
+  if not Assigned(vEntityPersister) then
+    Raise Exception.Create('EntityPersister to '+GUIDToString(pEntityID)+
+      'not found!');
+  // ### No hibernate:
+  // - Verificar se o Oid passado é compatível com o tipo de OID do
+  //   EntityPersister;
+  // - Prepara um objeto EntityKey com informações sobre o OID e passa
+  //   para DoLoad;
+  // - Há uma tratamento de Proxy;
+  // - Se pInstanceToLoad já está associado a este session gera exceção;
+  // - Primeiro procura a instância nos caches e se nao achar em nenhum
+  //   carrega do Datasource. Este chama o Load do EntityPersister;
+  Result := vEntityPersister.Load(pOID, pInstanceToLoad, Self);
 end;
 
-function TSession.Load(const pObj, pOID: IInfraType): IInfraType;
-begin
-  // *** TSession (3)
-end;
-
-procedure TSession.SetConnection(const Value: IConnection);
+procedure TSession.SetConnection(const Value: IZConnection);
 begin
   FConnection := Value;
 end;
 
-{ TLoader }
-
-function TLoader.Load(const pTypeID: TGUID; const pSession: ISession;
-  const pOID: IInfraType): IInfraType;
-var
-  vEntityTypeInfo: IClassInfo;
-  sSelectClause: string;
-  vResultSet: IResultSet;
+function TSession.CreateCriteria(const pTypeID: TGUID): ICriteria;
 begin
-  with TypeService do
-  begin
-    vEntityTypeInfo := GetType(pTypeID, True);
-    Result := CreateInstance(vEntityTypeInfo) as IInfraType;
+  Result := CreateCriteria(TypeService.GetType(pTypeID, True));
+end;
+
+function TSession.CreateCriteria(const pTypeInfo: IClassInfo): ICriteria;
+begin
+  Result := TCriteria.Create(pTypeInfo, Self);
+end;
+
+function TSession.List(const Criteria: ICriteria): IInfraList;
+begin
+
+end;
+
+{ TEntityLoader }
+
+constructor TEntityLoader.Create(const pPersister: IEntityPersister);
+begin
+  inherited Create;
+  // O EntityPersister Aponta para este Loader logo este tem de manter uma
+  // referencia fraca ao seu EntityPersister.
+  SetReference(IInterface(FEntityPersister), pPersister);
+end;
+
+function TEntityLoader.DoQuery(const pSession: ISession; const pOID: IInfraType;
+  const pOptionalInstance: IInfraType): IInfraList;
+var
+  vSQL: string;
+  vST: IZPreparedStatement;
+  vRS: IZResultSet;
+  vObject: IInfraType;
+begin
+  // ### No hibernate:
+  // Acontece um laço em uma matriz chamada EntityPersisters. Esta
+  // matriz contem todos os persisters que precisam ser carregados
+  // para casos como herança ou esta classe possuir relacionamentos.
+  vSQL := FEntityPersister.SQLSnapshotSelectString;
+  vST := pSession.Connection.PrepareStatement(vSQL);
+  // *** Ver como tratar parametros OID's, podemos ter vários situações:
+  // *** um type simples que é oid
+  // *** vários types que fazem parte do oid
+  // *** um type personalizado empacotando vários types que fazem parte do oid
+  vSt.SetInt(1, (pOID as IInfraInteger).AsInteger);
+  vRS := vST.ExecuteQueryPrepared;
+  Result := TInfraList.Create;
+  try
+    while vRS.Next do
+    begin
+      vObject := GetRowFromResultSet(pOID, pOptionalInstance, vRS);
+      Result.Add(vObject);
+    end;
+  finally
+    vRs.Close;
+    vST.Close;
   end;
-  // *** FPersistentClass tem de ser removido com a entrada do EntityPersister
-  FPersistentClass.EntityTypeInfo := vEntityTypeInfo;
-  sSelectClause := GetSelectClause(vEntityTypeInfo, pOID);
-  vResultSet := pSession.Connection.ExecuteQuery(sSelectClause);
-  FillObject(Result, vResultSet);
 end;
 
-// gera uma instrução SQL de seleção simples
-function TLoader.GetSelectClause(const pEntityTypeInfo: IClassInfo;
-  const pOID: IInfraType): string;
+function TEntityLoader.GetRowFromResultSet(const pOID: IInfraType;
+  const pOptionalInstance: IInfraType;
+  const pResultSet: IZResultSet): IInfraType;
 begin
-  // *** FPersistentClass tem de ser removido com a entrada do EntityPersister
-  Result :=
-    ' SELECT *' +
-    ' FROM ' + FPersistentClass.GetEntityName +
-    ' WHERE ' +
-    FPersistentClass.GetOIDColumnName + ' = ' +
-    IntToStr((pOID as IInfraInteger).AsInteger);
+  // ### No Hibernate:
+  // Aqui acontece um laço que preenche uma matriz de EntityKeys (Keys)
+  // ersta matriz é passada para uma função que cria os objetos caso
+  // pOptionalInstance = nil e então já preenche o oid destes objetos
+  // com o conteudo de Keys
+  if not Assigned(pOptionalInstance) then
+    Result := FEntityPersister.Instantiate(pOID)
+  else
+    Result := pOptionalInstance;
+  InitializeEntity(Result, pResultSet);
 end;
 
-// Preenche as propriedades do objeto com base nos valores do registro atual
-// do resultset.
-function TLoader.FillObject(const pObject: IInfraType;
-  const vResultSet: IResultSet): string;
+procedure TEntityLoader.InitializeEntity(const pObject: IInfraType;
+  const pResultSet: IZResultSet);
 var
-  vPropIterator: IPropertyInfoIterator;
   vPropertyInfo: IPropertyInfo;
+  vI: integer;
   vObj: IInfraObject;
   vAttribute: IInfraType;
 begin
   if Supports(pObject, IInfraObject, vObj) then
   begin
-    vPropIterator := vObj.TypeInfo.GetProperties;
-    while not vPropIterator.IsDone do
+    for vI := 0 to FEntityPersister.GetAllColumns.Count-1 do
     begin
-      vPropertyInfo := vPropIterator.CurrentItem;
+      vPropertyInfo := FEntityPersister.GetAllColumns[vI] as IPropertyInfo;
       vAttribute := vPropertyInfo.GetValue(pObject) as IInfraType;
-      vAttribute.Assign(vResultSet.GetValue(
-        FPersistentClass.GetColumnName(vPropertyInfo)));
-      vPropIterator.Next;
+      SetPropertyFromResultSet(vAttribute, pResultSet, vI);
     end;
   end;
 end;
 
-constructor TLoader.Create;
+procedure TEntityLoader.SetPropertyFromResultSet(const pAttribute: IInfraType;
+  const pResultSet: IZResultSet; pIndex: Integer);
 begin
-  inherited Create;
-  FPersistentClass := THibPersistentClass.Create;
+  Inc(pIndex); // ResultSet trabalha a partir de 1;
+  if pResultSet.IsNull(pIndex) then
+    pAttribute.Clear
+  else
+  begin
+    case pResultSet.GetMetadata.GetColumnType(pIndex) of
+      stString: (pAttribute as IInfraString).AsString :=
+        pResultSet.GetString(pIndex);
+      stInteger: (pAttribute as IInfraInteger).AsInteger :=
+        pResultSet.GetInt(pIndex);
+      stDouble: (pAttribute as IInfraDouble).AsDouble :=
+        pResultSet.GetDouble(pIndex);
+      stBoolean: (pAttribute as IInfraBoolean).AsBoolean :=
+        pResultSet.GetBoolean(pIndex);
+      stDate: (pAttribute as IInfraDate).AsDate :=
+        pResultSet.GetDate(pIndex);
+      stTime: (pAttribute as IInfraTime).AsTime :=
+        pResultSet.GetTime(pIndex);
+      stTimeStamp: (pAttribute as IInfraDateTime).AsDateTime :=
+        pResultSet.GetTimeStamp(pIndex);
+    end;
+  end;
 end;
 
-{ THibPersistentClass }
+function TEntityLoader.Load(const pOID: IInfraType;
+  const pOptionalInstance: IInfraType; const pSession: ISession): IInfraType;
+var
+  vList: IInfraList;
+begin
+  vList := DoQuery(pSession, pOID, pOptionalInstance);
+  case vList.Count of
+    0: Result := nil;
+    1: Result := vList[0];
+  else
+    Raise Exception.Create('Mais de uma linha foi encontrada'#13+
+      ' para o mesmo identificador');
+  end;
+end;
 
-procedure THibPersistentClass.CheckEntityTypeInfo;
+{ TPersistentClass }
+
+procedure TPersistentClass.CheckEntityTypeInfo;
 begin
   if not Assigned(FEntityTypeInfo) then
     Raise Exception.Create('Classinfo should be filled.');
 end;
 
-function THibPersistentClass.GetEntityTypeInfo: IClassInfo;
+function TPersistentClass.GetEntityTypeInfo: IClassInfo;
 begin
   Result := FEntityTypeInfo;
 end;
 
-// Retorna o nome da coluna, se nao houve anotação retorna por padrão
-// o nome da propriedade.
-function THibPersistentClass.GetColumnName(
+// Retorna o nome da coluna ou o nome da propriedade (se nao houve anotação)
+function TPersistentClass.GetColumnName(
   const pPropertyInfo: IPropertyInfo): string;
 var
   vColumn: IColumn;
@@ -408,9 +567,8 @@ begin
     Result := pPropertyInfo.Name;
 end;
 
-// Retorna o nome da tabela, se nao houve anotação retorna o nome da classe por
-// padrão.
-function THibPersistentClass.GetEntityName: string;
+// Retorna o nome da tabela ou o nome da classe (se nao houve anotação)
+function TPersistentClass.GetEntityName: string;
 var
   vEntity: IEntity;
 begin
@@ -421,51 +579,138 @@ begin
     Result := FEntityTypeInfo.Name;
 end;
 
-// Retorna o nome da coluna que é chave primaria com base na propriedade anotada
-// como identificador.
-function THibPersistentClass.GetOIDColumnName: string;
-var
-  vPropIterator: IPropertyInfoIterator;
-  vPropertyInfo: IPropertyInfo;
+// Verifica se a propriedade faz parte da chave primaria.
+function TPersistentClass.IsIdentifierColumn(
+  const pPropertyInfo: IPropertyInfo): boolean;
 begin
-  CheckEntityTypeInfo;
-  vPropIterator := FEntityTypeInfo.GetProperties;
-  while not vPropIterator.IsDone do
-  begin
-    vPropertyInfo := vPropIterator.CurrentItem;
-    if Supports(vPropertyInfo, IID) then
-    begin
-      Result := GetColumnName(vPropertyInfo);
-      Break;
-    end;
-    vPropIterator.Next;
-  end;
+  Result := Supports(pPropertyInfo, IID);
 end;
 
-procedure THibPersistentClass.SetEntityTypeInfo(const Value: IClassInfo);
+procedure TPersistentClass.SetEntityTypeInfo(const Value: IClassInfo);
 begin
   FEntityTypeInfo := Value;
 end;
 
-// *** function THibPersistentClass.GetEntityPersister: IEntityPersister;
-//begin
-//
-//end;
-
 { TEntityPersister }
 
-constructor TEntityPersister.Create;
+constructor TEntityPersister.Create(const pEntityInfo: IClassInfo;
+  const pSessionFactory: ISessionFactory);
 begin
-  inherited;
-  // *** deveria haver uma lista de loaders em algum lugar para poder 
-  // *** ser reutilizado por mais de um entitypersister
-  FLoader := TLoader.Create;
+  inherited Create;
+  FPersistentClass := TPersistentClass.Create;
+  FPersistentClass.EntityTypeInfo := pEntityInfo;
+  FEntityLoader := TEntityLoader.Create(Self);
+  // O SessionFactory mantem a lista de EntityPersisters logo este
+  // EntityPersister tem de manter uma referencia fraca ao SessionFactory
+  SetReference(IInterface(FSessionFactory), pSessionFactory);
+  LoadColumns;
 end;
 
-function TEntityPersister.Load(const pTypeID: TGUID;
-  const pSession: ISession; const pOID: IInfraType): IInfraType;
+procedure TEntityPersister.LoadColumns;
+var
+  vPropIterator: IPropertyInfoIterator;
 begin
-  Result := FLoader.Load(pTypeID, pSession, pOID);
+  FColumns := TMemberInfoList.Create;
+  FIdentifierColumns := TMemberInfoList.Create;
+  FAllColumns := TMemberInfoList.Create;
+  vPropIterator := FPersistentClass.EntityTypeInfo.GetProperties;
+  while not vPropIterator.IsDone do
+  begin
+    if FPersistentClass.IsIdentifierColumn(vPropIterator.CurrentItem) then
+      FIdentifierColumns.Add(vPropIterator.CurrentItem)
+    else
+      FColumns.Add(vPropIterator.CurrentItem);
+    FAllColumns.Add(vPropIterator.CurrentItem);
+    vPropIterator.Next;
+  end;
+end;
+
+function TEntityPersister.GetColumnName(
+  const pPropertyInfo: IPropertyInfo): string;
+begin
+  Result := FPersistentClass.GetColumnName(pPropertyInfo);
+end;
+
+function TEntityPersister.GetPersistentClass: IPersistentClass;
+begin
+  Result := FPersistentClass;
+end;
+
+function TEntityPersister.GetSQLSnapshotSelectString: string;
+begin
+  if (FSQLSnapshotSelectString = EmptyStr) then
+    FSQLSnapshotSelectString := GenerateSnapshotSelectString;
+  Result := FSQLSnapshotSelectString;
+end;
+
+function TEntityPersister.GenerateSnapshotSelectString: string;
+var
+  vSelect: ISelectBuilder;
+  vSelectClause, vFromClause, vWhereClause: string;
+  vIdColumns: TStrings;
+begin
+  vSelect := TSelectBuilder.Create(FSessionFactory.Dialect);
+  with vSelect do
+  begin
+    vIdColumns := getIdentifierColumnNames;
+    try
+      vSelectClause := TStringHelper.Join(',', vIdColumns) + ',' +
+        ConcretePropertySelectFragment;
+      vFromClause := FPersistentClass.GetEntityName;
+      vWhereClause := TStringHelper.Join('=? and ', vIdColumns) + '=?';
+    finally
+      vIdColumns.Free;
+    end;
+    SetSelectClause(vSelectClause);
+    SetFromClause(vFromClause);
+    SetOuterJoins(EmptyStr, EmptyStr);
+    SetWhereClause(vWhereClause);
+    Result := ToStatementString;
+  end;
+end;
+
+function TEntityPersister.getIdentifierColumnNames: TStrings;
+var
+  i: integer;
+  vColumn: IPropertyInfo;
+begin
+  Result := TStringList.Create;
+  for i := 0 to FIdentifierColumns.Count-1 do
+  begin
+    vColumn := FIdentifierColumns[i] as IPropertyInfo;
+    Result.Add(FPersistentClass.GetColumnName(vColumn));
+  end;
+end;
+
+function TEntityPersister.ConcretePropertySelectFragment: string;
+var
+  vColumnNames: TStrings;
+  i: integer;
+begin
+  vColumnNames := TStringList.Create;
+  try
+    for i := 0 to FColumns.Count-1 do
+      vColumnNames.Add(FPersistentClass.GetColumnName(
+        FColumns[i] as IPropertyInfo));
+    Result := TStringHelper.Join(',', vColumnNames);
+  finally
+    vColumnNames.Free;
+  end;
+end;
+
+function TEntityPersister.Instantiate(const pOID: IInfraType): IInfraType;
+begin
+  Result := TypeService.CreateInstance(
+    FPersistentClass.EntityTypeInfo) as IInfraType;
+  // *** Tem de preencher o oid do objeto já aqui. no hibernate usar o setter
+end;
+
+function TEntityPersister.Load(const pOID: IInfraType;
+  const pOptionalInstance: IInfraType; const pSession: ISession): IInfraType;
+begin
+  // ### No hibernate:
+  // - Pega o EntityLoader apropriado com base no lockmode
+  Result := FEntityLoader.Load(pOID, pOptionalInstance, pSession);
 end;
 
 // Injeta o mecanismo de persistencia no Applicationcontext.
@@ -475,8 +720,12 @@ begin
     IPersistenceService, TPersistenceService.Create);
 end;
 
+function TEntityPersister.GetAllColumns: IMemberInfoList;
+begin
+  Result := FAllColumns;
+end;
+
 initialization
   InjectPersitenceService;
 
 end.
-

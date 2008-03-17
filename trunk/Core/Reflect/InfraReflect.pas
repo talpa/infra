@@ -2,7 +2,7 @@ unit InfraReflect;
 
 interface
 
-{$I Infra.Inc}
+{$I InfraReflection.Inc}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
@@ -312,7 +312,7 @@ implementation
 
 uses
   Types, List_ClassInfo, List_RelationInfo, List_ParameterInfo,
-  List_MemberInfo, InfraValueTypeIntf;
+  List_MemberInfo;
 
 { TMultiplicityInfo }
 

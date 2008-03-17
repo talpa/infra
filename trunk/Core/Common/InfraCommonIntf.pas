@@ -2,7 +2,7 @@ unit InfraCommonIntf;
 
 interface
 
-{$I 'Infra.Inc'}
+{$I InfraCommon.Inc}
 
 uses
   Classes,
@@ -694,8 +694,3 @@ finalization
     _ApplicationContext.ShutDown;
 
 end.
-
-
-
-
-

@@ -247,4 +247,10 @@ type
 
 implementation
 
+uses
+  InfraMVPRegister;
+
+initialization
+  InfraMVPRegister.RegisterOnReflection;
+
 end.

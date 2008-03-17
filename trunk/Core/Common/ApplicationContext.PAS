@@ -2,7 +2,7 @@ unit ApplicationContext;
 
 interface
 
-{$I Infra.Inc}
+{$I InfraCommon.Inc}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
@@ -27,23 +27,18 @@ type
       implements IBaseElement;
     property EventService: IInfraEventService read GetEventService;
     property ReferenceService: IInfraReferenceService read GetReferenceService;
-    property TypeService: ITypeService 
+    property TypeService: ITypeService
       read GetTypeService;
   end;
 
 implementation
 
-// Ps: It is important put all services on use clause.
 uses
   InfraReflect,
   InfraCommon,
   InfraNotify,
   InfraReference,
-  InfraCommonRegister,
-  InfraValueTypeRegister,
-  InfraHibernateRegister,
-  InfraGUIBuilderRegister;
-  // *** InfraMVPRegister;
+  InfraCommonRegister;
 
 { TApplicationContext }
 
@@ -94,19 +89,8 @@ begin
   FReferenceService := nil;
 end;
 
-procedure RegisterAllOnReflection;
-begin
-  InfraCommonRegister.RegisterOnReflection;
-  InfraValueTypeRegister.RegisterOnReflection;
-  InfraHibernateRegister.RegisterOnReflection;
-  InfraGUIBuilderRegister.RegisterOnReflection;
-  // *** Marcos: voltar quando encaixar o MVP
-  // *** InfraMVPRegister.RegisterOnReflection;
-end;
-
 initialization
   RegisterApplicationContext(TApplicationContext.Create as IApplicationContext);
-  RegisterAllOnReflection;
+  InfraCommonRegister.RegisterOnReflection;
 
 end.
-

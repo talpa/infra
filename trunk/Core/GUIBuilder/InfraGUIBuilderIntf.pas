@@ -147,9 +147,15 @@ function GUIService: IInfraGUIService;
 
 implementation
 
+uses
+  InfraGUIBuilderRegister;
+
 function GUIService: IInfraGUIService;
 begin
   Result := ApplicationContext as IInfraGUIService;
 end;
+
+initialization
+  InfraGUIBuilderRegister.RegisterOnReflection;
 
 end.

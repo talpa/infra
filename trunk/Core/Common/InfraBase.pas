@@ -12,7 +12,7 @@ type
 
 implementation
 
-{ TInfraObject }
+{ TInfraBaseObject }
 
 // this virtual constructor is necessary to reflection create rightly instances.
 // This will permit Reflection use the right constructor of ImplClass. 

@@ -3,7 +3,7 @@
 // {$APPTYPE CONSOLE}
 program InfraAnnotationTests;
 
-{$I Infra.Inc}
+{$I Test.Inc}
 
 uses
   {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}

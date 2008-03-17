@@ -2,7 +2,7 @@ unit List_GUIMapping;
 
 interface
 
-{$I Infra.Inc}
+{$I InfraGUI.Inc}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}

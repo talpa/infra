@@ -290,10 +290,15 @@ function GetRefCountedPointerFromInterface(const Intf: IInterface): Pointer;
 
 implementation
 
+uses InfraValueTypeRegister;
+
 function GetRefCountedPointerFromInterface(const Intf: IInterface): Pointer;
 begin
   Result := nil;
   IInterface(Result) := Intf;
 end;
+
+initialization
+  InfraValueTypeRegister.RegisterOnReflection;
 
 end.

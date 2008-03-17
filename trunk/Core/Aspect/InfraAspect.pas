@@ -13,7 +13,7 @@
 }
 unit InfraAspect;
 
-{$I 'Infra.Inc'}
+{$I 'InfraAspect.Inc'}
 
 interface
 

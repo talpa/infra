@@ -1,6 +1,6 @@
 unit List_InterceptMethod;
 
-{$I Infra.Inc}
+{$I InfraAspect.Inc}
 
 interface
 

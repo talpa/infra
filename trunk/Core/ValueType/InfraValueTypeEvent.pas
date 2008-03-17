@@ -1,6 +1,6 @@
 unit InfraValueTypeEvent;
 
-{$I Infra.Inc}
+{$I InfraTypes.Inc}
 
 interface
 

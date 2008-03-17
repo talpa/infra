@@ -2,7 +2,7 @@ unit List_Literal;
 
 interface
 
-{$I Infra.Inc}
+{$I InfraTypes.Inc}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}

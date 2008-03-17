@@ -3,15 +3,16 @@
 // {$APPTYPE CONSOLE}
 program InfraReflectTests;
 
-{$I Infra.Inc}
+{$I Test.Inc}
 
 uses
-  {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}
+  FastMM4,
   ApplicationContext,
-  TestFramework
-  {$IFDEF LINUX}, QForms, QGUITestRunner
-  {$ELSE}, Forms, GUITestRunner
-  {$ENDIF},
+  TestFramework {$IFDEF LINUX},
+  QForms,
+  QGUITestRunner {$ELSE},
+  Forms,
+  GUITestRunner {$ENDIF},
   TextTestRunner,
   ClassInfoTests in 'ClassInfoTests.pas',
   ReflectModel in 'ReflectModel.pas',
