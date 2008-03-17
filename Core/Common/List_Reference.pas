@@ -2,7 +2,7 @@ unit List_Reference;
 
 interface
 
-{$I Infra.Inc}
+{$I InfraCommon.Inc}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}

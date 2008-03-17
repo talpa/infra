@@ -1,0 +1,42 @@
+package InfraTypes;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'InfraTypes - Framework de ValueTypes'}
+{$LIBSUFFIX '70'}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  InfraCore;
+
+contains
+  InfraValueType in '..\..\Core\ValueType\InfraValueType.pas',
+  InfraValueTypeConvert in '..\..\Core\ValueType\InfraValueTypeConvert.pas',
+  InfraValueTypeEvent in '..\..\Core\ValueType\InfraValueTypeEvent.pas',
+  InfraValueTypeIntf in '..\..\Core\ValueType\InfraValueTypeIntf.pas',
+  InfraValueTypeRegister in '..\..\Core\ValueType\InfraValueTypeRegister.pas',
+  List_Literal in '..\..\Core\ValueType\List_Literal.pas';
+
+end.

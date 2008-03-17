@@ -3,7 +3,7 @@ unit InfraAspectUtil;
 
 interface
 
-{$I 'Infra.Inc'}
+{$I 'InfraAspect.Inc'}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}

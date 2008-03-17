@@ -2,7 +2,7 @@ unit List_Screen;
 
 interface
 
-{$I Infra.Inc}
+{$I InfraGUI.Inc}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}

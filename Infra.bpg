@@ -9,14 +9,12 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = Infra.bpl InfraAspectTests.exe InfraAnnotationTests.exe \
-  InfraHibernateTests.exe InfraReflectTests.exe
+PROJECTS = InfraCore70.bpl InfraTypes70.bpl InfraPersistence70.bpl \
+  InfraHibernateTests.exe InfraAOP70.bpl InfraGUI70.bpl InfraAspectTests.exe \
+  InfraAnnotationTests.exe InfraReflectTests.exe GUIBuilderDemo.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
-
-Infra.bpl: Core\Infra.dpk
-  $(DCC)
 
 InfraAspectTests.exe: UnitTests\InfraAspect\InfraAspectTests.dpr
   $(DCC)
@@ -28,6 +26,24 @@ InfraHibernateTests.exe: UnitTests\InfraHibernate\InfraHibernateTests.dpr
   $(DCC)
 
 InfraReflectTests.exe: UnitTests\InfraReflect\InfraReflectTests.dpr
+  $(DCC)
+
+InfraPersistence70.bpl: Packages\D7\InfraPersistence.dpk
+  $(DCC)
+
+InfraCore70.bpl: Packages\D7\InfraCore.dpk
+  $(DCC)
+
+InfraAOP70.bpl: Packages\D7\InfraAOP.dpk
+  $(DCC)
+
+InfraTypes70.bpl: Packages\D7\InfraTypes.dpk
+  $(DCC)
+
+InfraGUI70.bpl: Packages\D7\InfraGUI.dpk
+  $(DCC)
+
+GUIBuilderDemo.exe: Demos\GUIBuilder\GUIBuilderDemo.dpr
   $(DCC)
 
 

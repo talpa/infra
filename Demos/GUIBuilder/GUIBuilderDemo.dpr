@@ -1,6 +1,6 @@
 program GUIBuilderDemo;
 
-{$I Infra.Inc}
+{$I GUIBuilderDemo.Inc}
 
 uses
   {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}
@@ -18,11 +18,11 @@ uses
   ExtCtrls,
   Model in 'Model.pas',
   ModelIntf in 'ModelIntf.pas',
-  StdCtrls, ComCtrls;
+  StdCtrls,
+  ComCtrls;
 
 var
   lPerson: IPerson;
-  lPerson2: IPerson;
   lPersonInfo: IClassInfo;
   lGUIPersonSimple: IScreen;
   lGUIPerson: IScreen;
@@ -80,7 +80,7 @@ begin
 
   lItem := lGUIPersonSimple.AddControl('Birthday');
   lItem.Caption.AsString := 'Data de nascimento';
-//  lItem.ControlClass := TcxDateEdit;
+  lItem.ControlClass := TDateTimePicker;
 
 
 
@@ -120,7 +120,7 @@ begin
 
   lItem := lGUIPerson.AddControl('Birthday');
   lItem.Caption.AsString := 'Data de nascimento';
-//  lItem.ControlClass := TcxDateEdit;
+  lItem.ControlClass := TDateTimePicker;
 
   lItem := lGUIPerson.AddControl('Details');
   lItem.Caption.AsString := 'Observações';
@@ -136,11 +136,9 @@ begin
   lItem.ControlClass := TComboBox;
   lItem.PutAfter := 'Address';
 
-
-
   //Build ----------------------------------------------------------------------
   //GUIService.RegisterGUIMapping(TcxTextEdit, IInfraString, 'Text');
-  GUIService.Build(lPerson, lGUIPersonSimple);
+  //GUIService.Build(lPerson, lGUIPersonSimple);
   GUIService.Build(lPerson, lGUIPerson);
-  GUIService.Build(lPerson);
+  //GUIService.Build(lPerson);
 end.

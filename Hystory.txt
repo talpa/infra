@@ -1,3 +1,17 @@
+Revisão 48
++ Alterada estrutura de pacotes
++ Adicionado a ZDBC API do ZEOS como engine de banco de dados para efetuar a persistência;
++ Refatorado esquema de Geração de declaração SQL Select por OID de objetos;
++ Cada pacote tem seu proprio .inc que aponta para o .Inc real;
++ Removido registros de frameworks extras do ApplicationContext. Cada framework extra registra-se a sí mesmo;
++ Todos os componentes usados nos forms de configurações do GUIBuilder em tempo de execução são criados tambem em tempo
+  de execução;
++ Refatorada Persistencia, acrescentando EntityPersister e EntityLoader;
+- Removido ResultSet e Connection proprios por estar usando o do ZEOS;
+
+Revisão 47
++ Criada classe Base TInfraBaseObject e corrigido classes base de todos os Frameworks;
+
 Revisão 46
 + Alterada rotina de injeção, agora nao precisa fazer mas cast ao registrar servicos do infra ou qualquer outro objeto;
 + InfraAnnotation ganhou os métodos: overload de Annotate, isAnnotationPresent (IsAnnotedWith removido), GetAnnotation, GetAnnotations

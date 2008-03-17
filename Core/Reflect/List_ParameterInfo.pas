@@ -2,7 +2,7 @@ unit List_ParameterInfo;
 
 interface
 
-{$I Infra.Inc}
+{$I InfraReflection.Inc}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}

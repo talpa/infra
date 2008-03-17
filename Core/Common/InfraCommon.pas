@@ -2,7 +2,7 @@ unit InfraCommon;
 
 interface
 
-{$I Infra.Inc}
+{$I InfraCommon.Inc}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}

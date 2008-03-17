@@ -2,12 +2,11 @@ unit InfraValueType;
 
 interface
 
-{$I Infra.Inc}
+{$I InfraTypes.Inc}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
   Classes,
-  Controls,
   Contnrs,
   InfraCommonIntf,
   InfraCommon,
@@ -176,7 +175,7 @@ type
   {! Classe ValueType para representação de date }
   TInfraDate = class(TInfraType, IInfraDate)
   private
-    FValue: TDate;
+    FValue: Double;
   protected
     function GetAsDate: TDateTime;
     procedure Assign(const Source: IInfraType); override;

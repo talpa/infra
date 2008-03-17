@@ -4,6 +4,7 @@ interface
 
 uses
   InfraHibernateIntf,
+  ZDbcInterbase6,
   TestFramework;
 
 type
@@ -21,8 +22,9 @@ type
 implementation
 
 uses
-  SysUtils, InfraValueType, InfraValueTypeIntf,
-  HibernateModel, HibernateModelIntf, Math;
+  SysUtils, Forms, Math,
+  InfraValueType, InfraValueTypeIntf,
+  HibernateModel, HibernateModelIntf;
 
 { THibernateTests }
 
@@ -40,11 +42,12 @@ begin
 
   with FConfiguration do
   begin
-    PropertyItem['ConnectionClass'] := 'DBXConnection';
-    PropertyItem['Connection.DatabaseLogin'] := 'SYSDBA';
-    PropertyItem['Connection.DatabasePassword'] := 'masterkey';
-    PropertyItem['Connection.DatabasePath'] :=
-      '..\InfraHibernate\DBDEMOS.FDB';
+    PropertyItem['protocol'] := 'firebird-2.0';
+    PropertyItem['username'] := 'SYSDBA';
+    PropertyItem['password'] := 'masterkey';
+    PropertyItem['hostname'] := 'localhost';
+    PropertyItem['database'] :=
+      ExtractFilePath(Application.ExeName) + '..\InfraHibernate\DBDEMOS.FDB';
   end;
 end;
 

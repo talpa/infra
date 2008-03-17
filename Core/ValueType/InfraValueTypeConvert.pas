@@ -2,7 +2,7 @@ unit InfraValueTypeConvert;
 
 interface
 
-{$I Infra.Inc}
+{$I InfraTypes.Inc}
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}

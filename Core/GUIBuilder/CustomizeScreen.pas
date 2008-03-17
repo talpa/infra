@@ -16,25 +16,8 @@ type
     btbtEditControl: TButton;
     actlActions: TActionList;
     actnClose: TAction;
-    LayoutManager1: TLayoutManager;
-    editTitle: TEdit;
-    Title: TLayoutManagerItem;
-    combCaptionPosition: TComboBox;
-    CaptionPosition: TLayoutManagerItem;
-    editHeight: TMaskEdit;
-    Height: TLayoutManagerItem;
-    editWidth: TMaskEdit;
-    Width: TLayoutManagerItem;
-    combItemLayout: TComboBox;
-    ItemLayout: TLayoutManagerItem;
-    editPaddingLeft: TMaskEdit;
-    PaddingLeft: TLayoutManagerItem;
-    editPaddingTop: TMaskEdit;
-    PaddingTop: TLayoutManagerItem;
-    editPaddingRight: TMaskEdit;
-    PaddingRight: TLayoutManagerItem;
-    editPaddingBottom: TMaskEdit;
-    PaddingBottom: TLayoutManagerItem;
+    procedure FormDestroy(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure actnCloseExecute(Sender: TObject);
     procedure btbtCancelClick(Sender: TObject);
@@ -42,6 +25,18 @@ type
     procedure btbtOKClick(Sender: TObject);
     procedure lsvControlListDblClick(Sender: TObject);
   private
+    // componentes de tela
+    LayoutManager1: TLayoutManager;
+    editTitle: TEdit;
+    combCaptionPosition: TComboBox;
+    editHeight: TMaskEdit;
+    editWidth: TMaskEdit;
+    combItemLayout: TComboBox;
+    editPaddingLeft: TMaskEdit;
+    editPaddingTop: TMaskEdit;
+    editPaddingRight: TMaskEdit;
+    editPaddingBottom: TMaskEdit;
+    // Outras Variaveis
     FExecute: Boolean;
     FForm: TInfraGUIBuilderForm;
     FGUI: IGUI;
@@ -66,6 +61,166 @@ uses
   GUIAnnotationLoaderXML;
 
 {$R *.dfm}
+
+procedure TCustomizeScreen.FormDestroy(Sender: TObject);
+begin
+  editTitle.Free;
+  combCaptionPosition.Free;
+  editHeight.Free;
+  editWidth.Free;
+  combItemLayout.Free;
+  editPaddingLeft.Free;
+  editPaddingTop.Free;
+  editPaddingRight.Free;
+  editPaddingBottom.Free;
+  LayoutManager1.Free;
+end;
+
+procedure TCustomizeScreen.FormCreate(Sender: TObject);
+begin
+  LayoutManager1 := TLayoutManager.Create(Self);
+  with LayoutManager1 do
+  begin
+    SetBounds(0, 0, 719, 127);
+    AlignMode := alTop;
+  end;
+  editTitle := TEdit.Create(Self);
+  editTitle.Parent := Self;
+  combCaptionPosition := TComboBox.Create(Self);
+  with combCaptionPosition do
+  begin
+    Parent := Self;
+    Style := csDropDownList;
+    ItemHeight := 13;
+    TabOrder := 0;
+    Items.Clear;
+    Items.Add('Above');
+    Items.Add('Below');
+    Items.Add('Left');
+    Items.Add('Right');
+  end;
+  editHeight := TMaskEdit.Create(Self);
+  editHeight.Parent := Self;
+  editWidth := TMaskEdit.Create(Self);
+  editWidth.Parent := Self;
+  combItemLayout := TComboBox.Create(Self);
+  with combItemLayout do
+  begin
+    Parent := Self;
+    Name := 'combItemLayout';
+    Style := csDropDownList;
+    Items.Clear;
+    Items.Add('Horizontal');
+    Items.Add('Vertical');
+  end;
+  editPaddingLeft := TMaskEdit.Create(Self);
+  with editPaddingLeft do
+  begin
+    Parent := Self;
+    Name := 'editPaddingLeft';
+    EditMask := '99;1; ';
+    MaxLength := 2;
+    Text := '  ';
+  end;
+  editPaddingTop := TMaskEdit.Create(Self);
+  with editPaddingTop do
+  begin
+    Parent := Self;
+    Name := 'editPaddingTop';
+    EditMask := '99;1; ';
+    MaxLength := 2;
+    Text := '  ';
+  end;
+  editPaddingRight := TMaskEdit.Create(Self);
+  with editPaddingRight do
+  begin
+    Parent := Self;
+    Name := 'editPaddingRight';
+    EditMask := '99;1; ';
+    MaxLength := 2;
+    Text := '  ';
+  end;
+  editPaddingBottom := TMaskEdit.Create(Self);
+  with editPaddingBottom do
+  begin
+    Parent := Self;
+    Name := 'editPaddingBottom';
+    EditMask := '99;1; ';
+    MaxLength := 2;
+    Text := '  ';
+  end;
+  with LayoutManager1 do
+  begin
+    Parent := Self;
+    AlignMode := alTop;
+    Left := 0;
+    Top := 0;
+    with AddControl(editTitle) do
+    begin
+      Name := 'Title';
+      Caption := 'Title';
+      WidthOptions.MeasureType := mtPercent;
+      WidthOptions.Size := 100;
+    end;
+    with AddControl(combCaptionPosition) do
+    begin
+      Name := 'CaptionPosition';
+      Caption := 'Caption Position';
+      WidthOptions.MeasureType := mtPercent;
+      WidthOptions.Size := 30;
+    end;
+    with AddControl(editHeight) do
+    begin
+      Name := 'Height';
+      Caption := 'Height';
+      WidthOptions.MeasureType := mtPercent;
+      WidthOptions.Size := 20;
+    end;
+    with AddControl(editWidth) do
+    begin
+      Name := 'Width';
+      Caption := 'Width';
+      WidthOptions.MeasureType := mtPercent;
+      WidthOptions.Size := 20;
+    end;
+    with AddControl(combItemLayout) do
+    begin
+      Name := 'ItemLayout';
+      Caption := 'Item Layout';
+      WidthOptions.MeasureType := mtPercent;
+      WidthOptions.Size := 30;
+    end;
+    with AddControl(editPaddingLeft) do
+    begin
+      Name := 'PaddingLeft';
+      Caption := 'Padding - Left';
+      WidthOptions.MeasureType := mtPercent;
+      WidthOptions.Size := 24.89568845618915;
+    end;
+    with AddControl(editPaddingTop) do
+    begin
+      Name := 'PaddingTop';
+      Caption := 'Padding - Top';
+      WidthOptions.MeasureType := mtPercent;
+      WidthOptions.Size := 24.89568845618915;
+    end;
+    with AddControl(editPaddingRight) do
+    begin
+      Name := 'PaddingRight';
+      Caption := 'Padding - Right';
+      WidthOptions.MeasureType := mtPercent;
+      WidthOptions.Size := 24.89568845618915;
+    end;
+    with AddControl(editPaddingBottom) do
+    begin
+      Name := 'PaddingBottom';
+      Caption := 'Padding - Bottom';
+      WidthOptions.MeasureType := mtPercent;
+      WidthOptions.Size := 24.89568845618915;
+    end;
+  end;
+  lsvControlList.Align := alClient;
+end;
 
 { TCustomizeScreen }
 

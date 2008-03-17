@@ -3,7 +3,7 @@
 // {$APPTYPE CONSOLE}
 program InfraHibernateTests;
 
-{$I Infra.Inc}
+{$I Test.Inc}
 
 uses
   FastMM4,
