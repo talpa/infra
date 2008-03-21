@@ -1,3 +1,12 @@
+Revisão 50
++ TPropertyInfo reimplementa IElement.TypeInfo para pegar o metadata da propriedade corretamente;
++ Criada Anotação para setar parâmetros de um IZPreparedStatemet e para poder pegar valor de campos do ResultSet de forma genérica;
+- Corrigida a forma de setar parâmetros de uma instrução preparada de Select;
+- Corrigida a forma de pegar valores de um ResultSet e jogar nos atributos do objeto;
+- Renomeada units MapperAnnotation para InfraHibernateAnnotation;
+- Renomeada units MapperAnnotationIntf para InfraHibernateAnnotationIntf;
+- removida interface sem uso IPropertyInfoList;
+
 Revisão 48
 + Alterada estrutura de pacotes
 + Adicionado a ZDBC API do ZEOS como engine de banco de dados para efetuar a persistência;

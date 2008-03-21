@@ -36,14 +36,14 @@ type
 implementation
 
 uses
-  SysUtils, InfraCommonIntf;
+  SysUtils, InfraCommonIntf, InfraCommon;
 
 { TClassA }
 
 procedure TClassA.InitTypeInfo;
 begin
   inherited;
-  FTypeInfo := TypeService.GetType(IClassA);
+  TypeInfo := TypeService.GetType(IClassA);
 end;
 
 procedure TClassA.ProcSemPar;
@@ -102,7 +102,7 @@ end;
 procedure TClassB.InitTypeInfo;
 begin
   inherited;
-  FTypeInfo := TypeService.GetType(IClassB);
+  TypeInfo := TypeService.GetType(IClassB);
 end;
 
 function TClassB.Func1Par(const x: IInfraInteger): IInfraInteger;

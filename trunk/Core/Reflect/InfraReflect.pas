@@ -218,17 +218,19 @@ type
     property Name: string read GetName write SetName;
   end;
 
-  TPropertyInfo = class(TMemberInfo, IPropertyInfo)
+  TPropertyInfo = class(TMemberInfo, IPropertyInfo, IElement)
   private
     FTypeInfo: IClassInfo;
     FGetterInfo: IMethodInfo;
     FSetterInfo: IMethodInfo;
+    procedure SetTypeInfo(const Value: IClassInfo);
   protected
     function GetGetterInfo: IMethodInfo;
     function GetSetterInfo: IMethodInfo;
     function GetTypeInfo: IClassInfo;
     function GetValue(const pObject: IInterface): IInterface;
     procedure SetValue(const pObject, pValue: IInterface);
+    property TypeInfo: IClassInfo read GetTypeInfo write SetTypeInfo;
   public
     constructor Create(const pName: string;
       const pType, pDeclaringType: IClassInfo;
@@ -996,6 +998,12 @@ begin
     Result := FGetterInfo.Invoke(Obj, nil)
   else
     Result := nil;
+end;
+
+procedure TPropertyInfo.SetTypeInfo(const Value: IClassInfo);
+begin
+  if Value <> FTypeInfo then
+    FTypeInfo := Value;
 end;
 
 procedure TPropertyInfo.SetValue(const pObject, pValue: IInterface);

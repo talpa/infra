@@ -119,6 +119,8 @@ type
       const pResultSet: IZResultSet);
     procedure SetPropertyFromResultSet(const pAttribute: IInfraType;
       const pResultSet: IZResultSet; pIndex: Integer);
+    procedure SetParameters(const pStatement: IZPreparedStatement;
+      const pParamTypes: IMemberInfoList; const pParamValues: IInfraType);
   public
     constructor Create(const pPersister: IEntityPersister); Reintroduce;
   end;
@@ -140,6 +142,7 @@ type
     function getIdentifierColumnNames: TStrings;
     function GenerateSnapshotSelectString: string;
     function GetAllColumns: IMemberInfoList;
+    function GetIdentifierColumns: IMemberInfoList;
   protected
     function Load(const pOID: IInfraType; const pOptionalInstance: IInfraType;
       const pSession: ISession): IInfraType;
@@ -154,7 +157,7 @@ type
 implementation
 
 uses
-  SysUtils, List_MemberInfo, MapperAnnotationIntf, List_EntityPersister, InfraConsts,
+  SysUtils, List_MemberInfo, InfraHibernateAnnotationIntf, List_EntityPersister, InfraConsts,
   List_Criterion, InfraValueType, InfraCriteria, InfraSQLBuilder;
 
 // *** acho que nao precisamos desta classe
@@ -446,11 +449,7 @@ begin
   // para casos como herança ou esta classe possuir relacionamentos.
   vSQL := FEntityPersister.SQLSnapshotSelectString;
   vST := pSession.Connection.PrepareStatement(vSQL);
-  // *** Ver como tratar parametros OID's, podemos ter vários situações:
-  // *** um type simples que é oid
-  // *** vários types que fazem parte do oid
-  // *** um type personalizado empacotando vários types que fazem parte do oid
-  vSt.SetInt(1, (pOID as IInfraInteger).AsInteger);
+  SetParameters(vST, FEntityPersister.GetIdentifierColumns, pOID);
   vRS := vST.ExecuteQueryPrepared;
   Result := TInfraList.Create;
   try
@@ -500,31 +499,32 @@ begin
   end;
 end;
 
+procedure TEntityLoader.SetParameters(const pStatement: IZPreparedStatement;
+  const pParamTypes: IMemberInfoList; const pParamValues: IInfraType);
+var
+  vIndex: integer;
+  vTypeInfo: IClassInfo;
+  vParamValue: IInfraType;
+begin
+  for vIndex := 0 to pParamTypes.Count-1 do
+  begin
+    vTypeInfo := (pParamTypes[vIndex] as IPropertyInfo).TypeInfo;
+    // *** tem de tratar o InfraType aqui se for um Object
+    if Supports(pParamValues, IInfraList) then
+      vParamValue := (pParamValues as IInfraList).Items[vIndex]
+    else
+      vParamValue := pParamValues;
+    (vTypeInfo as IZTypeAnnotation).NullSafeSet(pStatement, vIndex,
+      vParamValue);
+  end;
+end;
+
 procedure TEntityLoader.SetPropertyFromResultSet(const pAttribute: IInfraType;
   const pResultSet: IZResultSet; pIndex: Integer);
 begin
-  Inc(pIndex); // ResultSet trabalha a partir de 1;
-  if pResultSet.IsNull(pIndex) then
-    pAttribute.Clear
-  else
-  begin
-    case pResultSet.GetMetadata.GetColumnType(pIndex) of
-      stString: (pAttribute as IInfraString).AsString :=
-        pResultSet.GetString(pIndex);
-      stInteger: (pAttribute as IInfraInteger).AsInteger :=
-        pResultSet.GetInt(pIndex);
-      stDouble: (pAttribute as IInfraDouble).AsDouble :=
-        pResultSet.GetDouble(pIndex);
-      stBoolean: (pAttribute as IInfraBoolean).AsBoolean :=
-        pResultSet.GetBoolean(pIndex);
-      stDate: (pAttribute as IInfraDate).AsDate :=
-        pResultSet.GetDate(pIndex);
-      stTime: (pAttribute as IInfraTime).AsTime :=
-        pResultSet.GetTime(pIndex);
-      stTimeStamp: (pAttribute as IInfraDateTime).AsDateTime :=
-        pResultSet.GetTimeStamp(pIndex);
-    end;
-  end;
+  // *** tem de tratar o InfraType aqui se for um Object ou InfraList
+  (pAttribute.TypeInfo as IZTypeAnnotation).NullSafeGet(
+    pResultSet, pIndex, pAttribute)
 end;
 
 function TEntityLoader.Load(const pOID: IInfraType;
@@ -723,6 +723,11 @@ end;
 function TEntityPersister.GetAllColumns: IMemberInfoList;
 begin
   Result := FAllColumns;
+end;
+
+function TEntityPersister.GetIdentifierColumns: IMemberInfoList;
+begin
+  Result := FIdentifierColumns;
 end;
 
 initialization

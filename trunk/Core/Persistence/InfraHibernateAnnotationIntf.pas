@@ -1,13 +1,29 @@
-unit MapperAnnotationIntf;
+unit InfraHibernateAnnotationIntf;
 
 interface
 
 
 Uses
-  Classes, InfraCommonIntf, InfraValueTypeIntf;
+  Classes,
+  {Zeos} ZDbcIntfs,
+  {Infra} InfraCommonIntf, InfraValueTypeIntf;
 
+Type
+  TZTypeSetter = procedure (const pStatement: IZPreparedStatement;
+    pIndex: Integer; const pParamValue: IInfraType);
 
-Type   
+  TZTypeGetter = procedure (const pResultSet: IZResultSet;
+    pIndex: Integer; const pPropertyValue: IInfraType);
+
+  IZTypeAnnotation = interface(IElement)
+    ['{224B7552-1AB1-456B-B5C5-C7A85BA60580}']
+    function GetNullSafeGetter: TZTypeGetter;
+    function GetNullSafeSetter: TZTypeSetter;
+    property NullSafeGet: TZTypeGetter read GetNullSafeGetter;
+    property NullSafeSet: TZTypeSetter read GetNullSafeSetter;
+    procedure Init(pGetter: TZTypeGetter; pSetter: TZTypeSetter);
+  end;
+
   IEntity = interface(IElement)
     ['{28B94C80-55F6-47BB-9E86-8C38514E1980}']
     procedure SetName( const Value: String);
@@ -60,4 +76,7 @@ Type
 implementation
 
 end.
+
+
+
 

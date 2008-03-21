@@ -9,8 +9,8 @@ implementation
 uses
   InfraCommonIntf,
   InfraHibernateIntf,
-  MapperAnnotationIntf,
-  MapperAnnotation;
+  InfraHibernateAnnotationIntf,
+  InfraHibernateAnnotation;
 
 procedure RegisterOnReflection;
 begin

@@ -40,15 +40,15 @@ type
     IInfraPublisher, ISubscriber, IInfraFilter)
   private
     FPublisher: IInfraPublisher;
-  protected
     FTypeInfo: IClassInfo;
+  protected
     function Apply(const Event: IInfraEvent): Boolean; virtual;
     function GetPublisher: IInfraPublisher;
     function GetTypeInfo: IClassInfo;
     procedure InitTypeInfo; virtual;
     procedure Inform(const Event: IInfraEvent); virtual;
     procedure SetTypeInfo(const Value: IClassInfo);
-    property TypeInfo: IClassInfo read GetTypeInfo;
+    property TypeInfo: IClassInfo read GetTypeInfo write SetTypeInfo;
   public
     procedure InfraInitInstance; override;
     destructor Destroy; override;

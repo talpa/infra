@@ -128,6 +128,7 @@ type
       const pSession: ISession): IInfraType;
     function Instantiate(const pOID: IInfraType): IInfraType;
     function GetColumnName(const pPropertyInfo: IPropertyInfo): string;
+    function GetIdentifierColumns: IMemberInfoList;
     function GetAllColumns: IMemberInfoList;
     function GetSQLSnapshotSelectString: string;
     property PersistentClass: IPersistentClass read GetPersistentClass;
@@ -319,5 +320,6 @@ initialization
   InfraHibernateRegister.RegisterOnReflection;
 
 end.
+
 
 
