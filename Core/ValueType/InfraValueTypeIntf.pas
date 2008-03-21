@@ -135,33 +135,6 @@ type
     property Owner: IElement read GetOwner write SetOwner;
   end;
 
-  (* ***
-  IPropertyList = interface(IInterface)
-    ['{75EA8EC9-8CEF-4722-92C6-039EFA4BCE5E}']
-    function Add(const Item: IProperty): Integer;
-    function First: IProperty;
-    function GetCount: Integer;
-    function GetPropertyByName(const Name: string): IProperty;
-    function GetItem(Index: Integer): IProperty;
-    function GetOwner: IElement;
-    function IndexOf(const Item: IProperty): Integer;
-    function Last: IProperty;
-    function Remove(const Item: IProperty): Integer;
-    procedure Clear;
-    procedure Delete(Index: Integer);
-    procedure Exchange(Index1, Index2: Integer);
-    procedure Insert(Index: Integer; const Item: IProperty);
-    procedure Lock;
-    procedure SetItem(Index: Integer; const Item: IProperty);
-    procedure SetOwner(const Value: IElement);
-    procedure Unlock;
-    property Count: Integer read GetCount;
-    property Items[Index: Integer]: IProperty read GetItem
-      write SetItem; default;
-    property Owner: IElement read GetOwner write SetOwner;
-  end;
-  *)
-
   IInfraLiteral = interface(IElement)
     ['{14557BB1-5918-415F-AEAA-050E9CCB3B7D}']
     function GetName: string;

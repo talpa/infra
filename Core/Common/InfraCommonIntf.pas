@@ -334,23 +334,6 @@ type
       write SetItem; default;
   end;
 
-  IPropertyInfoList = interface(IBaseElement)
-    ['{86FED90A-06AC-4CB5-8BB8-2ECB78FA8A25}']
-    function Add(const Item: IPropertyInfo): Integer;
-    function First: IPropertyInfo;
-    function GetCount: Integer;
-    function GetItem(Index: Integer): IPropertyInfo;
-    function IndexOf(const Item: IPropertyInfo): Integer;
-    function Last: IPropertyInfo;
-    procedure Clear;
-    procedure Delete(Index: Integer);
-    procedure Insert(Index: Integer; const Item: IPropertyInfo);
-    procedure SetItem(Index: Integer; const TypeInfo: IPropertyInfo);
-    property Count: Integer read GetCount;
-    property Items[Index: Integer]: IPropertyInfo read GetItem
-      write SetItem; default;
-  end;
-
   IMethodInfoList = interface(IBaseElement)
     ['{EA1C173B-0079-4F53-819E-851A24C3798E}']
     function Add(const Item: IMethodInfo): Integer;
@@ -694,3 +677,4 @@ finalization
     _ApplicationContext.ShutDown;
 
 end.
+

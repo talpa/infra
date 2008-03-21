@@ -40,8 +40,8 @@ contains
   List_Criterion in '..\..\Core\Persistence\List_Criterion.pas',
   List_EntityPersister in '..\..\Core\Persistence\List_EntityPersister.pas',
   List_MapperCollumn in '..\..\Core\Persistence\List_MapperCollumn.pas',
-  MapperAnnotation in '..\..\Core\Persistence\MapperAnnotation.pas',
-  MapperAnnotationIntf in '..\..\Core\Persistence\MapperAnnotationIntf.pas',
-  InfraSQLBuilder in '..\..\Core\Persistence\InfraSQLBuilder.pas';
+  InfraSQLBuilder in '..\..\Core\Persistence\InfraSQLBuilder.pas',
+  InfraHibernateAnnotation in '..\..\Core\Persistence\InfraHibernateAnnotation.pas',
+  InfraHibernateAnnotationIntf in '..\..\Core\Persistence\InfraHibernateAnnotationIntf.pas';
 
 end.

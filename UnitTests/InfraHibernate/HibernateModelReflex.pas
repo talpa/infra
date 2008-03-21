@@ -21,7 +21,7 @@ implementation
 
 uses
   HibernateModelIntf, InfraCommonIntf, InfraValueTypeIntf,
-  MapperAnnotationIntf;
+  InfraHibernateAnnotationIntf;
 
 function RegisterAccountOnReflection: IClassInfo;
 var

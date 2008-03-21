@@ -28,7 +28,7 @@ type
     property InjectedInterface: IInterface read GetInjectedInterface
       write SetInjectedInterface;
     property IsAnnotation: boolean read GetIsAnnotation write SetIsAnnotation;
-    constructor Create(ID: TGUID; {***const }InjectedInterface: IInterface;
+    constructor Create(ID: TGUID; const InjectedInterface: IInterface;
       WeakReference: boolean; pIsAnnotation: boolean = False); reintroduce;
   end;
 
@@ -40,7 +40,7 @@ uses
 { TInjectedItem }
 
 constructor TInjectedItem.Create(ID: TGUID;
-  InjectedInterface: IInterface; WeakReference: boolean;
+  const InjectedInterface: IInterface; WeakReference: boolean;
   pIsAnnotation: boolean = False);
 begin
   inherited Create;
