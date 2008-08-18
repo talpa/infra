@@ -47,7 +47,7 @@ type
     procedure SetForm(const Value: TInfraGUIBuilderForm);
   protected
     procedure InterfarceToObject;
-    procedure ObjectToInterface;
+    procedure ObjectToInterface(UpdateListViewOnly: Boolean);
   public
     function Execute: Boolean;
     property Form: TInfraGUIBuilderForm read GetForm write SetForm;
@@ -248,8 +248,7 @@ begin
       if CustomizeScreenControl.Execute then
       begin
         GUI.GUIControlList.Items[lsvControlList.ItemIndex] := CustomizeScreenControl.GUIControl;
-        ObjectToInterface;
-
+        ObjectToInterface(True);
       end;
     finally
       CustomizeScreenControl.Free;
@@ -284,7 +283,7 @@ end;
 
 procedure TCustomizeScreen.FormShow(Sender: TObject);
 begin
-  ObjectToInterface;
+  ObjectToInterface(False);
 end;
 
 function TCustomizeScreen.GetForm: TInfraGUIBuilderForm;
@@ -427,7 +426,7 @@ begin
   btbtEditControl.Click;
 end;
 
-procedure TCustomizeScreen.ObjectToInterface;
+procedure TCustomizeScreen.ObjectToInterface(UpdateListViewOnly: Boolean);
 var
   iIndex: Integer;
   It: IGUIControlIterator;
@@ -446,56 +445,59 @@ var
 
 
 begin
-  if Assigned(GUI.Screen) then
-    editTitle.Text := GUI.Screen.Title.AsString
-  else
-    editTitle.Text := GUI.Title;
-
-  if (Assigned(GUI.Screen)) and (GUI.Screen.CaptionPosition <> lpLeft) then
+  if not UpdateListViewOnly then
   begin
-    case GUI.Screen.CaptionPosition of
-      lpAbove: combCaptionPosition.ItemIndex := 0;
-      lpBelow: combCaptionPosition.ItemIndex := 1;
-      lpRight: combCaptionPosition.ItemIndex := 3;
-    end;
-  end
-  else
-    combCaptionPosition.ItemIndex := 2;
+    if Assigned(GUI.Screen) and (not GUI.Screen.Title.IsNull) then
+      editTitle.Text := GUI.Screen.Title.AsString
+    else
+      editTitle.Text := GUI.Title;
 
-  if (Assigned(GUI.Screen)) and (not GUI.Screen.Height.IsNull) then
-    editHeight.Text := IntToStr(GUI.Screen.Height.AsInteger)
-  else
-    editHeight.Text := IntToStr(Form.Height);
+    if (Assigned(GUI.Screen)) and (GUI.Screen.CaptionPosition <> lpLeft) then
+    begin
+      case GUI.Screen.CaptionPosition of
+        lpAbove: combCaptionPosition.ItemIndex := 0;
+        lpBelow: combCaptionPosition.ItemIndex := 1;
+        lpRight: combCaptionPosition.ItemIndex := 3;
+      end;
+    end
+    else
+      combCaptionPosition.ItemIndex := 2;
 
-  if (Assigned(GUI.Screen)) and (not GUI.Screen.Width.IsNull) then
-    editWidth.Text := IntToStr(GUI.Screen.Width.AsInteger)
-  else
-    editWidth.Text := IntToStr(Form.Width);
+    if (Assigned(GUI.Screen)) and (not GUI.Screen.Height.IsNull) then
+      editHeight.Text := IntToStr(GUI.Screen.Height.AsInteger)
+    else
+      editHeight.Text := IntToStr(Form.Height);
 
-  if (Assigned(GUI.Screen)) and (GUI.Screen.ItemLayout <> laHorizontal) then
-    combItemLayout.ItemIndex := 1
-  else
-    combItemLayout.ItemIndex := 0;
+    if (Assigned(GUI.Screen)) and (not GUI.Screen.Width.IsNull) then
+      editWidth.Text := IntToStr(GUI.Screen.Width.AsInteger)
+    else
+      editWidth.Text := IntToStr(Form.Width);
 
-  if Assigned(GUI.Screen) then
-    editPaddingLeft.Text := IntToStr(GUI.Screen.Padding.Left)
-  else
-    editPaddingLeft.Text := IntToStr(Form.MainLayoutManager.ItemDefPadding.Left);
+    if (Assigned(GUI.Screen)) and (GUI.Screen.ItemLayout <> laHorizontal) then
+      combItemLayout.ItemIndex := 1
+    else
+      combItemLayout.ItemIndex := 0;
 
-  if Assigned(GUI.Screen) then
-    editPaddingTop.Text := IntToStr(GUI.Screen.Padding.Top)
-  else
-    editPaddingTop.Text := IntToStr(Form.MainLayoutManager.ItemDefPadding.Top);
+    if Assigned(GUI.Screen) then
+      editPaddingLeft.Text := IntToStr(GUI.Screen.Padding.Left)
+    else
+      editPaddingLeft.Text := IntToStr(Form.MainLayoutManager.ItemDefPadding.Left);
 
-  if Assigned(GUI.Screen) then
-    editPaddingRight.Text := IntToStr(GUI.Screen.Padding.Right)
-  else
-    editPaddingRight.Text := IntToStr(Form.MainLayoutManager.ItemDefPadding.Right);
+    if Assigned(GUI.Screen) then
+      editPaddingTop.Text := IntToStr(GUI.Screen.Padding.Top)
+    else
+      editPaddingTop.Text := IntToStr(Form.MainLayoutManager.ItemDefPadding.Top);
 
-  if Assigned(GUI.Screen) then
-    editPaddingBottom.Text := IntToStr(GUI.Screen.Padding.Bottom)
-  else
-    editPaddingBottom.Text := IntToStr(Form.MainLayoutManager.ItemDefPadding.Bottom);
+    if Assigned(GUI.Screen) then
+      editPaddingRight.Text := IntToStr(GUI.Screen.Padding.Right)
+    else
+      editPaddingRight.Text := IntToStr(Form.MainLayoutManager.ItemDefPadding.Right);
+
+    if Assigned(GUI.Screen) then
+      editPaddingBottom.Text := IntToStr(GUI.Screen.Padding.Bottom)
+    else
+      editPaddingBottom.Text := IntToStr(Form.MainLayoutManager.ItemDefPadding.Bottom);
+  end;
 
   if Assigned(GUI) then
   begin

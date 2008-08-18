@@ -123,7 +123,7 @@ begin
         if Assigned(lGUIControl) then
         begin
           if not Assigned(lGUIControl.ScreenItem) then
-            lGUIControl.ScreenItem := TScreenItem.Create;
+            lGUIControl.ScreenItem := TScreenControl.Create;
 
           lScreenItem := lGUIControl.ScreenItem;
 

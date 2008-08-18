@@ -219,6 +219,7 @@ begin
     begin
       Name := 'editPutAfter';
       Parent := Self;
+      Text := '';
     end;
     with AddControl(editPutAfter) do
     begin
@@ -233,6 +234,7 @@ begin
     begin
       Name := 'editPutBefore';
       Parent := Self;
+      Text := '';
     end;
     with AddControl(editPutBefore) do
     begin
