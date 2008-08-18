@@ -3,7 +3,6 @@ program GUIBuilderDemo;
 {$I GUIBuilderDemo.Inc}
 
 uses
-  {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}
   ApplicationContext,
   Forms,
   SysUtils,
@@ -16,10 +15,10 @@ uses
   InfraValueType,
   LayoutManager,
   ExtCtrls,
-  Model in 'Model.pas',
-  ModelIntf in 'ModelIntf.pas',
   StdCtrls,
-  ComCtrls;
+  ComCtrls,
+  Model in 'Model.pas',
+  ModelIntf in 'ModelIntf.pas';
 
 var
   lPerson: IPerson;
@@ -138,7 +137,7 @@ begin
 
   //Build ----------------------------------------------------------------------
   //GUIService.RegisterGUIMapping(TcxTextEdit, IInfraString, 'Text');
-  //GUIService.Build(lPerson, lGUIPersonSimple);
+  GUIService.Build(lPerson, lGUIPersonSimple);
   GUIService.Build(lPerson, lGUIPerson);
-  //GUIService.Build(lPerson);
+  GUIService.Build(lPerson);
 end.
