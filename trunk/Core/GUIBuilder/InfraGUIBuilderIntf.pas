@@ -8,6 +8,8 @@ uses
 
 type
 
+  TGUIResult = (grNone, grSave, grCancel);
+
   IGUIControl = interface;
 
   IGUIControlList = interface;
@@ -136,11 +138,14 @@ type
 
   IInfraGUIService = interface(IBaseElement)
     ['{99444446-6E4E-4BC3-B282-4119FFE4EBF9}']
+    function Build(pObject: IInfraObject; pScreen: IScreen = nil): TGUIResult;    
     function GetGUIMappings: IGUIMappingList;
-    procedure Build(pObject: IInfraObject; pScreen: IScreen = nil);
+    function GetUserRepository: string;
     procedure RegisterGUIMapping(pControlClass: TControlClass;
       pTypeInfo: TGUID; pBindProperty: string);
+    procedure SetUserRepository(const Value: string);
     property GUIMappings: IGUIMappingList read GetGUIMappings;
+    property UserRepository: string read GetUserRepository write SetUserRepository;
   end;
 
 function GUIService: IInfraGUIService;

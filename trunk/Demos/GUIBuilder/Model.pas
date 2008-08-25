@@ -8,6 +8,21 @@ uses
 
 type
 
+  TUser = class(TInfraObject, IUser)
+  private
+    FLogin: IInfraString;
+    FPassword: IInfraString;
+    function GetLogin: IInfraString;
+    function GetPassword: IInfraString;
+    procedure SetLogin(const Value: IInfraString);
+    procedure SetPassword(const Value: IInfraString);
+  public
+    procedure InfraInitInstance; override;
+    procedure LoadSampleData;
+    property Login: IInfraString read GetLogin write SetLogin;
+    property Password: IInfraString read GetPassword write SetPassword;
+  end;
+
   TCity = class(TInfraObject, ICity)
   private
     FName: IInfraString;
@@ -18,6 +33,7 @@ type
     procedure SetPopulation(const Value: IInfraInteger);
   public
     procedure InfraInitInstance; override;
+    procedure LoadSampleData;
     property Name: IInfraString read GetName write SetName;
     property Population: IInfraInteger read GetPopulation write SetPopulation;
   end;
@@ -59,6 +75,7 @@ type
     procedure SetCity(const Value: ICity);
   public
     procedure InfraInitInstance; override;
+    procedure LoadSampleData;
     property ID: IInfraInteger read GetID write SetID;
     property Name: IInfraString read GetName write SetName;
     property Email: IInfraString read GetEmail write SetEmail;
@@ -72,10 +89,30 @@ type
     property City: ICity read GetCity write SetCity;
   end;
 
+procedure RegisterUser;
 procedure RegisterPerson;
 procedure RegisterCity;
 
 implementation
+
+procedure RegisterUser;
+var
+  lUser: IClassInfo;
+begin
+  with TypeService do
+  begin
+    lUser := AddType(IUser, 'User', TUser, IInfraObject, GetType(IInfraObject));
+
+    with lUser do
+    begin
+      AddConstructorInfo('Create', nil, @TUser.Create);
+      AddPropertyInfo('Login', GetType(IInfraString),
+        @TUser.GetLogin, @TUser.SetLogin);
+      AddPropertyInfo('Password', GetType(IInfraString),
+        @TUser.GetPassword, @TUser.SetPassword);
+    end;
+  end;
+end;
 
 procedure RegisterPerson;
 var
@@ -134,6 +171,41 @@ begin
   end;
 end;
 
+{ TUser }
+
+function TUser.GetLogin: IInfraString;
+begin
+  Result := FLogin;
+end;
+
+function TUser.GetPassword: IInfraString;
+begin
+  Result := FPassword;
+end;
+
+procedure TUser.InfraInitInstance;
+begin
+  inherited;
+
+  FLogin := AddProperty('Login') as IInfraString;
+  FPassword := AddProperty('Password') as IInfraString;
+end;
+
+procedure TUser.LoadSampleData;
+begin
+
+end;
+
+procedure TUser.SetLogin(const Value: IInfraString);
+begin
+  FLogin := Value;
+end;
+
+procedure TUser.SetPassword(const Value: IInfraString);
+begin
+  FPassword := Value;
+end;
+
 { TCity }
 
 procedure TCity.InfraInitInstance;
@@ -142,6 +214,12 @@ begin
 
   FName := AddProperty('Name') as IInfraString;
   FPopulation := AddProperty('Population') as IInfraInteger;
+end;
+
+procedure TCity.LoadSampleData;
+begin
+  Name.AsString := 'São Leopoldo';
+  Population.AsInteger := 200000;
 end;
 
 function TCity.GetName: IInfraString;
@@ -181,6 +259,23 @@ begin
   FAmount := AddProperty('Amount') as IInfraDouble;
   FDetails := AddProperty('Details') as IInfraString;
   FCity := AddProperty('City') as ICity;
+end;
+
+procedure TPerson.LoadSampleData;
+begin
+  ID.AsInteger := 1;
+  Name.AsString := 'Diogo Augusto Pereira';
+  Email.AsString := 'diogoap82@gmail.com';
+  Address.AsString := 'Rua ABC';
+  State.AsString := 'RS';
+  Country.AsString := 'Brasil';
+  Birthday.AsDateTime := 30280;
+  Active.AsBoolean := True;
+  Amount.AsDouble := 10000;
+  Details.AsString := 'Observações linha 1' + #13 +
+    'Observações linha 2' + #13 +
+    'Observações linha 3';
+  City.LoadSampleData;  
 end;
 
 function TPerson.GetActive: IInfraBoolean;
@@ -294,6 +389,7 @@ begin
 end;
 
 initialization
+  RegisterUser;
   RegisterCity;
   RegisterPerson;
 
