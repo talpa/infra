@@ -6,6 +6,7 @@ interface
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
+  Windows,
   InfraSingleton,
   InfraValueTypeIntf;
 
@@ -102,36 +103,52 @@ type
       IInfraType = nil): IInfraType; override;
   end;
 
-function GetVariantValue(pValue: IInfraType): IInfraVariant;
+function GetConverterToVariant(pProperty: IInfraType): ITypeConverter;
+function GetVariantValue(pProperty: IInfraType): IInfraVariant;
+procedure SetVariantValue(pProperty: IInfraType; pValue: Variant);
 
 implementation
 
 uses
   Variants, SysUtils, InfraValueType;
 
-function GetVariantValue(pValue: IInfraType): IInfraVariant;
-var
-  lTypeConverter: ITypeConverter;
+function GetConverterToVariant(pProperty: IInfraType): ITypeConverter;
 begin
-  if Supports(pValue, IInfraString) then
-    lTypeConverter := TStringToVariant.Create
-  else if Supports(pValue, IInfraBoolean) then
-    lTypeConverter := TBooleanToVariant.Create
-  else if Supports(pValue, IInfraDateTime) then
-    lTypeConverter := TDateTimeToVariant.Create
-  else if Supports(pValue, IInfraDate) then
-    lTypeConverter := TDateTimeToVariant.Create
-  else if Supports(pValue, IInfraTime) then
-    lTypeConverter := TDateTimeToVariant.Create
-  else if Supports(pValue, IInfraDouble) then
-    lTypeConverter := TDoubleToVariant.Create
-  else if Supports(pValue, IInfraInteger) then
-    lTypeConverter := TIntegerToVariant.Create;
+  if Supports(pProperty, IInfraString) then
+    Result := TStringToVariant.Create
+  else if Supports(pProperty, IInfraBoolean) then
+    Result := TBooleanToVariant.Create
+  else if Supports(pProperty, IInfraDateTime) then
+    Result := TDateTimeToVariant.Create
+  else if Supports(pProperty, IInfraDate) then
+    Result := TDateTimeToVariant.Create
+  else if Supports(pProperty, IInfraTime) then
+    Result := TDateTimeToVariant.Create
+  else if Supports(pProperty, IInfraDouble) then
+    Result := TDoubleToVariant.Create
+  else if Supports(pProperty, IInfraInteger) then
+    Result := TIntegerToVariant.Create;
+end;
 
-  if Supports(pValue, IInfraVariant) then
-    Result := pValue as IInfraVariant
+function GetVariantValue(pProperty: IInfraType): IInfraVariant;
+begin
+  if Supports(pProperty, IInfraVariant) then
+    Result := pProperty as IInfraVariant
   else
-    Result := lTypeConverter.ConvertToRight(pValue) as IInfraVariant;
+    Result := GetConverterToVariant(pProperty).ConvertToRight(pProperty) as IInfraVariant;
+end;
+
+procedure SetVariantValue(pProperty: IInfraType; pValue: Variant);
+var
+  lInfraType: IInfraType;
+begin
+  if Supports(pProperty, IInfraVariant) then
+    (pProperty as IInfraVariant).AsVariant := pValue
+  else
+  begin
+    lInfraType := GetConverterToVariant(pProperty).ConvertToLeft(TInfraVariant.NewFrom(pValue));
+    pProperty.Assign(lInfraType);
+  end;
 end;
 
 { TTypeConverter }

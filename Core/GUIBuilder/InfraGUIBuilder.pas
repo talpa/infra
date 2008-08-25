@@ -104,6 +104,7 @@ type
   TInfraGUIService = class(TBaseElement, IInfraGUIService)
   private
     FGUIMappings: IGUIMappingList;
+    FUserRepository: string;
     function FindGUIControl(pGUIControlList: IGUIControlList;
       pPropertyName: string): IGUIControl;
     function GetControlProperty(pPropertyID: TGUID;
@@ -112,14 +113,17 @@ type
       pTypeID: TGUID): TControlClass;
     function GetGUIMapping(pTypeInfo: TGUID): IGUIMapping;
     function GetGUIMappings: IGUIMappingList;
+    function GetUserRepository: string;
     function PrepareGUIInfo(pObject: IInfraObject;
       pScreen: IScreen = nil): IGUI;
+    procedure SetUserRepository(const Value: string);
   protected
     property GUIMappings: IGUIMappingList read GetGUIMappings;
   public
-    procedure Build(pObject: IInfraObject; pScreen: IScreen = nil);
+    function Build(pObject: IInfraObject; pScreen: IScreen = nil): TGUIResult;
     procedure RegisterGUIMapping(pControlClass: TControlClass; pTypeInfo: TGUID;
       pControlProperty: string = '');
+    property UserRepository: string read GetUserRepository write SetUserRepository;
   end;
 
 implementation
@@ -180,8 +184,7 @@ function TGUI.GetConfigurationFileName: string;
 begin
   if Assigned(BusinessObject) then
   begin
-    Result := ExtractFileDir(Application.ExeName) + '\Screens\' +
-      GUIDToString(BusinessObject.TypeInfo.TypeID);
+    Result := GUIDToString(BusinessObject.TypeInfo.TypeID);
 
     if Assigned(Screen) and (Length(Screen.Name) > 0) then
       Result := Result + '_' + Screen.Name;
@@ -391,7 +394,7 @@ end;
 
 { TInfraGUIService }
 
-procedure TInfraGUIService.Build(pObject: IInfraObject; pScreen: IScreen = nil);
+function TInfraGUIService.Build(pObject: IInfraObject; pScreen: IScreen = nil): TGUIResult;
 var
   lGUI: IGUI;
   lForm: TInfraGUIBuilderEditForm;
@@ -402,7 +405,7 @@ begin
   try
     lForm.GUI := lGUI;
     lForm.Build;
-    lForm.ShowModal;
+    Result := lForm.Execute;
   finally
     lForm.Free;
   end;
@@ -488,6 +491,11 @@ begin
   if not Assigned(FGUIMappings) then
     FGUIMappings := TGUIMappingList.Create;
   Result := FGUIMappings;
+end;
+
+function TInfraGUIService.GetUserRepository: string;
+begin
+  Result := FUserRepository;
 end;
 
 function TInfraGUIService.PrepareGUIInfo(pObject: IInfraObject;
@@ -598,6 +606,11 @@ begin
   end
   else
     GUIMappings.Add(TGUIMapping.Create(pControlClass, pTypeInfo, pControlProperty));
+end;
+
+procedure TInfraGUIService.SetUserRepository(const Value: string);
+begin
+  FUserRepository := Value;
 end;
 
 procedure InjectGUIService;

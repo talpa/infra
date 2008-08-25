@@ -9,6 +9,7 @@ type
 
   IGUIAnnotationLoader = interface(IBaseElement)
     ['{A40720CD-3117-40BD-AC5E-1911D326C339}']
+    function GetRepository(CanCreate: Boolean): string;    
     procedure Load;
     procedure Save;
     function GetFileName: string;

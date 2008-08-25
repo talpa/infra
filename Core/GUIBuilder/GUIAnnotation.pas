@@ -5,7 +5,7 @@ interface
 uses
   GUIAnnotationIntf, InfraCommon, InfraCommonIntf, InfraValueTypeIntf, Controls,
   ExtCtrls, LayoutManager, InfraValueType, List_Screen, Classes, SysUtils,
-  List_ScreenItem;
+  List_ScreenItem, List_CustomProperty;
 
 type
 
@@ -70,20 +70,37 @@ type
     property Visible: IInfraBoolean read GetVisible write SetVisible;
   end;
 
+  TCustomProperty = class(TElement, ICustomProperty)
+  private
+    FPropName: string;
+    FPropValue: Variant;
+    function GetPropName: string;
+    function GetPropValue: Variant;
+    function Clone: ICustomProperty;
+    procedure SetPropName(const Value: string);
+    procedure SetPropValue(const Value: Variant);
+  public
+    property PropName: string read GetPropName write SetPropName;
+    property PropValue: Variant read GetPropValue write SetPropValue;
+  end;
+
   TScreenControl = class(TScreenItem, IScreenControl)
   private
     FControlClass: TControlClass;
     FControlProperty: IInfraString;
+    FCustomProperties: ICustomPropertyList;
     FHeight: IInfraInteger;
     FPropertyName: string;
     FWidth: IInfraInteger;
     function GetControlClass: TControlClass;
     function GetControlProperty: IInfraString;
+    function GetCustomProperties: ICustomPropertyList;
     function GetHeight: IInfraInteger;
     function GetPropertyName: string;
     function GetWidth: IInfraInteger;
     procedure SetControlClass(const Value: TControlClass);
     procedure SetControlProperty(const Value: IInfraString);
+    procedure SetCustomProperties(const Value: ICustomPropertyList);
     procedure SetHeight(const Value: IInfraInteger);
     procedure SetPropertyName(const Value: string);
     procedure SetWidth(const Value: IInfraInteger);
@@ -93,6 +110,7 @@ type
     procedure SetSize(pHeight, pWidth: IInfraInteger);
     property ControlClass: TControlClass read GetControlClass write SetControlClass;
     property ControlProperty: IInfraString read GetControlProperty write SetControlProperty;
+    property CustomProperties: ICustomPropertyList read GetCustomProperties write SetCustomProperties;
     property Height: IInfraInteger read GetHeight write SetHeight;
     property PropertyName: string read GetPropertyName write SetPropertyName;
     property Width: IInfraInteger read GetWidth write SetWidth;
@@ -367,6 +385,35 @@ begin
   FVisible := Value;
 end;
 
+{ TCustomProperty }
+
+function TCustomProperty.Clone: ICustomProperty;
+begin
+  Result := TCustomProperty.Create;
+  Result.PropName := PropName;
+  Result.PropValue := PropValue;
+end;
+
+function TCustomProperty.GetPropName: string;
+begin
+  Result := FPropName;
+end;
+
+function TCustomProperty.GetPropValue: Variant;
+begin
+  Result := FPropValue;
+end;
+
+procedure TCustomProperty.SetPropName(const Value: string);
+begin
+  FPropName := Value;
+end;
+
+procedure TCustomProperty.SetPropValue(const Value: Variant);
+begin
+  FPropValue := Value;
+end;
+
 { TScreenControl }
 
 function TScreenControl.Clone: IScreenControl;
@@ -387,6 +434,7 @@ begin
   //ScreenControl
   Result.ControlClass := ControlClass;
   Result.ControlProperty := ControlProperty.Clone as IInfraString;
+  Result.CustomProperties := CustomProperties.Clone;
   Result.Height := Height.Clone as IInfraInteger;
   Result.PropertyName := PropertyName;
   Result.Width := Width.Clone as IInfraInteger;
@@ -397,6 +445,7 @@ begin
   inherited;
 
   FControlProperty := TInfraString.Create;
+  FCustomProperties := TCustomPropertyList.Create;
   FHeight := TInfraInteger.Create;
   FWidth := TInfraInteger.Create;
 end;
@@ -409,6 +458,11 @@ end;
 function TScreenControl.GetControlProperty: IInfraString;
 begin
   Result := FControlProperty;
+end;
+
+function TScreenControl.GetCustomProperties: ICustomPropertyList;
+begin
+  Result := FCustomProperties;
 end;
 
 function TScreenControl.GetHeight: IInfraInteger;
@@ -434,6 +488,11 @@ end;
 procedure TScreenControl.SetControlProperty( const Value: IInfraString);
 begin
   FControlProperty := Value;
+end;
+
+procedure TScreenControl.SetCustomProperties(const Value: ICustomPropertyList);
+begin
+  FCustomProperties := Value;
 end;
 
 procedure TScreenControl.SetHeight(const Value: IInfraInteger);

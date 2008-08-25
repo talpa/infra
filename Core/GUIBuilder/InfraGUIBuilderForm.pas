@@ -21,67 +21,121 @@ type
   TInfraGUIBuilderForm = class(TCustomForm)
   private
     FAdjustFormSize: Boolean;
+    FCanClose: Boolean;
+    FExecuted: Boolean;
     FGUI: IGUI;
+    FGUIResult: TGUIResult;
     FMainLayoutManager: TLayoutManager;
     FScreenSizeRatio: TScreenSizeRatio;
     procedure CalculateFormHeight;
     procedure CalculateFormWidth;
+    function GetCanClose: Boolean;
     function GetGUI: IGUI;
+    function GetGUIResult: TGUIResult;
     function GetMainLayoutManager: TLayoutManager;
     function GetScreenSizeCoefficient: Extended;
     function GetScreenSizeRatio: TScreenSizeRatio;
     procedure PositioningForm;
+    procedure SetCanClose(const Value: Boolean);
     procedure SetGUI(const Value: IGUI);
+    procedure SetGUIResult(const Value: TGUIResult);
     procedure SetScreenSizeRatio(const Value: TScreenSizeRatio);
     procedure WMSYSCOMMAND(var message: TWMSYSCOMMAND); message WM_SYSCOMMAND;
   protected
     procedure CreateLayoutManager;
     function GetAdditionalScreenHeight: Integer; virtual;
     function GetAdditionalScreenWidth: Integer; virtual;
-    procedure SetControlValue(pGUIControl: IGUIControl; pObject: IInfraObject);
     procedure SetItemOrder;
-    procedure SetPropAnnotationsForItem(pScreenItem: IScreenItem;
-      pItem: TLayoutManagerItem);
+    procedure SetPropAnnotationsForItem(pScreenItem: IScreenItem; pItem: TLayoutManagerItem);
     procedure SetObjectAnnotationsForForm(pScreen: IScreen);
+    procedure SetValueFromControl(pGUIControl: IGUIControl; pObject: IInfraObject);
+    procedure SetValueToControl(pGUIControl: IGUIControl; pObject: IInfraObject);
   public
+    function CloseQuery: Boolean; override;
+    function Execute(pShowModal: Boolean = True): TGUIResult;
+    function ShowModal: Integer; override;
     procedure AdjustFormSize;
     procedure Build;
     constructor CreateNew(AOwner: TComponent; Dummy: Integer = 0); override;
     procedure CreateParams(var Params: TCreateParams); override;
+    property CanClose: Boolean read GetCanClose write SetCanClose;
     property GUI: IGUI read GetGUI write SetGUI;
+    property GUIResult: TGUIResult read GetGUIResult write SetGUIResult;
     property MainLayoutManager: TLayoutManager read GetMainLayoutManager;
     property ScreenSizeRatio: TScreenSizeRatio read GetScreenSizeRatio write SetScreenSizeRatio;
   end;
 
   TInfraGUIBuilderEditForm = class(TInfraGUIBuilderForm)
   private
-    FCancelButton: TSpeedButton;
+    FCancelButton: TButton;
     FLayoutManager: TLayoutManager;
     FPanelPosition: TPanelPosition;
-    FSaveButton: TSpeedButton;
+    FSaveButton: TButton;
     procedure DoCancelButtonClick(Sender: TObject);
-    function GetCancelButton: TSpeedButton;
+    procedure DoSaveButtonClick(Sender: TObject);
+    function GetCancelButton: TButton;
     function GetLayoutManager: TLayoutManager;
     function GetPanelPosition: TPanelPosition;
-    function GetSaveButton: TSpeedButton;
+    function GetSaveButton: TButton;
     procedure SetPanelPosition(const Value: TPanelPosition);
   protected
     function GetAdditionalScreenHeight: Integer; override;
     function GetAdditionalScreenWidth: Integer; override;
     procedure RealignForm;
-    property CancelButton: TSpeedButton read GetCancelButton;
+    property CancelButton: TButton read GetCancelButton;
     property LayoutManager: TLayoutManager read GetLayoutManager;
     property PanelPosition: TPanelPosition read GetPanelPosition write SetPanelPosition default ppBelow;
-    property SaveButton: TSpeedButton read GetSaveButton;
+    property SaveButton: TButton read GetSaveButton;
   public
     constructor CreateNew(AOwner: TComponent; Dummy: Integer = 0); override;
   end;
 
+procedure ExtractDotSeparatedName(pFullName: string; var pFirstName, pSecondName: string);
+function WritePropValue(pInstance: TObject; const pPropName: string; const pValue: variant): variant;
+
 implementation
 
 uses
-  CustomizeScreen, InfraGUIBuilder, InfraValueTypeConvert,
-  GUIAnnotationLoaderXML;
+  CustomizeScreen, InfraGUIBuilder, InfraValueTypeConvert, GUIAnnotationLoaderXML;
+
+procedure ExtractDotSeparatedName(pFullName: string; var pFirstName, pSecondName: string);
+var
+  I: integer;
+begin
+  pFirstName := '';
+  pSecondName := pFullName;
+  I := Pos('.', pFullName);
+
+  if (I > 0) then
+  begin
+    pFirstName := Copy(pFullName, 1, I - 1);
+    pSecondName := Copy(pFullName, I + 1, Length(pFullName) - I);
+  end;
+end;
+
+function WritePropValue(pInstance: TObject; const pPropName: string; const pValue: variant): variant;
+var
+  lSubObject: TObject;
+  sClassName, sAttributeName: string;
+  Props: PPropInfo;
+begin
+  ExtractDotSeparatedName(pPropName, sClassName, sAttributeName);
+
+  if sClassName = '' then
+    SetPropValue(pInstance, pPropName, pValue)
+  else
+  begin
+    Props := GetPropInfo(pInstance, sClassName);
+
+    if IsPublishedProp(pInstance, sClassName) and PropIsType(pInstance, sClassName, tkClass) and (Props.GetProc <> nil) then
+    begin
+      lSubObject := GetObjectProp(pInstance, sClassName);
+
+      if Assigned(lSubObject) then
+        WritePropValue(lSubObject, sAttributeName, pValue);
+    end;
+  end;
+end;
 
 { TInfraGUIBuilderForm }
 
@@ -152,13 +206,15 @@ end;
 procedure TInfraGUIBuilderForm.Build;
 var
   It: IGUIControlIterator;
+  ItCustomProps: ICustomPropertyIterator;
   lGUIControl: IGUIControl;
+  lCustomProperty: ICustomProperty;
   lXMLLoader: IGUIAnnotationLoader;
+  lFirstControl: TControl;
 begin
-  SendToBack;
-
   Height := 300;
   Width := 400;
+  lFirstControl := nil;
 
   CreateLayoutManager;
 
@@ -180,10 +236,29 @@ begin
     lGUIControl.Control.Name := lGUIControl.Name;
     lGUIControl.Item := MainLayoutManager.AddControl(lGUIControl.Control);
 
-    SetControlValue(lGUIControl, GUI.BusinessObject);
+    if (not Assigned(lFirstControl)) and
+      (lGUIControl.Control.InheritsFrom(TWinControl)) and
+      ((lGUIControl.Control as TWinControl).CanFocus) then
+      lFirstControl := lGUIControl.Control;
+
+    SetValueToControl(lGUIControl, GUI.BusinessObject);
 
     if Supports(lGUIControl.ScreenItem, IScreenControl) then
+    begin
       SetPropAnnotationsForItem(lGUIControl.ScreenItem as IScreenControl, lGUIControl.Item);
+
+      //Add CustomProperties for control
+      ItCustomProps := (lGUIControl.ScreenItem as IScreenControl).CustomProperties.NewIterator;
+
+      while not ItCustomProps.IsDone do
+      begin
+        lCustomProperty := ItCustomProps.CurrentItem as ICustomProperty;
+
+        WritePropValue(lGUIControl.Control, lCustomProperty.PropName, lCustomProperty.PropValue);
+
+        ItCustomProps.Next;
+      end;
+    end;
 
     It.Next;
   end;
@@ -198,7 +273,8 @@ begin
 
   PositioningForm;
 
-  BringToFront;
+  if Assigned(lFirstControl) then
+    ActiveControl := lFirstControl as TWinControl;
 end;
 
 procedure TInfraGUIBuilderForm.CalculateFormHeight;
@@ -245,6 +321,11 @@ begin
     ClientWidth := Max(iNewWidth, Constraints.MinWidth);
 end;
 
+function TInfraGUIBuilderForm.CloseQuery: Boolean;
+begin
+  Result := FCanClose
+end;
+
 procedure TInfraGUIBuilderForm.CreateLayoutManager;
 begin
   if Assigned(FMainLayoutManager) then
@@ -267,6 +348,9 @@ begin
   inherited;
 
   FAdjustFormSize := True;
+  FCanClose := True;
+  FExecuted := False;
+  FGUIResult := grNone;
   FScreenSizeRatio := sr4to3;
 
   //Add menu items
@@ -297,6 +381,26 @@ begin
   Params.WndParent := GetDesktopWindow;
 end;
 
+function TInfraGUIBuilderForm.Execute(pShowModal: Boolean): TGUIResult;
+begin
+  FExecuted := True;
+
+  if pShowModal then
+    ShowModal
+  else
+    Show;
+
+  Result := FGUIResult;
+end;
+
+function TInfraGUIBuilderForm.ShowModal: Integer;
+begin
+  if not FExecuted then
+    raise Exception.Create('Form must be called with <Execute> method');
+
+  Result := inherited ShowModal;
+end;
+
 function TInfraGUIBuilderForm.GetAdditionalScreenHeight: Integer;
 begin
   Result := 0;
@@ -307,9 +411,19 @@ begin
   Result := 0;
 end;
 
+function TInfraGUIBuilderForm.GetCanClose: Boolean;
+begin
+  Result := FCanClose;
+end;
+
 function TInfraGUIBuilderForm.GetGUI: IGUI;
 begin
   Result := FGUI;
+end;
+
+function TInfraGUIBuilderForm.GetGUIResult: TGUIResult;
+begin
+  Result := FGUIResult
 end;
 
 function TInfraGUIBuilderForm.GetMainLayoutManager: TLayoutManager;
@@ -342,20 +456,19 @@ begin
   Top := ((Rect.Bottom - Rect.Top) - Height) div 2;
 end;
 
-procedure TInfraGUIBuilderForm.SetControlValue(pGUIControl: IGUIControl;
-  pObject: IInfraObject);
+procedure TInfraGUIBuilderForm.SetCanClose(const Value: Boolean);
 begin
-  if pGUIControl.Control is TMemo then
-    (pGUIControl.Control as TMemo).Lines.Text :=
-      GetVariantValue(pGUIControl.PropertyValue).AsVariant
-  else if Length(pGUIControl.ControlProperty) > 0 then
-    SetPropValue(pGUIControl.Control, pGUIControl.ControlProperty,
-      GetVariantValue(pGUIControl.PropertyValue).AsVariant);
+  FCanClose := Value;
 end;
 
 procedure TInfraGUIBuilderForm.SetGUI(const Value: IGUI);
 begin
   FGUI := Value;
+end;
+
+procedure TInfraGUIBuilderForm.SetGUIResult(const Value: TGUIResult);
+begin
+  FGUIResult := Value;
 end;
 
 procedure TInfraGUIBuilderForm.SetItemOrder;
@@ -500,6 +613,27 @@ begin
   FScreenSizeRatio := Value;
 end;
 
+procedure TInfraGUIBuilderForm.SetValueFromControl(pGUIControl: IGUIControl;
+  pObject: IInfraObject);
+begin
+  if pGUIControl.Control is TMemo then
+    SetVariantValue(pGUIControl.PropertyValue, (pGUIControl.Control as TMemo).Lines.Text)
+  else if Length(pGUIControl.ControlProperty) > 0 then
+    SetVariantValue(pGUIControl.PropertyValue,
+      GetPropValue(pGUIControl.Control, pGUIControl.ControlProperty));
+end;
+
+procedure TInfraGUIBuilderForm.SetValueToControl(pGUIControl: IGUIControl;
+  pObject: IInfraObject);
+begin
+  if pGUIControl.Control is TMemo then
+    (pGUIControl.Control as TMemo).Lines.Text :=
+      GetVariantValue(pGUIControl.PropertyValue).AsVariant
+  else if Length(pGUIControl.ControlProperty) > 0 then
+    SetPropValue(pGUIControl.Control, pGUIControl.ControlProperty,
+      GetVariantValue(pGUIControl.PropertyValue).AsVariant);
+end;
+
 procedure TInfraGUIBuilderForm.WMSYSCOMMAND(var message: TWMSYSCOMMAND);
 var
   CustomizeScreen: TCustomizeScreen;
@@ -536,6 +670,7 @@ begin
 
   HandleNeeded;
 
+  CanClose := False;
   FPanelPosition := ppBelow;
 
   FLayoutManager := TLayoutManager.Create(Self);
@@ -550,10 +685,10 @@ begin
   FLayoutManager.ItemSpacing.Right := 0;
 
   //Save button
-  FSaveButton := TSpeedButton.Create(Self);
+  FSaveButton := TButton.Create(Self);
   FSaveButton.Name := 'SaveButton';
-  FSaveButton.Caption := '&Gravar';
-  FSaveButton.OnClick := DoCancelButtonClick;
+  FSaveButton.Caption := '&Save';
+  FSaveButton.OnClick := DoSaveButtonClick;
 
   with FLayoutManager.AddControl(FSaveButton) do
   begin
@@ -562,9 +697,9 @@ begin
   end;
 
   //Cancel button
-  FCancelButton := TSpeedButton.Create(Self);
+  FCancelButton := TButton.Create(Self);
   FCancelButton.Name := 'CancelButton';
-  FCancelButton.Caption := '&Cancelar';
+  FCancelButton.Caption := '&Cancel';
   FCancelButton.OnClick := DoCancelButtonClick;
 
   with FLayoutManager.AddControl(FCancelButton) do
@@ -578,6 +713,28 @@ end;
 
 procedure TInfraGUIBuilderEditForm.DoCancelButtonClick(Sender: TObject);
 begin
+  FCanClose := True;
+  FGUIResult := grCancel;
+
+  Close;
+end;
+
+procedure TInfraGUIBuilderEditForm.DoSaveButtonClick(Sender: TObject);
+var
+  It: IGUIControlIterator;
+begin
+  It := GUI.GUIControlList.NewIterator;
+
+  while not It.IsDone do
+  begin
+    SetValueFromControl(It.CurrentItem as IGUIControl, GUI.BusinessObject);
+
+    It.Next;
+  end;
+
+  FCanClose := True;
+  FGUIResult := grSave;
+
   Close;
 end;
 
@@ -594,7 +751,7 @@ begin
   Result := 0;
 end;
 
-function TInfraGUIBuilderEditForm.GetCancelButton: TSpeedButton;
+function TInfraGUIBuilderEditForm.GetCancelButton: TButton;
 begin
   Result := FCancelButton;
 end;
@@ -609,7 +766,7 @@ begin
   Result := FPanelPosition;
 end;
 
-function TInfraGUIBuilderEditForm.GetSaveButton: TSpeedButton;
+function TInfraGUIBuilderEditForm.GetSaveButton: TButton;
 begin
   Result := FSaveButton;
 end;

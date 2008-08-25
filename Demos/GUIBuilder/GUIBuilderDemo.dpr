@@ -37,19 +37,7 @@ begin
 
   //Data -----------------------------------------------------------------------
   lPerson := TPerson.Create;
-  lPerson.ID.AsInteger := 1;
-  lPerson.Name.AsString := 'Diogo Augusto Pereira';
-  lPerson.Email.AsString := 'diogoap82@gmail.com';
-  lPerson.Address.AsString := 'Rua Alfredo Wust, 838';
-  lPerson.City.Name.AsString := 'Rolante';
-  lPerson.City.Population.AsInteger := 18500;
-  lPerson.State.AsString := 'RS';
-  lPerson.Country.AsString := 'Brasil';
-  lPerson.Birthday.AsDateTime := 30280;
-  lPerson.Active.AsBoolean := True;
-  lPerson.Amount.AsDouble := 10000;
-  lPerson.Details.AsString := 'Observações linha 1' + #13 +
-    'Observações linha 2' + #13 + 'Observações linha 3';
+  lPerson.LoadSampleData;
 
 
 
@@ -135,8 +123,9 @@ begin
   lItem.ControlClass := TComboBox;
   lItem.PutAfter := 'Address';
 
+
+  
   //Build ----------------------------------------------------------------------
-  //GUIService.RegisterGUIMapping(TcxTextEdit, IInfraString, 'Text');
   GUIService.Build(lPerson, lGUIPersonSimple);
   GUIService.Build(lPerson, lGUIPerson);
   GUIService.Build(lPerson);

@@ -13,6 +13,7 @@ type
   private
     FFileName: string;
     FGUI: IGUI;
+    function GetRepository(CanCreate: Boolean = True): string;
     function GetFileName: string;
     function GetGUI: IGUI;
     procedure SetFileName(const Value: string);
@@ -41,6 +42,21 @@ begin
   Result := FGUI;
 end;
 
+function TGUIAnnotationLoaderXML.GetRepository(CanCreate: Boolean): string;
+var
+  sDir: string;
+begin
+  if Length(GUIService.UserRepository) > 0 then
+    sDir := GUIService.UserRepository
+  else
+    sDir := ExtractFileDir(Application.ExeName) + '\Screens';
+
+  if (CanCreate) and (not DirectoryExists(sDir)) then
+    CreateDir(sDir);
+
+  Result := sDir + '\' + FileName;
+end;
+
 procedure TGUIAnnotationLoaderXML.Load;
 var
   I : Integer;
@@ -49,10 +65,7 @@ var
   lGUIControl: IGUIControl;
   lScreenItem: IScreenItem;
 begin
-  if not DirectoryExists(ExtractFileDir(Application.ExeName) + '\Screens') then
-    CreateDir(ExtractFileDir(Application.ExeName) + '\Screens');
-
-  if not FileExists(FileName) then
+  if not FileExists(GetRepository(False)) then
     Exit;
 
   if not Assigned(GUI.Screen) then
@@ -62,121 +75,117 @@ begin
 
   try
     XMLDoc.Active:= False;
+    XMLDoc.LoadFromFile(GetRepository);
 
-    if FileExists(FileName) then
+    //Title
+    ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['Title'];
+    if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
+      GUI.Screen.Title.AsString := ANode.NodeValue;
+
+    //CaptionPosition
+    ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['CaptionPosition'];
+    if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
+      GUI.Screen.CaptionPosition := GetLabelPosition(ANode.NodeValue);
+
+    //Height
+    ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['Height'];
+    if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
+      GUI.Screen.Height.AsInteger := ANode.NodeValue;
+
+    //Width
+    ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['Width'];
+    if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
+      GUI.Screen.Width.AsInteger := ANode.NodeValue;
+
+    //ItemLayout
+    ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['ItemLayout'];
+    if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
+      GUI.Screen.ItemLayout := GetLayoutOrientation(ANode.NodeValue);
+
+    //Padding - Left
+    ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['PaddingLeft'];
+    if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
+      GUI.Screen.Padding.Left := ANode.NodeValue;
+
+    //Padding - Top
+    ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['PaddingTop'];
+    if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
+      GUI.Screen.Padding.Top := ANode.NodeValue;
+
+    //Padding - Right
+    ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['PaddingRight'];
+    if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
+      GUI.Screen.Padding.Right := ANode.NodeValue;
+
+    //Padding - Bottom
+    ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['PaddingBottom'];
+    if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
+      GUI.Screen.Padding.Bottom := ANode.NodeValue;
+
+    ANode := XMLDoc.DocumentElement.ChildNodes['ScreenItems'];
+
+    for I := 0 to ANode.ChildNodes.Count - 1 do
     begin
-      XMLDoc.LoadFromFile(FileName);
+      AChild := ANode.ChildNodes.Nodes[I];
 
-      //Title
-      ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['Title'];
-      if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
-        GUI.Screen.Title.AsString := ANode.NodeValue;
+      lGUIControl := GUI.FindGUIControl(AChild.NodeName);
 
-      //CaptionPosition
-      ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['CaptionPosition'];
-      if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
-        GUI.Screen.CaptionPosition := GetLabelPosition(ANode.NodeValue);
-
-      //Height
-      ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['Height'];
-      if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
-        GUI.Screen.Height.AsInteger := ANode.NodeValue;
-
-      //Width
-      ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['Width'];
-      if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
-        GUI.Screen.Width.AsInteger := ANode.NodeValue;
-
-      //ItemLayout
-      ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['ItemLayout'];
-      if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
-        GUI.Screen.ItemLayout := GetLayoutOrientation(ANode.NodeValue);
-
-      //Padding - Left
-      ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['PaddingLeft'];
-      if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
-        GUI.Screen.Padding.Left := ANode.NodeValue;
-
-      //Padding - Top
-      ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['PaddingTop'];
-      if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
-        GUI.Screen.Padding.Top := ANode.NodeValue;
-
-      //Padding - Right
-      ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['PaddingRight'];
-      if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
-        GUI.Screen.Padding.Right := ANode.NodeValue;
-
-      //Padding - Bottom
-      ANode := XMLDoc.DocumentElement.ChildNodes.Nodes['PaddingBottom'];
-      if (Assigned(ANode)) and (not (ANode.NodeValue = null)) then
-        GUI.Screen.Padding.Bottom := ANode.NodeValue;
-
-      ANode := XMLDoc.DocumentElement.ChildNodes['ScreenItems'];
-
-      for I := 0 to ANode.ChildNodes.Count - 1 do
+      if Assigned(lGUIControl) then
       begin
-        AChild := ANode.ChildNodes.Nodes[I];
+        if not Assigned(lGUIControl.ScreenItem) then
+          lGUIControl.ScreenItem := TScreenControl.Create;
 
-        lGUIControl := GUI.FindGUIControl(AChild.NodeName);
+        lScreenItem := lGUIControl.ScreenItem;
 
-        if Assigned(lGUIControl) then
-        begin
-          if not Assigned(lGUIControl.ScreenItem) then
-            lGUIControl.ScreenItem := TScreenControl.Create;
+        //Caption
+        AChildNode := AChild.ChildNodes['Caption'];
+        if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
+          lScreenItem.Caption.AsString := AChildNode.NodeValue;
 
-          lScreenItem := lGUIControl.ScreenItem;
+        //Visible
+        AChildNode := AChild.ChildNodes['Visible'];
+        if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
+          lScreenItem.Visible.AsBoolean := AChildNode.NodeValue;
 
-          //Caption
-          AChildNode := AChild.ChildNodes['Caption'];
-          if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
-            lScreenItem.Caption.AsString := AChildNode.NodeValue;
+        //CaptionVisible
+        AChildNode := AChild.ChildNodes['CaptionVisible'];
+        if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
+          lScreenItem.CaptionVisible.AsBoolean := AChildNode.NodeValue;
 
-          //Visible
-          AChildNode := AChild.ChildNodes['Visible'];
-          if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
-            lScreenItem.Visible.AsBoolean := AChildNode.NodeValue;
+        //CaptionPosition
+        AChildNode := AChild.ChildNodes['CaptionPosition'];
+        if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
+          lScreenItem.CaptionPosition := GetLabelPosition(AChildNode.NodeValue);
 
-          //CaptionVisible
-          AChildNode := AChild.ChildNodes['CaptionVisible'];
-          if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
-            lScreenItem.CaptionVisible.AsBoolean := AChildNode.NodeValue;
+        //ItemHeight
+        AChildNode := AChild.ChildNodes['ItemHeight'];
+        if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
+          lScreenItem.ItemHeight.AsInteger := AChildNode.NodeValue;
 
-          //CaptionPosition
-          AChildNode := AChild.ChildNodes['CaptionPosition'];
-          if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
-            lScreenItem.CaptionPosition := GetLabelPosition(AChildNode.NodeValue);
+        //ItemHeightMeasureType
+        AChildNode := AChild.ChildNodes['ItemHeightMeasureType'];
+        if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
+          lScreenItem.ItemHeightMeasureType := GetMeasureType(AChildNode.NodeValue);
 
-          //ItemHeight
-          AChildNode := AChild.ChildNodes['ItemHeight'];
-          if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
-            lScreenItem.ItemHeight.AsInteger := AChildNode.NodeValue;
+        //ItemWidth
+        AChildNode := AChild.ChildNodes['ItemWidth'];
+        if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
+          lScreenItem.ItemWidth.AsInteger := AChildNode.NodeValue;
 
-          //ItemHeightMeasureType
-          AChildNode := AChild.ChildNodes['ItemHeightMeasureType'];
-          if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
-            lScreenItem.ItemHeightMeasureType := GetMeasureType(AChildNode.NodeValue);
+        //ItemWidthMeasureType
+        AChildNode := AChild.ChildNodes['ItemWidthMeasureType'];
+        if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
+          lScreenItem.ItemWidthMeasureType := GetMeasureType(AChildNode.NodeValue);
 
-          //ItemWidth
-          AChildNode := AChild.ChildNodes['ItemWidth'];
-          if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
-            lScreenItem.ItemWidth.AsInteger := AChildNode.NodeValue;
+        //PutAfter
+        AChildNode := AChild.ChildNodes['PutAfter'];
+        if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
+          lScreenItem.PutAfter := AChildNode.NodeValue;
 
-          //ItemWidthMeasureType
-          AChildNode := AChild.ChildNodes['ItemWidthMeasureType'];
-          if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
-            lScreenItem.ItemWidthMeasureType := GetMeasureType(AChildNode.NodeValue);
-
-          //PutAfter
-          AChildNode := AChild.ChildNodes['PutAfter'];
-          if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
-            lScreenItem.PutAfter := AChildNode.NodeValue;
-
-          //PutBefore
-          AChildNode := AChild.ChildNodes['PutBefore'];
-          if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
-            lScreenItem.PutBefore := AChildNode.NodeValue;
-        end;
+        //PutBefore
+        AChildNode := AChild.ChildNodes['PutBefore'];
+        if (Assigned(AChildNode)) and (not (AChildNode.NodeValue = null)) then
+          lScreenItem.PutBefore := AChildNode.NodeValue;
       end;
     end;
   finally
@@ -191,11 +200,8 @@ var
   XMLDoc: IXMLDOMDocument;
   root, child, root_item, item: IXMLDomElement;
 begin
-  if Length(FileName) = 0 then
+  if Length(GetRepository) = 0 then
     raise Exception.Create('Invalid FileName');
-
-  if not DirectoryExists(ExtractFileDir(Application.ExeName) + '\Screens') then
-    CreateDir(ExtractFileDir(Application.ExeName) + '\Screens');
 
   XMLDoc:= CreateOleObject('Microsoft.XMLDOM') as IXMLDomDocument;
 
@@ -376,7 +382,7 @@ begin
   end;
 
   //Salva o documento
-  XMLDoc.save(FileName);
+  XMLDoc.save(GetRepository);
 end;
 
 procedure TGUIAnnotationLoaderXML.SetFileName(const Value: string);

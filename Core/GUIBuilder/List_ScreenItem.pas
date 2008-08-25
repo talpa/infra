@@ -39,7 +39,7 @@ begin
   inherited;
 end;
 
-{ TGUIControlList }
+{ TScreenItemList }
 
 function TScreenItemList.Clone: IScreenItemList;
 var

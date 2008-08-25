@@ -83,15 +83,59 @@ type
     function Clone: IScreenItemList;
   end;
 
+  ICustomProperty = interface(IElement)
+    ['{3E9AEC5A-8572-4F13-8A98-D813382F1FAB}']
+    function GetPropName: string;
+    function GetPropValue: Variant;
+    function Clone: ICustomProperty;
+    procedure SetPropName(const Value: string);
+    procedure SetPropValue(const Value: Variant);
+    property PropName: string read GetPropName write SetPropName;
+    property PropValue: Variant read GetPropValue write SetPropValue;
+  end;
+
+  ICustomPropertyIterator = interface(IInterface)
+    ['{F0B65BF8-2582-4D09-B020-709FB7F10065}']
+    function CurrentItem: IInterface;
+    function IsDone: Boolean;
+    procedure First;
+    procedure Next;
+  end;
+
+  ICustomPropertyListBase = interface(IBaseElement)
+    ['{59D910CC-E093-4541-B8D4-204D3717E6F0}']
+    function Add(const Item: ICustomProperty): Integer;
+    function First: ICustomProperty;
+    function GetCount: Integer;
+    function GetItem(Index: Integer): ICustomProperty;
+    function IndexOf(const Item: ICustomProperty): Integer;
+    function Last: ICustomProperty;
+    function NewIterator: ICustomPropertyIterator;
+    procedure Clear;
+    procedure Delete(Index: Integer);
+    procedure Insert(Index: Integer; const Item: ICustomProperty);
+    procedure SetItem(Index: Integer; const TypeInfo: ICustomProperty);
+    property Count: Integer read GetCount;
+    property Items[Index: Integer]: ICustomProperty read GetItem write SetItem; default;
+  end;
+
+  ICustomPropertyList = interface(ICustomPropertyListBase)
+    ['{67C8610E-8EC8-4D6A-BF5E-6F7E658ED9DF}']
+    function Clone: ICustomPropertyList;
+    procedure AddProp(PropName: string; PropValue: Variant);
+  end;
+
   IScreenControl = interface(IScreenItem)
     ['{AAAACFBB-E1C1-43CA-A8AC-3031F166DD01}']
     function GetControlClass: TControlClass;
     function GetControlProperty: IInfraString;
+    function GetCustomProperties: ICustomPropertyList;
     function GetHeight: IInfraInteger;
     function GetPropertyName: string;
     function GetWidth: IInfraInteger;
     procedure SetControlClass(const Value: TControlClass);
     procedure SetControlProperty(const Value: IInfraString);
+    procedure SetCustomProperties(const Value: ICustomPropertyList);
     procedure SetHeight(const Value: IInfraInteger);
     procedure SetPropertyName(const Value: string);
     procedure SetWidth(const Value: IInfraInteger);
@@ -99,6 +143,7 @@ type
     function Clone: IScreenControl;
     property ControlClass: TControlClass read GetControlClass write SetControlClass;
     property ControlProperty: IInfraString read GetControlProperty write SetControlProperty;
+    property CustomProperties: ICustomPropertyList read GetCustomProperties write SetCustomProperties;
     property Height: IInfraInteger read GetHeight write SetHeight;
     property PropertyName: string read GetPropertyName write SetPropertyName;
     property Width: IInfraInteger read GetWidth write SetWidth;
