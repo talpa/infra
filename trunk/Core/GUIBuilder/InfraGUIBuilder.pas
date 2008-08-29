@@ -535,7 +535,7 @@ begin
         lItem.ControlClass := GetControlClass(lItem.ScreenItem as IScreenControl,
           lItem.PropertyInfo.TypeInfo.TypeID);
 
-        if (Assigned(lItem)) and (Supports(lItem, IScreenControl)) then
+        if (Assigned(lItem)) and (Supports(lItem.ScreenItem, IScreenControl)) then
           lItem.ControlProperty := GetControlProperty(
             lItem.PropertyInfo.TypeInfo.TypeID, lItem.ScreenItem as IScreenControl)
         else
