@@ -189,7 +189,7 @@ type
     function GetControlByName(pName: string): IScreenControl;
     function GetGroup(pName: string): IScreenGroup;
     procedure Group(pProperties: TStrings);
-    procedure SetSize(pHeight, pWidth: IInfraInteger);
+    procedure SetSize(pHeight, pWidth: Integer);
     function UseProperty(pPropertyName: string): Boolean;
     property CaptionPosition: TLabelPosition read GetCaptionPosition write SetCaptionPosition;
     property ControlSpacing: IInfraInteger read GetControlSpacing write SetControlSpacing;

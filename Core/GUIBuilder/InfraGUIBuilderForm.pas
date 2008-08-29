@@ -45,6 +45,7 @@ type
     procedure CreateLayoutManager;
     function GetAdditionalScreenHeight: Integer; virtual;
     function GetAdditionalScreenWidth: Integer; virtual;
+    procedure SelectFirstControl;
     procedure SetItemOrder;
     procedure SetPropAnnotationsForItem(pScreenItem: IScreenItem; pItem: TLayoutManagerItem);
     procedure SetObjectAnnotationsForForm(pScreen: IScreen);
@@ -210,11 +211,9 @@ var
   lGUIControl: IGUIControl;
   lCustomProperty: ICustomProperty;
   lXMLLoader: IGUIAnnotationLoader;
-  lFirstControl: TControl;
 begin
   Height := 300;
   Width := 400;
-  lFirstControl := nil;
 
   CreateLayoutManager;
 
@@ -235,11 +234,6 @@ begin
     lGUIControl.Control := lGUIControl.ControlClass.Create(Self);
     lGUIControl.Control.Name := lGUIControl.Name;
     lGUIControl.Item := MainLayoutManager.AddControl(lGUIControl.Control);
-
-    if (not Assigned(lFirstControl)) and
-      (lGUIControl.Control.InheritsFrom(TWinControl)) and
-      ((lGUIControl.Control as TWinControl).CanFocus) then
-      lFirstControl := lGUIControl.Control;
 
     SetValueToControl(lGUIControl, GUI.BusinessObject);
 
@@ -273,8 +267,7 @@ begin
 
   PositioningForm;
 
-  if Assigned(lFirstControl) then
-    ActiveControl := lFirstControl as TWinControl;
+  SelectFirstControl;
 end;
 
 procedure TInfraGUIBuilderForm.CalculateFormHeight;
@@ -454,6 +447,28 @@ begin
 
   Left := ((Rect.Right - Rect.Left) - Width) div 2;
   Top := ((Rect.Bottom - Rect.Top) - Height) div 2;
+end;
+
+procedure TInfraGUIBuilderForm.SelectFirstControl;
+var
+  It: IGUIControlIterator;
+  lGUIControl: IGUIControl;
+begin
+  It := GUI.GUIControlList.NewIterator;
+
+  while not It.IsDone do
+  begin
+    lGUIControl := It.CurrentItem as IGUIControl;
+
+    if (lGUIControl.Control.InheritsFrom(TWinControl)) and
+      ((lGUIControl.Control as TWinControl).CanFocus) then
+    begin
+      ActiveControl := lGUIControl.Control as TWinControl;
+      Break;
+    end;
+
+    It.Next;
+  end;
 end;
 
 procedure TInfraGUIBuilderForm.SetCanClose(const Value: Boolean);
