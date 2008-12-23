@@ -1,4 +1,4 @@
-# Persistencia Flexivel e Simplificada.
+#summary Persistencia Flexivel e Simplificada.
 
 = Introduction =
 
