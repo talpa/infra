@@ -208,9 +208,9 @@ end;
 
 class function TRestrictions.CriterionIn(const PropertyName: String;
   const Values: array of Integer): ICriterion;
-var
-  InfraValues: array of IInfraType;
-  i: Integer;
+//var
+//  InfraValues: array of IInfraType;
+//  i: Integer;
 begin
 //  SetLength(InfraValues, Length(Values));
 //  for i := 0 to High(Values) do
@@ -220,9 +220,9 @@ end;
 
 class function TRestrictions.CriterionIn(const PropertyName: String;
   const Values: array of String): ICriterion;
-var
-  InfraValues: array of IInfraType;
-  i: Integer;
+//var
+//  InfraValues: array of IInfraType;
+//  i: Integer;
 begin
 //  SetLength(InfraValues, Length(Values));
 //  for i := 0 to High(Values) do

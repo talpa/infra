@@ -10,9 +10,8 @@ DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = InfraCore70.bpl InfraTypes70.bpl InfraPersistence70.bpl \
-  InfraHibernateTests.exe InfraAOP70.bpl InfraReflectTests.exe \
-  InfraAnnotationTests.exe InfraAspectTests.exe InfraGUI70.bpl \
-  GUIBuilderDemo.exe
+  InfraAOP70.bpl InfraGUI70.bpl InfraHibernateTests.exe InfraReflectTests.exe \
+  InfraAnnotationTests.exe InfraAspectTests.exe GUIBuilderDemo.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
