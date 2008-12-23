@@ -67,7 +67,7 @@ type
   private
     FConfiguration: IConfiguration;
     FConnectionProvider: IConnectionProvider;
-    FDialect: IDialect;
+    //FDialect: IDialect;
     FEntityPersisters: IEntityPersisters;
     function GetConnectionProvider: IConnectionProvider;
     function GetDialect: IDialect;

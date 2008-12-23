@@ -55,6 +55,7 @@ contains
   List_GUIControl in '..\..\Core\GUIBuilder\List_GUIControl.pas',
   List_GUIMapping in '..\..\Core\GUIBuilder\List_GUIMapping.pas',
   List_Screen in '..\..\Core\GUIBuilder\List_Screen.pas',
-  List_ScreenItem in '..\..\Core\GUIBuilder\List_ScreenItem.pas';
+  List_ScreenItem in '..\..\Core\GUIBuilder\List_ScreenItem.pas',
+  List_CustomProperty in '..\..\Core\GUIBuilder\List_CustomProperty.pas';
 
 end.

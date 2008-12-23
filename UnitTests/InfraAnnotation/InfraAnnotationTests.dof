@@ -94,10 +94,10 @@ OutputDir=..\bin
 UnitOutputDir=..\bin
 PackageDLLOutputDir=..\bin
 PackageDCPOutputDir=..\bin
-SearchPath=..\bin;..\..\bin
+SearchPath=..\bin;..\..\Packages\D7\Build
 Packages=vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;visualclx;visualdbclx;vclactnband;vclshlctrls;IntrawebDB_50_70;Intraweb_50_70;dclOfficeXP;RemObjects_WebBroker_D7;RemObjects_Indy_D7;RemObjects_RODX_D7;RemObjects_BPDX_D7;EPCOTAUtils70;dss
 Conditionals=
-DebugSourceDirs=..\bin
+DebugSourceDirs=..\bin;..\..\Packages\D7\Build
 UsePackages=0
 [Parameters]
 RunParams=
@@ -135,41 +135,38 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 [Excluded Packages]
-C:\Temp\dvExpressLayout\Bin\dclcxEditorsVCLD7.bpl=ExpressEditors Library 5 (VCL Edition) by Developer Express Inc.
-C:\Temp\dvExpressLayout\Bin\dclcxLibraryVCLD7.bpl=Express Cross Platform Library (VCL Edition) by Developer Express Inc.
-C:\Temp\dvExpressLayout\Bin\dxGDIPlusD7.bpl=ExpressGDI+ Library by Developer Express Inc.
-C:\Temp\dvExpressLayout\Bin\dxThemeD7.bpl=Express XP Theme Manager by Developer Express Inc.
-C:\Temp\dvExpressLayout\Bin\dclcxExtEditorsVCLD7.bpl=ExpressExtendedEditors Library 5 (VCL Edition) by Developer Express Inc.
-C:\Temp\dvExpressLayout\Bin\dcldxLayoutControlD7.bpl=ExpressLayout Control by Developer Express Inc.
-C:\Temp\dvExpressLayout\Bin\dxLayoutControlD7.bpl=ExpressLayout Control by Developer Express Inc.
-C:\Temp\dvExpressLayout\Bin\dxLayoutControlcxEditAdaptersD7.bpl=ExpressLayoutControl Adapters for ExpressEditors Library 5 by Developer Express Inc.
-C:\Temp\dvExpressLayout\Bin\dxComnD7.bpl=ExpressCommonLibrary by Developer Express Inc.
+C:\Projetos\Stocker\src\Components\graph3\sgr.bpl=(untitled)
+C:\Projetos\DynApp\_Outros\Validation\ValidationProviderD10.bpl=Validation Provider
 [HistoryLists\hlDebugSourcePath]
-Count=6
-Item0=..\..\..\..\Packages\D7\Build
-Item1=build
-Item2=..\bin
-Item3=..\..\..\..\Bin
-Item4=..\..\bin;..\bin
-Item5=$(ZEOSDBO_BUILD)
+Count=8
+Item0=..\..\Packages\D7\Build
+Item1=..\bin;..\..\Packages\D7\Build
+Item2=..\..\..\..\Packages\D7\Build
+Item3=build
+Item4=..\bin
+Item5=..\..\..\..\Bin
+Item6=..\..\bin;..\bin
+Item7=$(ZEOSDBO_BUILD)
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=8
-Item0=..\..\..\..\Packages\D7\Build
-Item1=$(DELPHI)\Lib\Debug;build
-Item2=build
-Item3=$(DELPHI)\Lib\Debug;..\bin
-Item4=..\..\..\..\Bin
-Item5=..\..\bin;..\bin
-Item6=build;../../test/framework
-Item7=$(ZEOSDBO_BUILD)
+Count=10
+Item0=..\..\Packages\D7\Build
+Item1=..\bin;..\..\Packages\D7\Build
+Item2=..\..\..\..\Packages\D7\Build
+Item3=$(DELPHI)\Lib\Debug;build
+Item4=build
+Item5=$(DELPHI)\Lib\Debug;..\bin
+Item6=..\..\..\..\Bin
+Item7=..\..\bin;..\bin
+Item8=build;../../test/framework
+Item9=$(ZEOSDBO_BUILD)
 [HistoryLists\hlUnitOutputDirectory]
 Count=5
-Item0=..\..\..\..\Packages\D7\Build
-Item1=build
-Item2=..\bin
+Item0=..\bin
+Item1=..\..\..\..\Packages\D7\Build
+Item2=build
 Item3=..\..\..\..\Bin
 Item4=$(ZEOSDBO_BUILD)
 [HistoryLists\hlOutputDirectorry]
@@ -179,15 +176,15 @@ Item1=build
 Item2=$(ZEOSDBO_BUILD)
 [HistoryLists\hlBPLOutput]
 Count=5
-Item0=..\..\..\..\Packages\D7\Build
-Item1=build
-Item2=..\bin
+Item0=..\bin
+Item1=..\..\..\..\Packages\D7\Build
+Item2=build
 Item3=..\..\..\..\Bin
 Item4=$(ZEOSDBO_BUILD)
 [HistoryLists\hlDCPOutput]
 Count=5
-Item0=..\..\..\..\Packages\D7\Build
-Item1=build
-Item2=..\bin
+Item0=..\bin
+Item1=..\..\..\..\Packages\D7\Build
+Item2=build
 Item3=..\..\..\..\Bin
 Item4=$(ZEOSDBO_BUILD)

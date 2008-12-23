@@ -1,3 +1,17 @@
+Revisão 53
+- Correções de vários bugs na parte de anotação do GuiBuilder.
+
+Revisão 52
++ InfraValueTypeConvert: Adicionados os métodos SetVariantValue e GetConverterToVariant.
++ TInfraGUIService: Adicionada a propriedade UserRepository para configurar o local onde os arquivos XML de configuração serão gravados.
++ TInfraGUIService: Alterado o método Build para retornar o valor TGUIResult.
++ GUIAnnotation: Adicionado o tipo ICustomProperty e a lista ICustomPropertyList para permitir que sejam setados valores para propriedades específicas de um controle de tela.
++ TInfraGUIBuilderForm: Alterado para que as telas do framework retornem se a tela foi gravada ou cancelada.
++ TInfraGUIBuilderForm: Alterado para utilizar as propriedades customizadas que foram inseridas para um controle (ICustomPropertyList).
+
+Revisão 51
+- Correções de vários bugs no GuiBuilder e melhoria do exemplo.
+
 Revisão 50
 + TPropertyInfo reimplementa IElement.TypeInfo para pegar o metadata da propriedade corretamente;
 + Criada Anotação para setar parâmetros de um IZPreparedStatemet e para poder pegar valor de campos do ResultSet de forma genérica;
