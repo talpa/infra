@@ -14,22 +14,21 @@
   * Cria um novo Session e configura ele com o Connection adiquirido;
 
 === TSession - classe responsável pela operação de carga de um objeto ===
-  * Possui um método Load onde passamos o tipo de objeto e o oid (identificador do objeto no banco). Um infratype é retornado com o objeto populado.
-  * Durante o Load o Session irá:
-    * cria um Loader e chama o método Loader.Load(TypeID, Session, OID). O resultado disso é um objeto populado para ser retornado a quem pediu a carga;
+  * Possui um método Load onde passamos o tipo de objeto e o OID (identificador do objeto no banco). Um infratype é retornado com o objeto populado.
+  * Durante o Load o Session irá criar um Loader e chamar o método Loader.Load(TypeID, Session, OID). O resultado disso é um objeto populado para ser retornado a quem pediu a carga;
 
 === TLoader - Responsável gerar a SQL e preencher um objeto a partir do resultado desta SQL ===
   * Possui um método Load que ao ser chamado irá:
     * Criar uma instância do objeto a partir do TypeID (Metadata da classe);
-    * Gerar a isntrução sql de select;
-    * Guardar em um Resultset a execução da SQL, através da chamada ao Connection.ExecuteQuery;
+    * Gerar a instrução SQL de select;
+    * Guardar em um ResultSet a execução da SQL, através da chamada ao Connection.ExecuteQuery;
     * Preencher o objeto criado com a linha atual do ResultSet;
   * O preenchimento do objeto se dá pelo FillObject(Obj, ResultSet). Este método faz o seguinte:
     * Passa por cada propriedade do objeto (à partir do seu metadata);
     * Verifica se o metadata da propriedade suportar collumn e o nome do column ou o nome do atributo;
     * Tentar pegar o valor desta coluna usando ResultSet.GetValue(NomeColuna)
     * Atribui o valor retornado ao atributo do objeto anteriormente criado;
-  * A geração da SQL ainda é simples. Neste primeiro momento só gera instruções na forma _select *All* from tabela where campopk = oid_. Para gerar esta sql faz-se:
+  * A geração da SQL ainda é simples. Neste primeiro momento só gera instruções na forma _SELECT *All* FROM tabela WHERE campopk = oid_. Para gerar este SQL faz-se:
     * Substitui "tabela" na SQL acima com o que estiver na anotação IEntity ou pelo nome da classe;
     * Substitui "campopk" na SQL, procurando o atributo anotado com IID (neste caso nao se tem um default mas poderia ser o primeiro atributo registrado na reflexão da classe).
     * Substitui "oid" na SQL, com o valor do OID passado pelo programador. Por enquanto está tratando OID como inteiro e por isso precisamos usar os converters;
@@ -55,6 +54,4 @@
   * Tem os métodos para navegar no dataset Next e EOF;
   * Possui o método GetValue(const CollumName: string): IInfraType, para retornar o valor de um campo do dataset já convertido como InfraType (ou seja, pronto para ser atribuido ao objeto);
   * Tem um método Open(pSQL: string; pParams: IInfraList) que configura e abre o dataset interno;
-
-
 
