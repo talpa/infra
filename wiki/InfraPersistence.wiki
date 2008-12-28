@@ -7,10 +7,10 @@ InfraPersistence é um simples e eficiente framework de persistência capaz de c
 
 = Características =
 
-* Poder executar qualquer tipo de instrução SQL;
-* Remover qualquer instrução SQL da aplicação;
-* Arquivar em alguma espécie de repositório as instruções SQL como templates;
-* Mapeamento automático dos parâmetros;
-* Cache dos templates lidos;
-* Log automático do processamento;
-* Processar instruções SQL no SGDB e automaticamente retornar listas de objetos ou o número de registros afetados;
+  * Poder executar qualquer tipo de instrução SQL;
+  * Remover qualquer instrução SQL da aplicação;
+  * Arquivar em alguma espécie de repositório as instruções SQL como templates;
+  * Mapeamento automático dos parâmetros;
+  * Cache dos templates lidos;
+  * Log automático do processamento;
+  * Processar instruções SQL no SGDB e automaticamente retornar listas de objetos ou o número de registros afetados;
