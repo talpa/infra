@@ -1,4 +1,5 @@
 #summary Persistencia Flexivel e Simplificada.
+#labels InfraPersistence,Documento
 
 = Introduction =
 
