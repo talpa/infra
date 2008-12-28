@@ -3,7 +3,7 @@
 
 = Se você ainda não instalou o Tortoise SVN? =
 
-  # Baixe e instale a versão mais atual do [http://sourceforge.net/project/showfiles.php?group_id=138498 Tortoise SVN]. 
+  # Baixe e instale a versão mais atual do [http://sourceforge.net/project/showfiles.php?group_id=138498&package_id=151948 Tortoise SVN]. 
 
 = Se você já possui o Tortoise SVN instalado? =
 
