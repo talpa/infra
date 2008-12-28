@@ -1,7 +1,0 @@
-=== Links Interessantes ===
-
-Documentação sobre Programação Orientada à Aspectos:
-http://www.ntier.com.br/wiki/index.php/AOP
-
-Especificação do Aspect no Spring
-http://static.springframework.org/spring/docs/2.5.x/reference/aop.html#aop-aj-ltw
