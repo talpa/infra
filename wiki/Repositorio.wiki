@@ -1,4 +1,5 @@
 #summary Usando o Tortoise SVN para baixar o Infra.
+#labels FAQ,Configuração,Instalação
 
 = Se você ainda não instalou o Tortoise SVN? =
 
