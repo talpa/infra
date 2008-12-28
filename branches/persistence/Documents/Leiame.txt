@@ -1,0 +1,24 @@
+Como Instalar?
+==============
+1) Baixe o ultimo release ou dê checkout dos fontes do repositorio
+2) descompacte o arquivo em C:\Infra e abra o Delphi
+2) No Delphi clique em Tools - Enviroment - Library
+3) Adicione c:\infra\bin ao Search Path
+4) Descompacte o Arquivo Infra\Third\Zeos.Rar no próprio diretório
+5) Abra Infra\Third\Zeos\Zeos\packages\delphi7\ZeosDbo.bpg e dê um Build All para compilar as bibliotecas do ZEOS;
+6) Abra c:\Infra\Infra.bpg
+7) Dê um Build All nos projetos e pode rodar os Testes (Tem de instalar o DUnit, veja Third\OthersThird.txt)
+
+Lista de diretórios e sua descrição:
+====================================
+Infra\Bin\		Pasta para os arquivos compilados.
+Infra\Core\		Pasta que mantem o código fonte do Infra.
+	Aspect		classes do InfraAspect, programação orientada a aspectos.
+	Common		classes básicas e servicos principais dos frameworks.
+	Persistence	classes do InfraHibernate, persistencia de dados.
+	Reflect		classes do InfraReflect, reflexao do modelo.
+	Templates	arquivos template para listas.
+	Valuetype	classes do InfraType, para substituição dos tipos nativos.
+Infra\Documents\	Pasta que mantem toda a documentação e diagramas.
+Infra\Third\		Pasta com links e tutorial para instalação de bibliotecas de terceiros (alguns de uso opicional, e configurado no Infra.Inc).
+Infra\Unit\		Pasta com testes unitários de cada framework.

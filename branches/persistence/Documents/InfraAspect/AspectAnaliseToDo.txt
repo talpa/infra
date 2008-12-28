@@ -1,0 +1,14 @@
+=== Bugs e Requisitos ====
+
+A serem implementados:
+======================
++ ver se tem como criar testes unitários "caixa branca" para as classes internas do InfraAspect (é dificil encontrar um bug caso mude alguma coisa por aqui);
+- ver como corrigir problema de chamar Procced durante Before ou After;
+
+Já implementados:
+=================
++ fazer o IInfraList implementar IInterfaceList;
++ Talvez podemos simplificar o TInfraAspectService.CallMethod fazendo o Params set um IInterfaceList em vez de IInfraList
++ Criar testes unitários para a classe TAspectPointcutEval;
++ rever uses;
++ remover chamadas globais possíveis;
