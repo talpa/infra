@@ -5,7 +5,7 @@
 
 InfraPersistence é um simples e eficiente framework de persistência capaz de carregar ou armazenar uma hierarquia de objetos a partir de templates SQL.
 
-= Características =
+== Características ==
 
   * Poder executar qualquer tipo de instrução SQL;
   * Remover qualquer instrução SQL da aplicação;
