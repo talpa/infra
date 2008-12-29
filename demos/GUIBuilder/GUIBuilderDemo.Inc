@@ -1,5 +1,5 @@
 {$IFDEF VER140}
-{$I ..\..\Core\Infra.inc}
+{$I ..\..\src\Core\Infra.inc}
 {$ELSE}
-{$I ../../Core/Infra.inc}
+{$I ../../src/Core/Infra.inc}
 {$ENDIF}
