@@ -7,10 +7,8 @@ uses
   {Zeos}ZDbcIntfs,
   {Infra}InfraCommonIntf, InfraValueTypeIntf;
 
-(*
 type
   ISession = interface;
-  ITemplateEngine = interface;
 
   {
     * Guarda as configurações sobre a persistencia:
@@ -118,12 +116,14 @@ type
     procedure SetPersistenceService(const Value: IPersistenceService);
     function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommand; overload;
     function Load(const pCommandName: string; const pClassType: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pClassType: TGUID = NullGUID; const pListType: TGUID = NullGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListType: TGUID = NullGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pList: InfraList = nil): ISQLCommand; overload;
-    function Delete(const pCommandName: string; const pObj: IInfraObject);
-    function Save(const pCommandName: string; const pObj: IInfraObject);
-    function Flush: InfraInteger;
+    function LoadList(const pCommandName: string): ISQLCommand; overload;
+    function LoadList(const pCommandName: string; const pClassType: TGUID): ISQLCommand; overload;
+    function LoadList(const pCommandName: string; const pClassType: TGUID; const pListType: TGUID): ISQLCommand; overload;
+    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListType: TGUID): ISQLCommand; overload;
+    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pList: IInfraList = nil): ISQLCommand; overload;
+    procedure Delete(const pCommandName: string; const pObj: IInfraObject);
+    procedure Save(const pCommandName: string; const pObj: IInfraObject);
+    function Flush: Integer;
     property PersistenceService: IPersistenceService read GetPersistenceService write SetPersistenceService;
   end;
 
@@ -181,7 +181,7 @@ type
   ITemplateReader = interface
     function Read(const pTemplateName: string): string;
   end;
-*)
+
 implementation
 
 end.
@@ -241,7 +241,7 @@ end.
    sc.SetParams(InfraObject);
    sc.Param.Add(NameString, InfraType);
    sc.GetResult <<<< InfraObject
-   
+
    sc := Load >>>> ISQLCommand
    sc.Param.Add(NameString, InfraType);
    sc.GetResult <<<< InfraObject
