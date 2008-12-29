@@ -6,8 +6,8 @@ program InfraReflectTests;
 {$I Test.Inc}
 
 uses
-  FastMM4,
-  ApplicationContext,
+  {$IFDEF USE_FASTMM}FastMM4,
+  {$ENDIF}ApplicationContext,
   TestFramework {$IFDEF LINUX},
   QForms,
   QGUITestRunner {$ELSE},

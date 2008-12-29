@@ -243,7 +243,7 @@ end;
 
 procedure TElement.Inform(const Event: IInfraEvent);
 begin
-  // nothing. inplemented on descedents.
+  // Não faz nada. Deve ser implementado nos descendentes
 end;
 
 procedure TElement.InitTypeInfo;

@@ -1,0 +1,47 @@
+package InfraPersistence;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'InfraPersistence - Framework de Persistencia'}
+{$LIBSUFFIX '70'}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  InfraCore,
+  InfraTypes,
+  ZDbc;
+
+contains
+  InfraCriteria in '..\..\Core\Persistence\InfraCriteria.pas',
+  InfraHibernate in '..\..\Core\Persistence\InfraHibernate.pas',
+  InfraHibernateIntf in '..\..\Core\Persistence\InfraHibernateIntf.pas',
+  InfraHibernateRegister in '..\..\Core\Persistence\InfraHibernateRegister.pas',
+  List_Criterion in '..\..\Core\Persistence\List_Criterion.pas',
+  List_EntityPersister in '..\..\Core\Persistence\List_EntityPersister.pas',
+  List_MapperCollumn in '..\..\Core\Persistence\List_MapperCollumn.pas',
+  InfraSQLBuilder in '..\..\Core\Persistence\InfraSQLBuilder.pas',
+  InfraHibernateAnnotation in '..\..\Core\Persistence\InfraHibernateAnnotation.pas',
+  InfraHibernateAnnotationIntf in '..\..\Core\Persistence\InfraHibernateAnnotationIntf.pas';
+
+end.

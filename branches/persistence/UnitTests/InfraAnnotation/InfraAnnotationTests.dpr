@@ -6,8 +6,8 @@ program InfraAnnotationTests;
 {$I Test.Inc}
 
 uses
-  {$IFDEF USE_FASTMM}FastMM4, {$ENDIF}
-  ApplicationContext,
+  {$IFDEF USE_FASTMM}FastMM4,
+  {$ENDIF} ApplicationContext,
   TestFramework 
   {$IFDEF LINUX}, QForms, QGUITestRunner
   {$ELSE}, Forms, GUITestRunner 
