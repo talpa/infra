@@ -1,0 +1,46 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = InfraCore70.bpl InfraTypes70.bpl InfraAOP70.bpl InfraGUI70.bpl \
+  InfraOPF70.bpl InfraReflectTests.exe InfraAnnotationTests.exe \
+  InfraAspectTests.exe GUIBuilderDemo.exe
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+InfraAspectTests.exe: UnitTests\InfraAspect\InfraAspectTests.dpr
+  $(DCC)
+
+InfraAnnotationTests.exe: UnitTests\InfraAnnotation\InfraAnnotationTests.dpr
+  $(DCC)
+
+InfraReflectTests.exe: UnitTests\InfraReflect\InfraReflectTests.dpr
+  $(DCC)
+
+InfraCore70.bpl: Packages\D6\InfraCore.dpk
+  $(DCC)
+
+InfraAOP70.bpl: Packages\D6\InfraAOP.dpk
+  $(DCC)
+
+InfraTypes70.bpl: Packages\D6\InfraTypes.dpk
+  $(DCC)
+
+InfraGUI70.bpl: Packages\D6\InfraGUI.dpk
+  $(DCC)
+
+GUIBuilderDemo.exe: Demos\GUIBuilder\GUIBuilderDemo.dpr
+  $(DCC)
+
+InfraOPF70.bpl: Packages\D6\InfraOPF.dpk
+  $(DCC)
+
+
