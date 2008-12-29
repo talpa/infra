@@ -11,7 +11,7 @@ BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = InfraCore60.bpl InfraTypes60.bpl InfraAOP60.bpl InfraGUI60.bpl \
   InfraOPF60.bpl InfraReflectTests.exe InfraAnnotationTests.exe \
-  InfraAspectTests.exe GUIBuilderDemo.exe
+  InfraAspectTests.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -35,9 +35,6 @@ InfraTypes60.bpl: Packages\D6\InfraTypes.dpk
   $(DCC)
 
 InfraGUI60.bpl: Packages\D6\InfraGUI.dpk
-  $(DCC)
-
-GUIBuilderDemo.exe: Demos\GUIBuilder\GUIBuilderDemo.dpr
   $(DCC)
 
 InfraOPF60.bpl: Packages\D6\InfraOPF.dpk

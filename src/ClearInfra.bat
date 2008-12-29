@@ -14,5 +14,3 @@ copy Core\GUIBuilder\*.dfm Build
 del *.~* /s
 del *.dcu /s
 del *.ddp /s
-del Demos\GUIBuilder\*.exe
-del UnitTests\bin\*.exe
