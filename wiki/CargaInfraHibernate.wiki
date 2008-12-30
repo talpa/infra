@@ -1,4 +1,4 @@
-#summary Classes envolvidas na carga de um objeto a partir do OID e suas responsabilidades.
+#summary (ANTIGO-NAO LEIA) Classes envolvidas na carga de um objeto a partir do OID e suas responsabilidades.
 
 === TPersistenceService - O serviço do Infra responsável pela persistencia ===
   * Faz referencia a um objeto TConfiguration e a um TSessionFatory;
@@ -54,4 +54,3 @@
   * Tem os métodos para navegar no dataset Next e EOF;
   * Possui o método GetValue(const CollumName: string): IInfraType, para retornar o valor de um campo do dataset já convertido como InfraType (ou seja, pronto para ser atribuido ao objeto);
   * Tem um método Open(pSQL: string; pParams: IInfraList) que configura e abre o dataset interno;
-
