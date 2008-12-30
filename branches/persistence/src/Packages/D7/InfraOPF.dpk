@@ -33,6 +33,7 @@ requires
   ZDbc;
 
 contains
-  InfraPersistenceIntf in '..\..\Core\Persistence\InfraPersistenceIntf.pas';
+  InfraPersistenceIntf in '..\..\Core\Persistence\InfraPersistenceIntf.pas',
+  InfraPersistence in '..\..\Core\Persistence\InfraPersistence.pas';
 
 end.

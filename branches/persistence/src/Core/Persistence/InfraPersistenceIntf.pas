@@ -23,8 +23,7 @@ type
     function GetPropertyItem(const pName: string): string;
     procedure SetPropertyItem(const pName: string; const Value: string);
     property Properties: TStrings read GetProperties;
-    property PropertyItem[const pName: string]: string read GetPropertyItem
-    write SetPropertyItem;
+    property PropertyItem[const pName: string]: string read GetPropertyItem write SetPropertyItem;
   end;
 
   {
