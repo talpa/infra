@@ -1,4 +1,4 @@
-#summary InfraHibernate - ConnectionProvider.
+#summary (ANTIGO-NAO LEIA) InfraHibernate - ConnectionProvider.
 
 = Descrição =
 Esta classe é responsável por retornar uma instância de um Connection.
