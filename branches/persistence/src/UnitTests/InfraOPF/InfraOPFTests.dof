@@ -15,7 +15,7 @@ K=0
 L=1
 M=0
 N=1
-O=0
+O=1
 P=1
 Q=0
 R=0
@@ -76,28 +76,28 @@ LocaleToUnicode=1
 ImagebaseMultiple=1
 SuspiciousTypecast=1
 PrivatePropAccessor=1
-UnsafeType=1
-UnsafeCode=1
-UnsafeCast=1
+UnsafeType=0
+UnsafeCode=0
+UnsafeCast=0
 [Linker]
 MapFile=0
 OutputObjs=0
 ConsoleApp=1
-DebugInfo=1
+DebugInfo=0
 RemoteSymbols=0
 MinStackSize=16384
 MaxStackSize=1048576
 ImageBase=4194304
-ExeDescription=InfraGUI - Framework de geração de GUI
+ExeDescription=
 [Directories]
 OutputDir=
-UnitOutputDir=..\..\build
-PackageDLLOutputDir=..\..\build
-PackageDCPOutputDir=..\..\build
-SearchPath=..\..\build
-Packages=
+UnitOutputDir=
+PackageDLLOutputDir=
+PackageDCPOutputDir=
+SearchPath=..\..\Build
+Packages=rtl;vcl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;visualclx;visualdbclx;vclactnband;vclshlctrls;IntrawebDB_50_70;Intraweb_50_70;Rave50CLX;Rave50VCL;dclOffice2k;csbde70;EPCOTAUtils70;mxNativeExcel_d7;mxExport_D7;teeui;teedb;tee;dss;CommReg70;csoft70;cs3rd70;dcslib25D7;DCDBGridExportD7;SynEdit_R7;gbCob7;qrpt;VCLXFiles70;csib70;dxPack2D7;AVLockGolD7;RxCtl7;RxDB7;RxBDE7
 Conditionals=
-DebugSourceDirs=..\..\build
+DebugSourceDirs=
 UsePackages=0
 [Parameters]
 RunParams=
@@ -108,9 +108,9 @@ DebugCWD=
 [Language]
 ActiveLang=
 ProjectLang=
-RootDir=
+RootDir=C:\Arquivos de programas\Borland\Delphi7\Bin\
 [Version Info]
-IncludeVerInfo=1
+IncludeVerInfo=0
 AutoIncBuild=0
 MajorVer=1
 MinorVer=0
@@ -134,9 +134,6 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
-[Excluded Packages]
-C:\Projetos\Stocker\src\Components\graph3\sgr.bpl=(untitled)
-C:\Projetos\DynApp\_Outros\Validation\ValidationProviderD10.bpl=Validation Provider
 [HistoryLists\hlDebugSourcePath]
 Count=7
 Item0=..\..\Build
