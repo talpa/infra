@@ -24,3 +24,7 @@ O InfraPersistence é um simples e eficiente framework de persistência capaz de
 == Observações ==
 
 No futuro iremos estar fazendo algumas automatizações via annotation no sentido de evitar a escrita dos templates SQL. Sem impedir o programador de se beneficiar deste recurso.
+
+*Criamos um branch (a ser baixado via Tortoise SVN veja documento: Repositorio) para montar a nova camada de persistência, seria interessante se você puder acompanhar o desenvolvimento e contribuir com dicas e questionamentos no grupo:*
+
+http://infra.googlecode.com/svn/branches/persistence/
