@@ -36,9 +36,8 @@ type
   IConnectionProvider = interface(IBaseElement)
     ['{E4D7AF34-1750-461D-90E3-15F0DFD3167E}']
     function GetConnection: IZConnection;
+    procedure ReleaseConnection(const pConnection: IZConnection);
     procedure Close;
-    procedure CloseConnection(const pConnection: IZConnection);
-    procedure SetConnection(const pConnection: IZConnection);
   end;
 
   {
