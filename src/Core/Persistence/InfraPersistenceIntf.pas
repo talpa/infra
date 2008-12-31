@@ -22,6 +22,9 @@ type
     function GetProperties: TStrings;
     function GetPropertyItem(const pName: string): string;
     procedure SetPropertyItem(const pName: string; const Value: string);
+    function GetValue(const pName: string; const pDefaultValue: Integer): Integer; overload;
+    function GetValue(const pName: string; const pDefaultValue: Double): Double; overload;
+    function GetValue(const pName: string; const pDefaultValue: string): string; overload;
     property Properties: TStrings read GetProperties;
     property PropertyItem[const pName: string]: string read GetPropertyItem write SetPropertyItem;
   end;
