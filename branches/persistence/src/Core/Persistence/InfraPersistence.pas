@@ -20,30 +20,37 @@ type
   public
     constructor Create; override;
     destructor Destroy; override;
+    function GetValue(const pName: string; const pDefaultValue: Integer): Integer; overload;
+    function GetValue(const pName: string; const pDefaultValue: Double): Double; overload;
+    function GetValue(const pName: string; const pDefaultValue: string): string; overload;
     property Properties: TStrings read GetProperties;
     property PropertyItem[const pName: string]: string read GetPropertyItem write SetPropertyItem;
   end;
 
-  /// Classe responsável por prover conexões com o SGDB 
-  TInfraConnectionProvider = class(TBaseElement, IConnectionProvider)
+  /// Classe responsável por prover conexões com o SGDB
+  TConnectionProvider = class(TBaseElement, IConnectionProvider)
   private
     FConfiguration: IConfiguration;
     FDriverManager: IZDriverManager;    // O DriverManager que será usado pra criar as conexões
     FPool: array of IZConnection;       // O pool
     FCriticalSection: TCriticalSection;
-    function BuildConnectionString(pConfiguration: IConfiguration): string; // CriticalSection usado para evitar conflitos em aplicações multi-thread
+    function BuildConnectionString(pConfiguration: IConfiguration): string;
+    procedure CloseConnections; // CriticalSection usado para evitar conflitos em aplicações multi-thread
   protected
     function GetFreeConnection: IZConnection; // Procura por uma conexao livre
     function CreateConnection: IZConnection;  // Cria uma nova conexao
     function FindConnection(const pConnection: IZConnection): IZConnection; // Procura por uma conexao no pool
   public
-    constructor Create(MaxSize, ExpirationTime: Integer;
-      ADriverManager: IZDriverManager; AConfiguration: IConfiguration); reintroduce;
+    constructor Create(pDriverManager: IZDriverManager; pConfiguration: IConfiguration); reintroduce;
     destructor Destroy; override;
     function GetConnection: IZConnection; // Caso tenha conexoes disponíveis no Pool bloqueia uma e retorna-a
     procedure Close; // Fecha todas as conexões do pool
     procedure ReleaseConnection(const pConnection: IZConnection); // Devolve a conexao ao Pool
   end;
+
+const
+  MAX_CONNECTIONS_KEY = 'max_connections';
+  POOL_EXPIRATION_TIME_KEY = 'pool_expiration_time';
 
 implementation
 
@@ -71,10 +78,41 @@ begin
   Result := FProperties.Values[pName]
 end;
 
+function TConfiguration.GetValue(const pName: string;
+  const pDefaultValue: Integer): Integer;
+begin
+  if FProperties.IndexOfName(pName) <> -1 then
+    Result := StrToIntDef(PropertyItem[pName], pDefaultValue)
+  else
+    Result := pDefaultValue;
+end;
+
+function TConfiguration.GetValue(const pName: string;
+  const pDefaultValue: Double): Double;
+begin
+  if FProperties.IndexOfName(pName) <> -1 then
+    Result := StrToFloatDef(PropertyItem[pName], pDefaultValue)
+  else
+    Result := pDefaultValue;
+end;
+
+function TConfiguration.GetValue(const pName,
+  pDefaultValue: string): string;
+begin
+  if FProperties.IndexOfName(pName) <> -1 then
+    Result := PropertyItem[pName]
+  else
+    Result := pDefaultValue;
+end;
+
 procedure TConfiguration.SetPropertyItem(const pName, Value: string);
 begin
   FProperties.Values[pName] := Value;
 end;
+
+// Onde deve ficar isto?
+const
+  GlobalMaxConnections = 30;
 
 { ******************************************************************************
 
@@ -89,30 +127,44 @@ end;
   @param AConfiguration Um objeto do tipo IConfiguration que contém todas as
     informações para criar uma nova conexão
 }
-constructor TInfraConnectionProvider.Create(MaxSize, ExpirationTime: Integer;
-  ADriverManager: IZDriverManager; AConfiguration: IConfiguration);
+constructor TConnectionProvider.Create(pDriverManager: IZDriverManager; pConfiguration: IConfiguration);
+var
+  iMax: Integer;
 begin
   inherited Create;
   FCriticalSection := TCriticalSection.Create;
-  FDriverManager := ADriverManager;
-  FConfiguration := AConfiguration;
-  SetLength(FPool, MaxSize);
+  FDriverManager := pDriverManager;
+  FConfiguration := pConfiguration;
+
+  iMax := FConfiguration.GetValue(MAX_CONNECTIONS_KEY, GlobalMaxConnections);
+
+  SetLength(FPool, iMax);
 end;
 
-destructor TInfraConnectionProvider.Destroy;
+destructor TConnectionProvider.Destroy;
 begin
+  CloseConnections;
   SetLength(FPool, 0);
-  FConfiguration := nil;
   FCriticalSection.Free;
   inherited;
 end;
 
-procedure TInfraConnectionProvider.Close;
+procedure TConnectionProvider.CloseConnections;
 var
   i: Integer;
 begin
   for i := Low(FPool) to High(FPool) do
-    ReleaseConnection(FPool[i]);
+    if Assigned(FPool[i]) then
+      FPool[i].Close;
+end;
+
+procedure TConnectionProvider.Close;
+var
+  i: Integer;
+begin
+  for i := Low(FPool) to High(FPool) do
+    if Assigned(FPool[i]) then
+      ReleaseConnection(FPool[i]);
 end;
 
 {**
@@ -120,7 +172,7 @@ end;
   @param pConnection Objeto a ser localizado
   @return Retorna o objeto encontrado ou nil caso não seja localizado
 }
-function TInfraConnectionProvider.FindConnection(const pConnection: IZConnection): IZConnection;
+function TConnectionProvider.FindConnection(const pConnection: IZConnection): IZConnection;
 var
   i: Integer;
 begin
@@ -134,10 +186,10 @@ begin
 end;
 
 {**
-  Libera uma conexão para ser reutilizada
+  Libera uma conexão de volta ao pool para ser reutilizada
   @param pConnection Conexão a ser liberada
 }
-procedure TInfraConnectionProvider.ReleaseConnection(const pConnection: IZConnection);
+procedure TConnectionProvider.ReleaseConnection(const pConnection: IZConnection);
 begin
   if FindConnection(pConnection) = nil then
     raise EInfraConnectionProviderError.Create('Conexão não encontrada no Pool deste Provider');
@@ -157,7 +209,7 @@ end;
   E, caso a encontre, retorna-a.
   @return Retorna um objeto do tipo IZConnection
 }
-function TInfraConnectionProvider.GetFreeConnection: IZConnection;
+function TConnectionProvider.GetFreeConnection: IZConnection;
 var
   i: Integer;
 begin
@@ -170,7 +222,7 @@ begin
     end;
 end;
 
-function TInfraConnectionProvider.BuildConnectionString(pConfiguration: IConfiguration): string;
+function TConnectionProvider.BuildConnectionString(pConfiguration: IConfiguration): string;
 begin
   Result := 'zdbc:' + pConfiguration.PropertyItem['protocol'] +
     '://' + pConfiguration.PropertyItem['hostname'] +
@@ -184,7 +236,7 @@ end;
   Caso contrário, levanta uma exceção EInfraConnectionProviderError
   @return Retorna um objeto do tipo IZConnection
 }
-function TInfraConnectionProvider.CreateConnection: IZConnection;
+function TConnectionProvider.CreateConnection: IZConnection;
 var
   i: Integer;
 begin
@@ -205,7 +257,7 @@ end;
   levanta uma exceção EInfraConnectionProviderError
   @return Retorna um objeto do tipo IZConnection
 }
-function TInfraConnectionProvider.GetConnection: IZConnection;
+function TConnectionProvider.GetConnection: IZConnection;
 begin
   FCriticalSection.Acquire;
   try

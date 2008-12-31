@@ -15,7 +15,8 @@ uses
   InfraPersistence in '..\..\Core\Persistence\InfraPersistence.pas',
   InfraPersistenceIntf in '..\..\Core\Persistence\InfraPersistenceIntf.pas',
   InfraMocks in 'InfraMocks.pas',
-  InfraConnectionProviderTests in 'InfraConnectionProviderTests.pas';
+  InfraConnectionProviderTests in 'InfraConnectionProviderTests.pas',
+  InfraConfigurationTests in 'InfraConfigurationTests.pas';
 
 {$R *.RES}
 
