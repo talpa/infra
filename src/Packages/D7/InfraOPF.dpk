@@ -36,6 +36,6 @@ contains
   InfraPersistenceIntf in '..\..\Core\Persistence\InfraPersistenceIntf.pas',
   InfraPersistence in '..\..\Core\Persistence\InfraPersistence.pas',
   InfraPersistenceConsts in '..\..\Core\Persistence\InfraPersistenceConsts.pas',
-  ListSQLCommandParam in '..\..\Core\Persistence\ListSQLCommandParam.pas';
+  List_SQLCommandParam in '..\..\Core\Persistence\List_SQLCommandParam.pas';
 
 end.
