@@ -8,6 +8,8 @@ uses
   {Infra}InfraCommonIntf, InfraValueTypeIntf;
 
 type
+  EInfraConnectionProviderError = class(EInfraError);
+
   ISession = interface;
 
   IConfiguration = interface(IBaseElement)

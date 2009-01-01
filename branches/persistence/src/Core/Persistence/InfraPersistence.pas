@@ -6,12 +6,10 @@ uses
   SyncObjs,
   {TStrings}Classes,
   {Zeos}ZDbcIntfs,
-  {Infra}InfraCommon,
+  {Infra}InfraCommon, 
   {InfraInf}InfraCommonIntf, InfraValueTypeIntf, InfraPersistenceIntf;
 
 type
-  EInfraConnectionProviderError = class(Exception);
-
   TConfiguration = class(TBaseElement, IConfiguration)
     FProperties: TStrings;
     function GetProperties: TStrings;
@@ -244,10 +242,10 @@ end;
 procedure TConnectionProvider.ReleaseConnection(const pConnection: IZConnection);
 begin
   if FindConnection(pConnection) = nil then
-    raise EInfraConnectionProviderError.Create('Conexão não encontrada no Pool deste Provider');
+    raise EInfraConnectionProviderError.Create(cErrorConnectionNotFoundOnPool);
 
   if pConnection.IsClosed then
-    raise EInfraConnectionProviderError.Create('Conexão já fechada');
+    raise EInfraConnectionProviderError.Create(cErrorAlreadyClosedConnection);
 
   // Ao fechar a conexao, ela, automaticamente, fica disponível no pool
   pConnection.Close;
@@ -276,11 +274,11 @@ end;
 
 function TConnectionProvider.BuildConnectionString(pConfiguration: IConfiguration): string;
 begin
-  Result := 'zdbc:' + pConfiguration.PropertyItem['protocol'] +
-    '://' + pConfiguration.PropertyItem['hostname'] +
-    '/' + pConfiguration.PropertyItem['database'] +
-    '?username=' + pConfiguration.PropertyItem['username'] +
-    ';password=' + pConfiguration.PropertyItem['password'];
+  Result := 'zdbc:' + pConfiguration.PropertyItem[cCONFIGKEY_DRIVER] +
+    '://' + pConfiguration.PropertyItem[cCONFIGKEY_HOSTNAME] +
+    '/' + pConfiguration.PropertyItem[cCONFIGKEY_DATABASENAME] +
+    '?username=' + pConfiguration.PropertyItem[cCONFIGKEY_USERNAME] +
+    ';password=' + pConfiguration.PropertyItem[cCONFIGKEY_DATABASENAME];
 end;
 
 {**
@@ -506,7 +504,7 @@ end;
 function TInfraPersistenceService.GetPersistenceEngine: IPersistenceEngine;
 begin
   if not Assigned(FConfiguration) then
-    Raise Exception.Create(cErrorConfigurationNotDefined);
+    raise EInfraError.Create(cErrorConfigurationNotDefined);
   if not Assigned(FPersistenceEngine) then
     FPersistenceEngine := TPersistenceEngine.Create(FConfiguration);
 end;
@@ -524,6 +522,8 @@ end;
 
 // Não entendi mas se por direto no Initialization acontece
 // Access Violations.
+// ATENÇÃO: Vc não deve atribuir PersistenceService para uma variável de
+// instancia nem global sob pena de acontecer um AV no final da aplicação
 procedure InjectPersistenceService;
 begin
   (ApplicationContext as IBaseElement).Inject(
