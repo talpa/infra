@@ -15,24 +15,14 @@ type
     function GetProperties: TStrings;
     function GetPropertyItem(const pName: string): string;
     procedure SetPropertyItem(const pName: string; const Value: string);
-  protected
-    property Properties: TStrings read GetProperties;
-    property PropertyItem[const pName: string]: string read GetPropertyItem write SetPropertyItem;
   public
     constructor Create; override;
     destructor Destroy; override;
-
-    function GetAsInteger(const pName: string): Integer; overload;
-    function GetAsDouble(const pName: string): Double; overload;
-    function GetAsString(const pName: string): string; overload;
-
     function GetValue(const pName: string; const pDefaultValue: Integer): Integer; overload;
     function GetValue(const pName: string; const pDefaultValue: Double): Double; overload;
     function GetValue(const pName: string; const pDefaultValue: string): string; overload;
-
-    procedure SetValue(const pName: string; const Value: Integer); overload;
-    procedure SetValue(const pName: string; const Value: Double); overload;
-    procedure SetValue(const pName: string; const Value: string); overload;
+    property Properties: TStrings read GetProperties;
+    property PropertyItem[const pName: string]: string read GetPropertyItem write SetPropertyItem;
   end;
 
   /// Classe responsável por prover conexões com o SGDB
@@ -54,6 +44,20 @@ type
     function GetConnection: IZConnection; // Caso tenha conexoes disponíveis no Pool bloqueia uma e retorna-a
     procedure Close; // Fecha todas as conexões do pool
     procedure ReleaseConnection(const pConnection: IZConnection); // Devolve a conexao ao Pool
+  end;
+
+  TPersistentState = class(TBaseElement, IPersistentState)
+  private
+    FState: TPersistentStateKind;
+    FIsPersistent: Boolean;
+  protected
+    function GetIsPersistent: Boolean;
+    function GetState: TPersistentStateKind;
+    procedure SetIsPersistent(Value: Boolean);
+    procedure SetState(Value: TPersistentStateKind);
+    property IsPersistent: Boolean read GetIsPersistent write SetIsPersistent;
+    property State: TPersistentStateKind read GetState
+      write SetState;
   end;
 
   TSQLCommand = class(TBaseElement, ISQLCommand)
@@ -84,7 +88,7 @@ type
   private
     FPersistenceEngine: IPersistenceEngine;
     FListCommand: TObjectList;
-    procedure SetCommand(const pCommandName: string; const pObj: IInfraObject);
+    procedure AddCommand(const pCommandName: string; const pObj: IInfraObject);
   protected
     function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommand; overload;
     function Load(const pCommandName: string; const pClassID: TGUID): ISQLCommand; overload;
@@ -126,7 +130,7 @@ type
 implementation
 
 uses
-  InfraPersistenceConsts, InfraBasicList, InfraConsts;
+  InfraPersistenceConsts, InfraBasicList;
 
 { TConfiguration }
 
@@ -140,21 +144,6 @@ destructor TConfiguration.Destroy;
 begin
   FreeAndNil(FProperties);
   inherited;
-end;
-
-function TConfiguration.GetAsDouble(const pName: string): Double;
-begin
-  Result := StrToFloat(PropertyItem[pName]);
-end;
-
-function TConfiguration.GetAsInteger(const pName: string): Integer;
-begin
-  Result := StrToInt(PropertyItem[pName]);
-end;
-
-function TConfiguration.GetAsString(const pName: string): string;
-begin
-  Result := PropertyItem[pName];
 end;
 
 function TConfiguration.GetProperties: TStrings;
@@ -307,11 +296,11 @@ end;
 
 function TConnectionProvider.BuildConnectionString(pConfiguration: IConfiguration): string;
 begin
-  Result := 'zdbc:' + pConfiguration.GetAsString(cCONFIGKEY_DRIVER) +
-    '://' + pConfiguration.GetAsString(cCONFIGKEY_HOSTNAME) +
-    '/' + pConfiguration.GetAsString(cCONFIGKEY_DATABASENAME) +
-    '?username=' + pConfiguration.GetAsString(cCONFIGKEY_USERNAME) +
-    ';password=' + pConfiguration.GetAsString(cCONFIGKEY_DATABASENAME);
+  Result := 'zdbc:' + pConfiguration.PropertyItem[cCONFIGKEY_DRIVER] +
+    '://' + pConfiguration.PropertyItem[cCONFIGKEY_HOSTNAME] +
+    '/' + pConfiguration.PropertyItem[cCONFIGKEY_DATABASENAME] +
+    '?username=' + pConfiguration.PropertyItem[cCONFIGKEY_USERNAME] +
+    ';password=' + pConfiguration.PropertyItem[cCONFIGKEY_DATABASENAME];
 end;
 
 {**
@@ -332,7 +321,7 @@ begin
       Exit;
     end;
 
-  raise EInfraConnectionProviderError.Create(cErrorConnectionsLimitExceeded);
+  raise EInfraConnectionProviderError.Create('Número máximo de conexões excedido');
 end;
 
 {**
@@ -354,21 +343,26 @@ begin
   end;
 end;
 
-procedure TConfiguration.SetValue(const pName: string;
-  const Value: Integer);
+{ TPersistentState }
+
+function TPersistentState.GetIsPersistent: Boolean;
 begin
-  PropertyItem[pName] := IntToStr(Value);
+  Result := FIsPersistent;
 end;
 
-procedure TConfiguration.SetValue(const pName: string;
-  const Value: Double);
+function TPersistentState.GetState: TPersistentStateKind;
 begin
-  PropertyItem[pName] := FloatToStr(Value);
+  Result := FState;
 end;
 
-procedure TConfiguration.SetValue(const pName, Value: string);
+procedure TPersistentState.SetIsPersistent(Value: Boolean);
 begin
-  PropertyItem[pName] := Value;
+  FIsPersistent := Value;
+end;
+
+procedure TPersistentState.SetState(Value: TPersistentStateKind);
+begin
+  FState := Value;
 end;
 
 { TSQLCommand }
@@ -443,8 +437,6 @@ end;
 
 constructor TSession.Create(const pPersistenceEngine: IPersistenceEngine);
 begin
-  if not Assigned(pPersistenceEngine) then
-    raise EInfraArgumentError.CreateFmt(cErrorInvalidArgument, ['pPersistenceEngine']);
   inherited Create;
   FPersistenceEngine := pPersistenceEngine;
   FListCommand := TObjectList.Create;
@@ -452,7 +444,7 @@ end;
 
 procedure TSession.Delete(const pCommandName: string; const pObj: IInfraObject);
 begin
-  SetCommand(pCommandName, pObj);
+  AddCommand(pCommandName, pObj);
 end;
 
 function TSession.Flush: Integer;
@@ -462,26 +454,26 @@ begin
   Result := 0;
   for i := 0 to FListCommand.Count - 1 do
   begin
-//    Result := result + (FPersistenceEngine.Execute((FListCommand.Items[i] is ISqlCommand))).AsInteger;
+//    Result := result + (FPersistenceEngine.Execute(FListCommand.Items[i])).AsInteger;
   end;
 
 end;
 
-procedure TSession.SetCommand(const pCommandName: string; const pObj: IInfraObject);
+procedure TSession.AddCommand(const pCommandName: string; const pObj: IInfraObject);
 var
-  ASqlCommand: TSQLCommand;
+  ASqlCommand: ISQLCommand;
 begin
   ASqlCommand := TSQLCommand.Create(FPersistenceEngine);
   ASqlCommand.Name := pCommandName;
   ASqlCommand.SetParam(pObj);
-  FListCommand.Add(ASqlCommand);
+//  FListCommand.Add(ASqlCommand);
 end;
 
 function TSession.Load(const pCommandName: string; const pClassID: TGUID): ISQLCommand;
 begin
   Result := TSQLCommand.Create(FPersistenceEngine);
   result.Name := pCommandName;
-  Result.ClassID := pClassID;
+  Result.ClassID := pClassID
 end;
 
 function TSession.Load(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
@@ -491,37 +483,34 @@ begin
   Result.SetParam(pObj);
 end;
 
-function TSession.LoadList(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommand;
-begin
-  Result := TSQLCommand.Create(FPersistenceEngine);
-  result.Name := pCommandName;
-  Result.ClassID := pClassID;
-  Result.ListID := pListID;
-end;
-
-function TSession.LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommand;
-begin
-  Result := TSQLCommand.Create(FPersistenceEngine);
-  result.Name := pCommandName;
-  Result.ClassID := pClassID;
-end;
-
 function TSession.LoadList(const pCommandName: string): ISQLCommand;
 begin
   Result := TSQLCommand.Create(FPersistenceEngine);
   result.Name := pCommandName;
 end;
 
+function TSession.LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommand;
+begin
+  Result :=LoadList(pCommandName);
+  Result.ClassID := pClassID;
+end;
+
+function TSession.LoadList(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommand;
+begin
+  Result :=LoadList(pCommandName,pClassID);
+  Result.ListID := pListID;
+end;
+
 function TSession.LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommand;
 begin
   Result := TSQLCommand.Create(FPersistenceEngine);
   result.setParam(pObj);
-  result.ClassID := pListID;
+  Result.ClassID := pObj.TypeInfo.TypeID
 end;
 
 function TSession.LoadList(const pCommandName: string; const pObj: IInfraObject; const pList: IInfraList): ISQLCommand;
 begin
-  //...
+  //....
 end;
 
 procedure TSession.Save(const pCommandName: string; const pObj: IInfraObject);
@@ -533,8 +522,6 @@ end;
 
 constructor TPersistenceEngine.Create(pConfiguration: IConfiguration);
 begin
-  if not Assigned(pConfiguration) then
-    raise EInfraArgumentError.CreateFmt(cErrorInvalidArgument, ['pConfiguration']);
   inherited Create;
   FConfiguration := pConfiguration;
 end;
@@ -580,9 +567,10 @@ end;
 
 function TInfraPersistenceService.GetPersistenceEngine: IPersistenceEngine;
 begin
+  if not Assigned(FConfiguration) then
+    raise EInfraError.Create(cErrorConfigurationNotDefined);
   if not Assigned(FPersistenceEngine) then
     FPersistenceEngine := TPersistenceEngine.Create(FConfiguration);
-  Result := FPersistenceEngine;
 end;
 
 function TInfraPersistenceService.OpenSession: ISession;
@@ -611,4 +599,3 @@ initialization
   InjectPersistenceService;
 
 end.
-
