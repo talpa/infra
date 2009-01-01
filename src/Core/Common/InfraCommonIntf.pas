@@ -17,6 +17,8 @@ type
     constructor CreateFmt(const Msg: string; const Args: array of const);
   end;
 
+  EInfraArgumentError = class(EInfraError);
+
   TRetentionPolice = (rpNone, rpClass, rpInstance);
 
   IBaseElement = interface;

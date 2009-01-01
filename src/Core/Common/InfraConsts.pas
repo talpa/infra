@@ -10,6 +10,9 @@ const
   cTypeInfoPropertyUndefined = 'TypeInfo undefined to property %s.%s';
   N: TRelationLimit = -2;
 
+resourcestring
+  cErrorInvalidArgument = 'Argumento inválido: %s';
+
 implementation
 
 end.
