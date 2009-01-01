@@ -25,7 +25,8 @@ type
 
 implementation
 
-uses InfraPersistence, InfraMocks, ZDbcIntfs;
+uses
+  InfraPersistence, InfraPersistenceConsts, InfraMocks, ZDbcIntfs;
 
 { TTestConnectionProvider }
 
@@ -37,9 +38,8 @@ begin
   // Tamanho do Pool = 2
   // Objetos no Pool não expiram
   vConfiguration := TConfiguration.Create;
-  vConfiguration.PropertyItem[POOL_EXPIRATION_TIME_KEY] := '10';
-  vConfiguration.PropertyItem[MAX_CONNECTIONS_KEY] := '2';
-
+  vConfiguration.PropertyItem[cCONFIGKEY_CONNECTIONTIME] := '10';
+  vConfiguration.PropertyItem[cCONFIGKEY_MAXCONNECTIONS] := '2';
   FConnProvider := TConnectionProvider.Create(TDriverManagerMock.Create, vConfiguration);
 end;
 
