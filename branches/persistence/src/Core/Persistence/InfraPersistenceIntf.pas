@@ -10,7 +10,7 @@ uses
 type
   EInfraConnectionProviderError = class(EInfraError);
 
-  ISession = interface;
+  ISession = interface;                   
 
   IConfiguration = interface(IBaseElement)
     ['{16AF1EFF-FB48-4BAD-BDC7-E0518E83E09E}']
@@ -49,6 +49,7 @@ type
     procedure SetClassID(const Value: TGUID);
     procedure SetName(const Value: String);
     procedure SetParam(const pParamName: string; const value: IInfraType); overload;
+    procedure SetParam(const pObj: IInfraType); overload;
     procedure ClearParams;
     property Name: string read GetName write SetName;
     property ClassID: TGUID read GetClassID write SetClassID;
@@ -74,11 +75,11 @@ type
   ISession = interface(IBaseElement)
     ['{693A7815-9A5E-46C7-97DD-04D3E9C245AF}']
     function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommand; overload;
-    function Load(const pCommandName: string; const pClassType: TGUID): ISQLCommand; overload;
+    function Load(const pCommandName: string; const pClassID: TGUID): ISQLCommand; overload;
     function LoadList(const pCommandName: string): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pClassType: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pClassType: TGUID; const pListType: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListType: TGUID): ISQLCommand; overload;
+    function LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommand; overload;
+    function LoadList(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommand; overload;
+    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommand; overload;
     function LoadList(const pCommandName: string; const pObj: IInfraObject; const pList: IInfraList = nil): ISQLCommand; overload;
     procedure Delete(const pCommandName: string; const pObj: IInfraObject);
     procedure Save(const pCommandName: string; const pObj: IInfraObject);
