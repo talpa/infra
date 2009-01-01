@@ -97,7 +97,7 @@ type
   TSession = class(TBaseElement, ISession)
   private
     FPersistenceEngine: IPersistenceEngine;
-    FListCommand: TObjectList;
+    FListCommand: ISQLCommandList;
     procedure AddCommand(const pCommandName: string; const pObj: IInfraObject);
   protected
     function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommand; overload;
@@ -140,7 +140,7 @@ type
 implementation
 
 uses
-  InfraPersistenceConsts, InfraBasicList, InfraConsts;
+  InfraPersistenceConsts, InfraBasicList, InfraConsts,List_SQLCommandList;
 
 { TConfiguration }
 
@@ -487,7 +487,7 @@ begin
     raise EInfraArgumentError.Create('pPersistenceEngine');
   inherited Create;
   FPersistenceEngine := pPersistenceEngine;
-  FListCommand := TObjectList.Create;
+  FListCommand := TSQLCommandList.Create;
 end;
 
 procedure TSession.Delete(const pCommandName: string; const pObj: IInfraObject);
