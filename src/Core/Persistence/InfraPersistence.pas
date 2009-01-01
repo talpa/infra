@@ -140,7 +140,7 @@ type
 implementation
 
 uses
-  InfraPersistenceConsts, InfraBasicList;
+  InfraPersistenceConsts, InfraBasicList, InfraConsts;
 
 { TConfiguration }
 
@@ -244,6 +244,10 @@ constructor TConnectionProvider.Create(pDriverManager: IZDriverManager; pConfigu
 var
   iMax: Integer;
 begin
+  if not Assigned(pDriverManager) then
+    raise EInfraArgumentError.Create('pDriverManager');
+  if not Assigned(pConfiguration) then
+    raise EInfraArgumentError.Create('pConfiguration');
   inherited Create;
   FCriticalSection := TCriticalSection.Create;
   FDriverManager := pDriverManager;
@@ -363,7 +367,7 @@ begin
       Exit;
     end;
 
-  raise EInfraConnectionProviderError.Create('Número máximo de conexões excedido');
+  raise EInfraConnectionProviderError.Create(cErrorConnectionsLimitExceeded);
 end;
 
 {**
@@ -479,6 +483,8 @@ end;
 
 constructor TSession.Create(const pPersistenceEngine: IPersistenceEngine);
 begin
+  if not Assigned(pPersistenceEngine) then
+    raise EInfraArgumentError.Create('pPersistenceEngine');
   inherited Create;
   FPersistenceEngine := pPersistenceEngine;
   FListCommand := TObjectList.Create;
@@ -564,6 +570,8 @@ end;
 
 constructor TPersistenceEngine.Create(pConfiguration: IConfiguration);
 begin
+  if not Assigned(pConfiguration) then
+    raise EInfraArgumentError.Create('pConfiguration');
   inherited Create;
   FConfiguration := pConfiguration;
 end;
@@ -609,10 +617,9 @@ end;
 
 function TInfraPersistenceService.GetPersistenceEngine: IPersistenceEngine;
 begin
-  if not Assigned(FConfiguration) then
-    raise EInfraError.Create(cErrorConfigurationNotDefined);
   if not Assigned(FPersistenceEngine) then
     FPersistenceEngine := TPersistenceEngine.Create(FConfiguration);
+  Result := FPersistenceEngine;
 end;
 
 function TInfraPersistenceService.OpenSession: ISession;

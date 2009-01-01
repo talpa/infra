@@ -124,8 +124,6 @@ begin
   Result := ApplicationContext as IInfraPersistenceService;
 end;
 
-end.
-
   {
     function GetConnectionProvider: IConnectionProvider;
      ***
@@ -222,4 +220,6 @@ end.
     sessio
     É responsabilidade do session retornar o objeto ou a lista dependendo do que foi solicitado pelo programador.
   }
+
+end.
 

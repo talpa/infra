@@ -8,11 +8,14 @@ type
   TTestConnectionProvider = class(TTestCase)
   private
     FConnProvider: IConnectionProvider;
+    function CreateConfiguration: IConfiguration;
   protected
     procedure SetUp; override;
     procedure TearDown; override;
   published
     procedure TestCreate;
+    procedure TestCreateWithoutDriverManager;
+    procedure TestCreateWithoutConfiguration;
     procedure TestGetConnection;
     procedure TestGetConnectionObjAvailableInPool;
     procedure TestGetConnectionObjUnavailableInPool;
@@ -26,21 +29,25 @@ type
 implementation
 
 uses
-  InfraPersistence, InfraPersistenceConsts, InfraMocks, ZDbcIntfs;
+  InfraPersistence,
+  InfraPersistenceConsts,
+  InfraMocks,
+  ZDbcIntfs,
+  InfraCommonIntf;
+
+function TTestConnectionProvider.CreateConfiguration: IConfiguration;
+begin
+  Result := TConfiguration.Create;
+  Result.SetValue(cCONFIGKEY_CONNECTIONTIME, 10);
+  Result.SetValue(cCONFIGKEY_MAXCONNECTIONS, 2);
+end;
 
 { TTestConnectionProvider }
 
 procedure TTestConnectionProvider.SetUp;
-var
-  vConfiguration: IConfiguration;
 begin
   inherited;
-  // Tamanho do Pool = 2
-  // Objetos no Pool não expiram
-  vConfiguration := TConfiguration.Create;
-  vConfiguration.SetValue(cCONFIGKEY_CONNECTIONTIME, 10);
-  vConfiguration.SetValue(cCONFIGKEY_MAXCONNECTIONS, 2);
-  FConnProvider := TConnectionProvider.Create(TDriverManagerMock.Create, vConfiguration);
+  FConnProvider := TConnectionProvider.Create(TDriverManagerMock.Create, CreateConfiguration);
 end;
 
 procedure TTestConnectionProvider.TearDown;
@@ -52,6 +59,21 @@ end;
 procedure TTestConnectionProvider.TestCreate;
 begin
   CheckNotNull(FConnProvider);
+end;
+
+procedure TTestConnectionProvider.TestCreateWithoutDriverManager;
+begin
+  ExpectedException := EInfraArgumentError;
+  TConnectionProvider.Create(TDriverManagerMock.Create, nil);
+  ExpectedException := nil;
+end;
+
+procedure TTestConnectionProvider.TestCreateWithoutConfiguration;
+begin
+  inherited;
+  ExpectedException := EInfraArgumentError;
+  TConnectionProvider.Create(nil, CreateConfiguration);
+  ExpectedException := nil;
 end;
 
 procedure TTestConnectionProvider.TestGetConnection;
@@ -160,5 +182,5 @@ end;
 
 initialization
   TestFramework.RegisterTest(TTestConnectionProvider.Suite);
-
 end.
+
