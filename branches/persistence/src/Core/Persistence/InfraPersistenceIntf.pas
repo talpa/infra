@@ -44,6 +44,18 @@ type
     property Configuration: IConfiguration read GetConfiguration;
   end;
 
+  TPersistentStateKind = (osClean, osDirty, osDeleted);
+
+  IPersistentState = interface
+    ['{0968A2E4-4195-4843-A0D7-2FE24053EA38}']
+    function GetIsPersistent: Boolean;
+    function GetState: TPersistentStateKind;
+    procedure SetIsPersistent(Value: Boolean);
+    procedure SetState(Value: TPersistentStateKind);
+    property IsPersistent: Boolean read GetIsPersistent write SetIsPersistent;
+    property State: TPersistentStateKind read GetState write SetState;
+  end;
+
   ISQLCommand = interface(IBaseElement)
     ['{8F2E7318-09C1-4EA2-BA6E-6724275E9043}']
     function GetName: String;
