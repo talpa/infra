@@ -11,13 +11,13 @@ uses
   InfraConsts;
 
 type
-  TRetentionPolice = (rpNone, rpClass, rpInstance);
-
   EInfraError = class(Exception)
   public
     constructor Create(const Msg: string);
     constructor CreateFmt(const Msg: string; const Args: array of const);
   end;
+
+  TRetentionPolice = (rpNone, rpClass, rpInstance);
 
   IBaseElement = interface;
   IInfraEventService = interface;

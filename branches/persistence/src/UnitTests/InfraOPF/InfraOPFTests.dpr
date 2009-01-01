@@ -11,7 +11,7 @@ uses
   Forms,
   GUITestRunner {$ENDIF},
   TextTestRunner,
-  ApplicationContext in '..\..\Core\Common\ApplicationContext.PAS',
+  ApplicationContext,
   InfraMocks in 'InfraMocks.pas',
   InfraConnectionProviderTests in 'InfraConnectionProviderTests.pas',
   InfraConfigurationTests in 'InfraConfigurationTests.pas',

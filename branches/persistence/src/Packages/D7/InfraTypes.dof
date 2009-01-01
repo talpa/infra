@@ -137,3 +137,29 @@ Comments=
 [Excluded Packages]
 C:\Projetos\Stocker\src\Components\graph3\sgr.bpl=(untitled)
 C:\Projetos\DynApp\_Outros\Validation\ValidationProviderD10.bpl=Validation Provider
+[HistoryLists\hlDebugSourcePath]
+Count=2
+Item0=..\bin;..\..\Build
+Item1=..\..\build
+[HistoryLists\hlUnitAliases]
+Count=1
+Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+[HistoryLists\hlSearchPath]
+Count=2
+Item0=..\bin;..\..\Build
+Item1=..\..\build
+[HistoryLists\hlUnitOutputDirectory]
+Count=2
+Item0=..\bin
+Item1=..\..\build
+[HistoryLists\hlOutputDirectorry]
+Count=1
+Item0=..\bin
+[HistoryLists\hlBPLOutput]
+Count=2
+Item0=..\bin
+Item1=..\..\build
+[HistoryLists\hlDCPOutput]
+Count=2
+Item0=..\bin
+Item1=..\..\build
