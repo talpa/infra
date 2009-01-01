@@ -72,9 +72,6 @@ begin
 end;
 
 initialization
-
-  TestFramework.RegisterTest('InfraPersistenceServiceTests Suite',
-    TInfraPersistenceServiceTests.Suite);
-
+  TestFramework.RegisterTest(TInfraPersistenceServiceTests.Suite);
 end.
  

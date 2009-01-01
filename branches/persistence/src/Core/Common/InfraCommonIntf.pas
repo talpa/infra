@@ -17,7 +17,10 @@ type
     constructor CreateFmt(const Msg: string; const Args: array of const);
   end;
 
-  EInfraArgumentError = class(EInfraError);
+  EInfraArgumentError = class(EInfraError)
+  public
+    constructor Create(const Msg: string);
+  end;
 
   TRetentionPolice = (rpNone, rpClass, rpInstance);
 
@@ -690,6 +693,13 @@ constructor EInfraError.CreateFmt(const Msg: string;
   const Args: array of const);
 begin
   inherited CreateFmt('Infra Error: '+Msg, Args);
+end;
+
+{ EInfraArgumentError }
+
+constructor EInfraArgumentError.Create(const Msg: string);
+begin
+  inherited CreateFmt(cErrorInvalidArgument, [Msg]); 
 end;
 
 initialization

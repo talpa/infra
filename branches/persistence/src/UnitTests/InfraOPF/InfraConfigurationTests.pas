@@ -178,3 +178,4 @@ end;
 initialization
   TestFramework.RegisterTest(TTestConnectionProvider.Suite);
 end.
+

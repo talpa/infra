@@ -78,7 +78,7 @@ SuspiciousTypecast=1
 PrivatePropAccessor=1
 UnsafeType=0
 UnsafeCode=0
-UnsafeCast=0
+UnsafeCast=1
 [Linker]
 MapFile=0
 OutputObjs=0
@@ -134,9 +134,6 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
-[Excluded Packages]
-C:\Projetos\Stocker\src\Components\graph3\sgr.bpl=(untitled)
-C:\Projetos\DynApp\_Outros\Validation\ValidationProviderD10.bpl=Validation Provider
 [HistoryLists\hlDebugSourcePath]
 Count=2
 Item0=..\bin;..\..\Build
