@@ -12,11 +12,10 @@ uses
   GUITestRunner {$ENDIF},
   TextTestRunner,
   ApplicationContext in '..\..\Core\Common\ApplicationContext.PAS',
-  InfraPersistence in '..\..\Core\Persistence\InfraPersistence.pas',
-  InfraPersistenceIntf in '..\..\Core\Persistence\InfraPersistenceIntf.pas',
   InfraMocks in 'InfraMocks.pas',
   InfraConnectionProviderTests in 'InfraConnectionProviderTests.pas',
-  InfraConfigurationTests in 'InfraConfigurationTests.pas';
+  InfraConfigurationTests in 'InfraConfigurationTests.pas',
+  InfraPersistenceServiceTests in 'InfraPersistenceServiceTests.pas';
 
 {$R *.RES}
 

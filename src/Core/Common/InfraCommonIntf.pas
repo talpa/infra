@@ -5,12 +5,19 @@ interface
 {$I InfraCommon.Inc}
 
 uses
+  SysUtils,
   Classes,
   InfraBase,
   InfraConsts;
 
 type
   TRetentionPolice = (rpNone, rpClass, rpInstance);
+
+  EInfraError = class(Exception)
+  public
+    constructor Create(const Msg: string);
+    constructor CreateFmt(const Msg: string; const Args: array of const);
+  end;
 
   IBaseElement = interface;
   IInfraEventService = interface;
@@ -668,6 +675,19 @@ end;
 function TypeService: ITypeService;
 begin
   result := ApplicationContext.TypeService;
+end;
+
+{ EInfraError }
+
+constructor EInfraError.Create(const Msg: string);
+begin
+  inherited Create('Infra Error: '+Msg);
+end;
+
+constructor EInfraError.CreateFmt(const Msg: string;
+  const Args: array of const);
+begin
+  inherited CreateFmt('Infra Error: '+Msg, Args);
 end;
 
 initialization
