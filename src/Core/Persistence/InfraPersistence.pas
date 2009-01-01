@@ -4,7 +4,7 @@ interface
 uses
   SysUtils,
   SyncObjs,
-  {TStrings}Classes,
+  {TStrings}Classes, Contnrs,
   {Zeos}ZDbcIntfs,
   {Infra}InfraCommon, 
   {InfraInf}InfraCommonIntf, InfraValueTypeIntf, InfraPersistenceIntf;
@@ -29,14 +29,14 @@ type
   TConnectionProvider = class(TBaseElement, IConnectionProvider)
   private
     FConfiguration: IConfiguration;
-    FDriverManager: IZDriverManager;    // O DriverManager que será usado pra criar as conexões
-    FPool: array of IZConnection;       // O pool
+    FDriverManager: IZDriverManager; // O DriverManager que será usado pra criar as conexões
+    FPool: array of IZConnection; // O pool
     FCriticalSection: TCriticalSection;
     function BuildConnectionString(pConfiguration: IConfiguration): string;
     procedure CloseConnections; // CriticalSection usado para evitar conflitos em aplicações multi-thread
   protected
     function GetFreeConnection: IZConnection; // Procura por uma conexao livre
-    function CreateConnection: IZConnection;  // Cria uma nova conexao
+    function CreateConnection: IZConnection; // Cria uma nova conexao
     function FindConnection(const pConnection: IZConnection): IZConnection; // Procura por uma conexao no pool
   public
     constructor Create(pDriverManager: IZDriverManager; pConfiguration: IConfiguration); reintroduce;
@@ -53,14 +53,15 @@ type
     FClassID: TGUID;
     FListID: TGUID;
   protected
-    function GetName: String;
-    procedure SetName(const Value: String);
-    function GetClassID:TGUID;
+    function GetName: string;
+    procedure SetName(const Value: string);
+    function GetClassID: TGUID;
     procedure SetClassID(const Value: TGUID);
     function GetListID: TGUID;
     procedure SetListID(const Value: TGUID);
     function GetResult: IInfraType;
     procedure SetParam(const pParamName: string; const value: IInfraType); overload;
+    procedure SetParam(const pObj: IInfraType); overload;
     procedure ClearParams;
     property Name: string read GetName write SetName;
     property ClassID: TGUID read GetClassID write SetClassID;
@@ -69,21 +70,24 @@ type
     constructor Create(pPersistenceEngine: IPersistenceEngine); reintroduce;
   end;
 
-  TSession = class(TBaseElement,ISession)
+  TSession = class(TBaseElement, ISession)
   private
+    FPersistenceEngine: IPersistenceEngine;
+    FListCommand: TObjectList;
+    procedure SetCommand(const pCommandName: string; const pObj: IInfraObject);
   protected
     function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommand; overload;
-    function Load(const pCommandName: string; const pClassType: TGUID): ISQLCommand; overload;
+    function Load(const pCommandName: string; const pClassID: TGUID): ISQLCommand; overload;
     function LoadList(const pCommandName: string): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pClassType: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pClassType: TGUID; const pListType: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListType: TGUID): ISQLCommand; overload;
+    function LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommand; overload;
+    function LoadList(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommand; overload;
+    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommand; overload;
     function LoadList(const pCommandName: string; const pObj: IInfraObject; const pList: IInfraList = nil): ISQLCommand; overload;
     procedure Delete(const pCommandName: string; const pObj: IInfraObject);
     procedure Save(const pCommandName: string; const pObj: IInfraObject);
     function Flush: Integer;
   public
-    constructor Create(const pPersistenceEngine :IPersistenceEngine); reintroduce;
+    constructor Create(const pPersistenceEngine: IPersistenceEngine); reintroduce;
   end;
 
   TPersistenceEngine = class(TBaseElement, IPersistenceEngine)
@@ -112,7 +116,7 @@ type
 implementation
 
 uses
-  InfraPersistenceConsts;
+  InfraPersistenceConsts, InfraBasicList;
 
 { TConfiguration }
 
@@ -179,6 +183,7 @@ end;
   @param AConfiguration Um objeto do tipo IConfiguration que contém todas as
     informações para criar uma nova conexão
 }
+
 constructor TConnectionProvider.Create(pDriverManager: IZDriverManager; pConfiguration: IConfiguration);
 var
   iMax: Integer;
@@ -222,6 +227,7 @@ end;
   @param pConnection Objeto a ser localizado
   @return Retorna o objeto encontrado ou nil caso não seja localizado
 }
+
 function TConnectionProvider.FindConnection(const pConnection: IZConnection): IZConnection;
 var
   i: Integer;
@@ -239,6 +245,7 @@ end;
   Libera uma conexão de volta ao pool para ser reutilizada
   @param pConnection Conexão a ser liberada
 }
+
 procedure TConnectionProvider.ReleaseConnection(const pConnection: IZConnection);
 begin
   if FindConnection(pConnection) = nil then
@@ -259,6 +266,7 @@ end;
   E, caso a encontre, retorna-a.
   @return Retorna um objeto do tipo IZConnection
 }
+
 function TConnectionProvider.GetFreeConnection: IZConnection;
 var
   i: Integer;
@@ -286,6 +294,7 @@ end;
   Caso contrário, levanta uma exceção EInfraConnectionProviderError
   @return Retorna um objeto do tipo IZConnection
 }
+
 function TConnectionProvider.CreateConnection: IZConnection;
 var
   i: Integer;
@@ -307,6 +316,7 @@ end;
   levanta uma exceção EInfraConnectionProviderError
   @return Retorna um objeto do tipo IZConnection
 }
+
 function TConnectionProvider.GetConnection: IZConnection;
 begin
   FCriticalSection.Acquire;
@@ -345,7 +355,7 @@ begin
   Result := FListID;
 end;
 
-function TSQLCommand.GetName: String;
+function TSQLCommand.GetName: string;
 begin
   // TODO:
   Result := FName;
@@ -369,7 +379,7 @@ begin
   FListID := Value;
 end;
 
-procedure TSQLCommand.SetName(const Value: String);
+procedure TSQLCommand.SetName(const Value: string);
 begin
   // TODO:
   FName := Value;
@@ -382,76 +392,97 @@ begin
   //FParams[pParamName] := Value?
 end;
 
+procedure TSQLCommand.SetParam(const pObj: IInfraType);
+begin
+
+end;
+
 { TSession }
 
 constructor TSession.Create(const pPersistenceEngine: IPersistenceEngine);
 begin
   inherited Create;
-
+  FPersistenceEngine := pPersistenceEngine;
+  FListCommand := TObjectList.Create;
 end;
 
-procedure TSession.Delete(const pCommandName: string;const pObj: IInfraObject);
+procedure TSession.Delete(const pCommandName: string; const pObj: IInfraObject);
 begin
-  
+  SetCommand(pCommandName, pObj);
 end;
 
 function TSession.Flush: Integer;
+var
+  i: integer;
 begin
-  // Criar um laço assqui e ir somando o result de todos os retornos da execução
-  // dos sqlcommands da lista
   Result := 0;
+  for i := 0 to FListCommand.Count - 1 do
+  begin
+//    Result := result + (FPersistenceEngine.Execute((FListCommand.Items[i] is ISqlCommand))).AsInteger;
+  end;
+
 end;
 
-function TSession.Load(const pCommandName: string;const pClassType: TGUID): ISQLCommand;
+procedure TSession.SetCommand(const pCommandName: string; const pObj: IInfraObject);
+var
+  ASqlCommand: TSQLCommand;
 begin
-//  Result := TSQLCommand.Create();
-//  result.SetName(pCommandName);
-//  Result.SetClassType(pClassType);
+  ASqlCommand := TSQLCommand.Create(FPersistenceEngine);
+  ASqlCommand.Name := pCommandName;
+  ASqlCommand.SetParam(pObj);
+  FListCommand.Add(ASqlCommand);
+end;
+
+function TSession.Load(const pCommandName: string; const pClassID: TGUID): ISQLCommand;
+begin
+  Result := TSQLCommand.Create(FPersistenceEngine);
+  result.Name := pCommandName;
+  Result.ClassID := pClassID;
 end;
 
 function TSession.Load(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
 begin
-//  Result := TSQLCommand.create;
-//  result.SetName(pCommandName);
-//  Result.SetParam(pObj);
+  Result := TSQLCommand.Create(FPersistenceEngine);
+  result.Name := pCommandName;
+  Result.SetParam(pObj);
 end;
 
-function TSession.LoadList(const pCommandName: string; const pClassType, pListType: TGUID): ISQLCommand;
+function TSession.LoadList(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommand;
 begin
-//  Result := TSQLCommand.create;
-//  result.SetName(pCommandName);
-//  Result.SetClassType(pClassType);
-//  Result.SetListType(pListType);
+  Result := TSQLCommand.Create(FPersistenceEngine);
+  result.Name := pCommandName;
+  Result.ClassID := pClassID;
+  Result.ListID := pListID;
 end;
 
-function TSession.LoadList(const pCommandName: string;  const pClassType: TGUID): ISQLCommand;
+function TSession.LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommand;
 begin
-//  Result := TSQLCommand.create;
-//  result.SetName(pCommandName);
-//  Result.SetClassType(pClassType);
+  Result := TSQLCommand.Create(FPersistenceEngine);
+  result.Name := pCommandName;
+  Result.ClassID := pClassID;
 end;
 
 function TSession.LoadList(const pCommandName: string): ISQLCommand;
 begin
-//  Result := TSQLCommand.create;
-//  result.SetName(pCommandName);
+  Result := TSQLCommand.Create(FPersistenceEngine);
+  result.Name := pCommandName;
+end;
+
+function TSession.LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommand;
+begin
+  Result := TSQLCommand.Create(FPersistenceEngine);
+  result.setParam(pObj);
+  result.ClassID := pListID;
 end;
 
 function TSession.LoadList(const pCommandName: string; const pObj: IInfraObject; const pList: IInfraList): ISQLCommand;
 begin
-//  result := TSQLCommand.create;
-//  result.setParam(pObj);
-//  result.setListType(pL
+  //...
 end;
 
-function TSession.LoadList(const pCommandName: string; const pObj: IInfraObject; const pListType: TGUID): ISQLCommand;
+procedure TSession.Save(const pCommandName: string; const pObj: IInfraObject);
 begin
-
-end;
-
-procedure TSession.Save(const pCommandName: string;  const pObj: IInfraObject);
-begin
-
+  SetCommand(pCommandName, pObj);
 end;
 
 { TPersistenceEngine }
@@ -522,6 +553,7 @@ end;
 
 // Não entendi mas se por direto no Initialization acontece
 // Access Violations.
+
 // ATENÇÃO: Vc não deve atribuir PersistenceService para uma variável de
 // instancia nem global sob pena de acontecer um AV no final da aplicação
 procedure InjectPersistenceService;
@@ -534,3 +566,4 @@ initialization
   InjectPersistenceService;
 
 end.
+
