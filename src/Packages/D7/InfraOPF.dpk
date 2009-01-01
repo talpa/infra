@@ -36,6 +36,7 @@ contains
   InfraPersistenceIntf in '..\..\Core\Persistence\InfraPersistenceIntf.pas',
   InfraPersistence in '..\..\Core\Persistence\InfraPersistence.pas',
   InfraPersistenceConsts in '..\..\Core\Persistence\InfraPersistenceConsts.pas',
-  List_SQLCommandParam in '..\..\Core\Persistence\List_SQLCommandParam.pas';
+  List_SQLCommandParam in '..\..\Core\Persistence\List_SQLCommandParam.pas',
+  ReaderTemplate_IO in '..\..\Core\Persistence\ReaderTemplate_IO.pas';
 
 end.

@@ -8,7 +8,9 @@ uses
   {Infra}InfraCommonIntf, InfraValueTypeIntf;
 
 type
-  EInfraConnectionProviderError = class(EInfraError);
+  EInfraPersistenceError = Class(EInfraError);
+  EInfraConnectionProviderError = class(EInfraPersistenceError);
+  EInfraTemplateNotFound = Class(EInfraPersistenceError);
 
   ISession = interface;                   
 
