@@ -116,7 +116,7 @@ type
 implementation
 
 uses
-  InfraPersistenceConsts, InfraBasicList;
+  InfraPersistenceConsts, InfraBasicList, InfraConsts;
 
 { TConfiguration }
 
@@ -307,7 +307,7 @@ begin
       Exit;
     end;
 
-  raise EInfraConnectionProviderError.Create('Número máximo de conexões excedido');
+  raise EInfraConnectionProviderError.Create(cErrorConnectionsLimitExceeded);
 end;
 
 {**
@@ -401,6 +401,8 @@ end;
 
 constructor TSession.Create(const pPersistenceEngine: IPersistenceEngine);
 begin
+  if not Assigned(pPersistenceEngine) then
+    raise EInfraArgumentError.CreateFmt(cErrorInvalidArgument, ['pPersistenceEngine']);
   inherited Create;
   FPersistenceEngine := pPersistenceEngine;
   FListCommand := TObjectList.Create;
@@ -489,6 +491,8 @@ end;
 
 constructor TPersistenceEngine.Create(pConfiguration: IConfiguration);
 begin
+  if not Assigned(pConfiguration) then
+    raise EInfraArgumentError.CreateFmt(cErrorInvalidArgument, ['pConfiguration']);
   inherited Create;
   FConfiguration := pConfiguration;
 end;
@@ -534,10 +538,9 @@ end;
 
 function TInfraPersistenceService.GetPersistenceEngine: IPersistenceEngine;
 begin
-  if not Assigned(FConfiguration) then
-    raise EInfraError.Create(cErrorConfigurationNotDefined);
   if not Assigned(FPersistenceEngine) then
     FPersistenceEngine := TPersistenceEngine.Create(FConfiguration);
+  Result := FPersistenceEngine;
 end;
 
 function TInfraPersistenceService.OpenSession: ISession;

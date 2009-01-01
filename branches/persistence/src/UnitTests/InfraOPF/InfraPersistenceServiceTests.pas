@@ -21,13 +21,12 @@ type
     procedure TestConfiguration;
     procedure TestOpenSessionWithNoConfig;
     procedure TestOpenSession;
-    procedure TestSetConnection;
   end;
 
 implementation
 
 uses
-  InfraConsts, InfraPersistenceConsts;
+  InfraConsts, InfraPersistenceConsts, InfraMocks, ZDbcIntfs;
 
 procedure TInfraPersistenceServiceTests.SetUp;
 begin
@@ -70,11 +69,6 @@ begin
   FPersistenceService.Configuration.PropertyItem[cCONFIGKEY_USERNAME] := 'sysdba';
   FPersistenceService.Configuration.PropertyItem[cCONFIGKEY_PASSWORD] := 'masterkey';
   FPersistenceService.OpenSession;
-end;
-
-procedure TInfraPersistenceServiceTests.TestSetConnection;
-begin
-  // TODO:
 end;
 
 initialization
