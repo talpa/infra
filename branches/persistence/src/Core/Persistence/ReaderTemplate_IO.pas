@@ -19,7 +19,9 @@ type
 
 implementation
 
-uses SysUtils;
+uses
+  SysUtils,
+  InfraPersistenceConsts;
 
 { TTemplateReader }
 
@@ -37,27 +39,25 @@ begin
 end;
 
 function TTemplateReader.Read(const pTemplateName: string): string;
-//var
-//  vFileName: string;
+var
+  vFileName: string;
 begin
-//  cCONFIGKEY_TEMPLATEPATH = 'Template.Path';
-//  cCONFIGKEY_TEMPLATEEXT = 'Template.Ext';
-//
-//  vFileName :=
-//    FConfiguration.GetValue(cCONFIGKEY_TEMPLATEPATH, EmptyStr)+
-//  with FTemplateText do
-//  begin
-//    Clear;
-//    LoadFromFile(Format());
-//    if not FileExists  = EmptyStr then
-//      Raise ETemplateReaderInvalidType.Create();
-//
-//    Result := Text;
-//  end;  .
-//  FTemplateText.Clear;
-//  if not Assigned() then
-//
-//  cErrorTemplateFileNotFound = 'Template %s não encontrado';
+  with FConfiguration do
+  begin
+    vFileName :=
+      IncludeTrailingPathDelimiter(
+        GetValue(cCONFIGKEY_TEMPLATEPATH, ExtractFilePath(ParamStr(0))))+
+      pTemplateName+'.'+
+      GetValue(cCONFIGKEY_TEMPLATEEXT, 'sql');
+  end;
+  with FTemplateText do
+  begin
+    Clear;
+    LoadFromFile(vFileName);
+    if Text = EmptyStr then
+      Raise EInfraTemplateNotFound.Create(cErrorTemplateFileNotFound);
+    Result := Text;
+  end;
 end;
 
 end.
