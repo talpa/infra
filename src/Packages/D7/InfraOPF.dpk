@@ -34,6 +34,8 @@ requires
 
 contains
   InfraPersistenceIntf in '..\..\Core\Persistence\InfraPersistenceIntf.pas',
-  InfraPersistence in '..\..\Core\Persistence\InfraPersistence.pas';
+  InfraPersistence in '..\..\Core\Persistence\InfraPersistence.pas',
+  InfraPersistenceConsts in '..\..\Core\Persistence\InfraPersistenceConsts.pas',
+  ListSQLCommandParam in '..\..\Core\Persistence\ListSQLCommandParam.pas';
 
 end.
