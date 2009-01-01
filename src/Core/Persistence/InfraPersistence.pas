@@ -15,14 +15,24 @@ type
     function GetProperties: TStrings;
     function GetPropertyItem(const pName: string): string;
     procedure SetPropertyItem(const pName: string; const Value: string);
+  protected
+    property Properties: TStrings read GetProperties;
+    property PropertyItem[const pName: string]: string read GetPropertyItem write SetPropertyItem;
   public
     constructor Create; override;
     destructor Destroy; override;
+
+    function GetAsInteger(const pName: string): Integer; overload;
+    function GetAsDouble(const pName: string): Double; overload;
+    function GetAsString(const pName: string): string; overload;
+
     function GetValue(const pName: string; const pDefaultValue: Integer): Integer; overload;
     function GetValue(const pName: string; const pDefaultValue: Double): Double; overload;
     function GetValue(const pName: string; const pDefaultValue: string): string; overload;
-    property Properties: TStrings read GetProperties;
-    property PropertyItem[const pName: string]: string read GetPropertyItem write SetPropertyItem;
+
+    procedure SetValue(const pName: string; const Value: Integer); overload;
+    procedure SetValue(const pName: string; const Value: Double); overload;
+    procedure SetValue(const pName: string; const Value: string); overload;
   end;
 
   /// Classe responsável por prover conexões com o SGDB
@@ -130,6 +140,21 @@ destructor TConfiguration.Destroy;
 begin
   FreeAndNil(FProperties);
   inherited;
+end;
+
+function TConfiguration.GetAsDouble(const pName: string): Double;
+begin
+  Result := StrToFloat(PropertyItem[pName]);
+end;
+
+function TConfiguration.GetAsInteger(const pName: string): Integer;
+begin
+  Result := StrToInt(PropertyItem[pName]);
+end;
+
+function TConfiguration.GetAsString(const pName: string): string;
+begin
+  Result := PropertyItem[pName];
 end;
 
 function TConfiguration.GetProperties: TStrings;
@@ -282,11 +307,11 @@ end;
 
 function TConnectionProvider.BuildConnectionString(pConfiguration: IConfiguration): string;
 begin
-  Result := 'zdbc:' + pConfiguration.PropertyItem[cCONFIGKEY_DRIVER] +
-    '://' + pConfiguration.PropertyItem[cCONFIGKEY_HOSTNAME] +
-    '/' + pConfiguration.PropertyItem[cCONFIGKEY_DATABASENAME] +
-    '?username=' + pConfiguration.PropertyItem[cCONFIGKEY_USERNAME] +
-    ';password=' + pConfiguration.PropertyItem[cCONFIGKEY_DATABASENAME];
+  Result := 'zdbc:' + pConfiguration.GetAsString(cCONFIGKEY_DRIVER) +
+    '://' + pConfiguration.GetAsString(cCONFIGKEY_HOSTNAME) +
+    '/' + pConfiguration.GetAsString(cCONFIGKEY_DATABASENAME) +
+    '?username=' + pConfiguration.GetAsString(cCONFIGKEY_USERNAME) +
+    ';password=' + pConfiguration.GetAsString(cCONFIGKEY_DATABASENAME);
 end;
 
 {**
@@ -327,6 +352,23 @@ begin
   finally
     FCriticalSection.Release;
   end;
+end;
+
+procedure TConfiguration.SetValue(const pName: string;
+  const Value: Integer);
+begin
+  PropertyItem[pName] := IntToStr(Value);
+end;
+
+procedure TConfiguration.SetValue(const pName: string;
+  const Value: Double);
+begin
+  PropertyItem[pName] := FloatToStr(Value);
+end;
+
+procedure TConfiguration.SetValue(const pName, Value: string);
+begin
+  PropertyItem[pName] := Value;
 end;
 
 { TSQLCommand }

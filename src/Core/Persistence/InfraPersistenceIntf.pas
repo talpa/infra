@@ -16,14 +16,17 @@ type
 
   IConfiguration = interface(IBaseElement)
     ['{16AF1EFF-FB48-4BAD-BDC7-E0518E83E09E}']
-    function GetProperties: TStrings;
-    function GetPropertyItem(const pName: string): string;
-    procedure SetPropertyItem(const pName: string; const Value: string);
-    property Properties: TStrings read GetProperties;
-    property PropertyItem[const pName: string]: string read GetPropertyItem write SetPropertyItem;
+    function GetAsInteger(const pName: string): Integer; overload;
+    function GetAsDouble(const pName: string): Double; overload;
+    function GetAsString(const pName: string): string; overload;
+
     function GetValue(const pName: string; const pDefaultValue: Integer): Integer; overload;
     function GetValue(const pName: string; const pDefaultValue: Double): Double; overload;
     function GetValue(const pName: string; const pDefaultValue: string): string; overload;
+
+    procedure SetValue(const pName: string; const Value: Integer); overload;
+    procedure SetValue(const pName: string; const Value: Double); overload;
+    procedure SetValue(const pName: string; const Value: string); overload;
   end;
 
   IConnectionProvider = interface(IBaseElement)

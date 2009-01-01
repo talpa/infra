@@ -64,10 +64,10 @@ end;
 
 procedure TInfraPersistenceServiceTests.TestOpenSession;
 begin
-  FPersistenceService.Configuration.PropertyItem[cCONFIGKEY_DRIVER] := 'firebird';
-  FPersistenceService.Configuration.PropertyItem[cCONFIGKEY_HOSTNAME] := 'localhost';
-  FPersistenceService.Configuration.PropertyItem[cCONFIGKEY_USERNAME] := 'sysdba';
-  FPersistenceService.Configuration.PropertyItem[cCONFIGKEY_PASSWORD] := 'masterkey';
+  FPersistenceService.Configuration.SetValue(cCONFIGKEY_DRIVER, 'firebird');
+  FPersistenceService.Configuration.SetValue(cCONFIGKEY_HOSTNAME, 'localhost');
+  FPersistenceService.Configuration.SetValue(cCONFIGKEY_USERNAME, 'sysdba');
+  FPersistenceService.Configuration.SetValue(cCONFIGKEY_PASSWORD, 'masterkey');
   FPersistenceService.OpenSession;
 end;
 

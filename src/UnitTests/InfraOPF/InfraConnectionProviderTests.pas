@@ -38,8 +38,8 @@ begin
   // Tamanho do Pool = 2
   // Objetos no Pool não expiram
   vConfiguration := TConfiguration.Create;
-  vConfiguration.PropertyItem[cCONFIGKEY_CONNECTIONTIME] := '10';
-  vConfiguration.PropertyItem[cCONFIGKEY_MAXCONNECTIONS] := '2';
+  vConfiguration.SetValue(cCONFIGKEY_CONNECTIONTIME, 10);
+  vConfiguration.SetValue(cCONFIGKEY_MAXCONNECTIONS, 2);
   FConnProvider := TConnectionProvider.Create(TDriverManagerMock.Create, vConfiguration);
 end;
 

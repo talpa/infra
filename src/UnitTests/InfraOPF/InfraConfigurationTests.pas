@@ -51,7 +51,7 @@ const
 var
   vActual: Integer;
 begin
-  FConfiguration.PropertyItem['teste'] := IntToStr(vExpected);
+  FConfiguration.SetValue('teste', vExpected);
   vActual := FConfiguration.GetValue('teste', vExpected);
   CheckEquals(vActual, vExpected);
 end;
@@ -62,7 +62,7 @@ const
 var
   vActual: Integer;
 begin
-  FConfiguration.PropertyItem['teste'] := IntToStr(vExpected);
+  FConfiguration.SetValue('teste', vExpected);
   vActual := FConfiguration.GetValue('teste', vExpected);
   CheckEquals(vActual, vExpected);
 end;
@@ -73,7 +73,7 @@ const
 var
   vActual: Integer;
 begin
-  FConfiguration.PropertyItem['teste'] := 'x';
+  FConfiguration.SetValue('teste', 'x');
   vActual := FConfiguration.GetValue('teste', vExpected);
   CheckEquals(vActual, vExpected);
 end;
@@ -93,11 +93,11 @@ const
   sExpected01 = 'Valor1';
   sExpected02 = 'Valor2';
 begin
-  FConfiguration.PropertyItem['teste1'] := sExpected01;
-  FConfiguration.PropertyItem['teste2'] := sExpected02;
+  FConfiguration.SetValue('teste1', sExpected01);
+  FConfiguration.SetValue('teste2', sExpected02);
 
-  CheckEqualsString(sExpected01, FConfiguration.PropertyItem['teste1']);
-  CheckEqualsString(sExpected02, FConfiguration.PropertyItem['teste2']);
+  CheckEqualsString(sExpected01, FConfiguration.GetAsString('teste1'));
+  CheckEqualsString(sExpected02, FConfiguration.GetAsString('teste2'));
 end;
 
 procedure TTestConnectionProvider.TestGetValueAsDouble;
@@ -106,7 +106,7 @@ const
 var
   vActual: Double;
 begin
-  FConfiguration.PropertyItem['teste'] := FloatToStr(vExpected);
+  FConfiguration.SetValue('teste', vExpected);
   vActual := FConfiguration.GetValue('teste', vExpected);
   CheckEquals(vActual, vExpected, 0.00001);
 end;
@@ -117,7 +117,7 @@ const
 var
   vActual: Double;
 begin
-  FConfiguration.PropertyItem['teste'] := FloatToStr(vExpected);
+  FConfiguration.SetValue('teste', vExpected);
   vActual := FConfiguration.GetValue('teste', vExpected);
   CheckEquals(vActual, vExpected, 0.00001);
 end;
@@ -138,7 +138,7 @@ const
 var
   vActual: Double;
 begin
-  FConfiguration.PropertyItem['teste'] := 'invalido';
+  FConfiguration.SetValue('teste', 'invalido');
   vActual := FConfiguration.GetValue('teste', vExpected);
   CheckEquals(vActual, vExpected, 0.00001);
 end;
@@ -149,7 +149,7 @@ const
 var
   vActual: string;
 begin
-  FConfiguration.PropertyItem['teste'] := vExpected;
+  FConfiguration.SetValue('teste', vExpected);
   vActual := FConfiguration.GetValue('teste', vExpected);
   CheckEqualsString(vActual, vExpected);
 end;
@@ -160,7 +160,7 @@ const
 var
   vActual: string;
 begin
-  FConfiguration.PropertyItem['teste'] := vExpected;
+  FConfiguration.SetValue('teste', vExpected);
   vActual := FConfiguration.GetValue('teste', vExpected);
   CheckEqualsString(vActual, vExpected);
 end;
