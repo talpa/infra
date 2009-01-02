@@ -7,10 +7,10 @@ uses
   TestFramework,
   InfraCommonIntf,
   InfraPersistenceIntf,
-  ReaderTemplate_IO;
+  TemplateReader_IO;
 
 type
-  TTemplateReaderHacked = class(TTemplateReader)
+  TTemplateReaderHacked = class(TTemplateReader_IO)
   end;
 
   TTestTemplateReader_IO = class(TTestCase)
@@ -49,7 +49,7 @@ end;
 procedure TTestTemplateReader_IO.TestCreateWithInvalidArgs;
 begin
   ExpectedException := EInfraArgumentError;
-  TTemplateReader.Create(nil);
+  TTemplateReader_IO.Create(nil);
   ExpectedException := nil;
 end;
 
