@@ -3,9 +3,12 @@ unit InfraPersistenceIntf;
 interface
 
 uses
-  {TStrings}Classes,
-  {Zeos}ZDbcIntfs,
-  {Infra}InfraCommonIntf, InfraValueTypeIntf;
+  Classes,
+  {Zeos}
+  ZDbcIntfs,
+  {Infra}
+  InfraCommonIntf, 
+  InfraValueTypeIntf;
 
 type
   EInfraPersistenceError = Class(EInfraError);
@@ -98,18 +101,11 @@ type
 
   ISQLCommandList = interface
     ['{3882EC5D-59EC-4839-93F8-B4DCDE3B6B37}']
-    function GetItem(Index: String): IInfraType;
-    procedure SetItem(Index: String; Value: IInfraType);
+    function Add(const Item: ISQLCommand): Integer;
     function GetCount: Integer;
-    function Add(Index: String; Value: IInfraType): String;
-    procedure Delete(Index: String);
-    procedure DeletePosition(Index: integer);
-    function NewIterator: IInterface;
-    function PositionOf(Index: String; Value: IInfraType): integer;
-    function ValueOfPosition(Index: Integer): IInfraType;
-    function IndexOfPosition(Index: Integer): String;
+    function GetItem(Index: Integer): ISQLCommand;
+    property Items[Index: Integer]: ISQLCommand read GetItem; default;
     property Count: Integer read GetCount;
-    property Items[Index: String]: IInfraType read GetItem write SetItem; default;
   end;
 
   ISession = interface(IBaseElement)
