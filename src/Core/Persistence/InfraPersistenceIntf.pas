@@ -19,11 +19,9 @@ type
     function GetAsInteger(const pName: string): Integer; overload;
     function GetAsDouble(const pName: string): Double; overload;
     function GetAsString(const pName: string): string; overload;
-
     function GetValue(const pName: string; const pDefaultValue: Integer): Integer; overload;
     function GetValue(const pName: string; const pDefaultValue: Double): Double; overload;
     function GetValue(const pName: string; const pDefaultValue: string): string; overload;
-
     procedure SetValue(const pName: string; const Value: Integer); overload;
     procedure SetValue(const pName: string; const Value: Double); overload;
     procedure SetValue(const pName: string; const Value: string); overload;
@@ -59,18 +57,26 @@ type
   ISQLCommand = interface(IBaseElement)
     ['{8F2E7318-09C1-4EA2-BA6E-6724275E9043}']
     function GetName: String;
-    function GetResult: IInfraType;
-    function GetListID: TGUID;
-    function GetClassID:TGUID;
-    procedure SetListID(const Value: TGUID);
-    procedure SetClassID(const Value: TGUID);
     procedure SetName(const Value: String);
     procedure SetParam(const pParamName: string; const value: IInfraType); overload;
     procedure SetParam(const pObj: IInfraType); overload;
     procedure ClearParams;
-    property Name: string read GetName write SetName;
+    property Name: string read GetName write SetName;    
+  end; 
+
+
+  ISQLCommandQuery = interface(ISQLCommand)
+    ['{437E64D0-7DD8-4D87-9B9F-DBEFAB200863}']
+    function GetResult: IInfraType;
+    function GetListID: TGUID;
+    function GetSingleResult: boolean;
+    function GetClassID:TGUID;
+    procedure SetListID(const Value: TGUID);
+    procedure SetClassID(const Value: TGUID);
+    procedure SetSingleResult(const Value: boolean);
     property ClassID: TGUID read GetClassID write SetClassID;
     property ListID: TGUID read GetListID write SetListID;
+    property SingleResult: boolean read GetSingleResult write SetSingleResult;
   end;
 
   ISQLCommandParams = interface
@@ -82,6 +88,7 @@ type
     procedure Delete(Index: String);
     procedure DeletePosition(Index: integer);
     function NewIterator: IInterface;
+    procedure Clear;
     function PositionOf(Index: String; Value: IInfraType): integer;
     function ValueOfPosition(Index: Integer): IInfraType;
     function IndexOfPosition(Index: Integer): String;
@@ -107,15 +114,14 @@ type
 
   ISession = interface(IBaseElement)
     ['{693A7815-9A5E-46C7-97DD-04D3E9C245AF}']
-    function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommand; overload;
-    function Load(const pCommandName: string; const pClassID: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pList: IInfraList = nil): ISQLCommand; overload;
-    procedure Delete(const pCommandName: string; const pObj: IInfraObject);
-    procedure Save(const pCommandName: string; const pObj: IInfraObject);
+    function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
+    function Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
+    function LoadList(const pCommandName: string): ISQLCommandQuery; overload;
+    function LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
+    function LoadList(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
+    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
+    function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
+    function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
   end;
 

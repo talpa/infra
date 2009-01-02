@@ -74,43 +74,53 @@ type
 
   TSQLCommand = class(TBaseElement, ISQLCommand)
   private
-    FPersistenceEngine: IPersistenceEngine;
     FName: string;
-    FClassID: TGUID;
-    FListID: TGUID;
+    FObj: IInfraType;
+    FParams: ISQLCommandParams;
+    FSingleResult :Boolean;
   protected
+    FPersistenceEngine: IPersistenceEngine;
     function GetName: string;
+    function GetSingleResult: boolean;
     procedure SetName(const Value: string);
-    function GetClassID: TGUID;
-    procedure SetClassID(const Value: TGUID);
-    function GetListID: TGUID;
-    procedure SetListID(const Value: TGUID);
-    function GetResult: IInfraType;
-    procedure SetParam(const pParamName: string; const value: IInfraType); overload;
+    procedure SetParam(const pParamName: string; const Value: IInfraType); overload;
     procedure SetParam(const pObj: IInfraType); overload;
+    procedure SetSingleResult(const Value: boolean);
     procedure ClearParams;
-    property Name: string read GetName write SetName;
-    property ClassID: TGUID read GetClassID write SetClassID;
-    property ListID: TGUID read GetListID write SetListID;
+    property SingleResult: boolean read GetSingleResult write SetSingleResult;
   public
     constructor Create(pPersistenceEngine: IPersistenceEngine); reintroduce;
+  end;
+
+  TSQLCommandQuery = class(TSQLCommand, ISQLCommandQuery)
+  private
+    FClassID: TGUID;
+    FListID: TGUID;
+  function CreateList: IInfraList;
+  protected
+    function GetResult: IInfraType;
+    function GetListID: TGUID;
+    function GetClassID:TGUID;
+    procedure SetListID(const Value: TGUID);
+    procedure SetClassID(const Value: TGUID);
+    property ClassID: TGUID read GetClassID write SetClassID;
+    property ListID: TGUID read GetListID write SetListID;
   end;
 
   TSession = class(TBaseElement, ISession)
   private
     FPersistenceEngine: IPersistenceEngine;
-    FListCommand: ISQLCommandList;
+    FCommandList: ISQLCommandList;
     procedure AddCommand(const pCommandName: string; const pObj: IInfraObject);
   protected
-    function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommand; overload;
-    function Load(const pCommandName: string; const pClassID: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommand; overload;
-    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pList: IInfraList = nil): ISQLCommand; overload;
-    procedure Delete(const pCommandName: string; const pObj: IInfraObject);
-    procedure Save(const pCommandName: string; const pObj: IInfraObject);
+    function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
+    function Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
+    function LoadList(const pCommandName: string): ISQLCommandQuery; overload;
+    function LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
+    function LoadList(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
+    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
+    function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
+    function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
   public
     constructor Create(const pPersistenceEngine: IPersistenceEngine); reintroduce;
@@ -426,76 +436,92 @@ end;
 
 procedure TSQLCommand.ClearParams;
 begin
-  // TODO:
-  // FParams.Clear?
-end;
-
-function TSQLCommand.GetClassID: TGUID;
-begin
-  // TODO:
-  Result := FClassID;
-end;
-
-function TSQLCommand.GetListID: TGUID;
-begin
-  // TODO:
-  Result := FListID;
+  FParams.Clear;
 end;
 
 function TSQLCommand.GetName: string;
 begin
-  // TODO:
   Result := FName;
-end;
-
-function TSQLCommand.GetResult: IInfraType;
-begin
-  // TODO:
-  // Result := FPersistenceEngine.???
-end;
-
-procedure TSQLCommand.SetClassID(const Value: TGUID);
-begin
-  // TODO:
-  FClassID := Value;
-end;
-
-procedure TSQLCommand.SetListID(const Value: TGUID);
-begin
-  // TODO:
-  FListID := Value;
 end;
 
 procedure TSQLCommand.SetName(const Value: string);
 begin
-  // TODO:
-  FName := Value;
+  if not AnsiSameText(FName, Value) then 
+    FName := Value;
 end;
 
-procedure TSQLCommand.SetParam(const pParamName: string;
-  const value: IInfraType);
+procedure TSQLCommand.SetParam(const pParamName: string; const Value: IInfraType);
 begin
-  // TODO:
-  //FParams[pParamName] := Value?
+  FParams.Add(pParamName, Value);
 end;
 
 procedure TSQLCommand.SetParam(const pObj: IInfraType);
 begin
+  FObj := pObj;
+end;
 
+{ TSQLCommandQuery }
+
+function TSQLCommandQuery.GetClassID: TGUID;
+begin
+  Result := FClassID;
+end;
+
+function TSQLCommandQuery.GetListID: TGUID;
+begin
+  Result := FListID;
+end;
+
+function TSQLCommandQuery.CreateList: IInfraList;
+begin
+  Result := TypeService.CreateInstance(FListID) as IInfraList;
+end;
+
+function TSQLCommandQuery.GetResult: IInfraType;
+var
+  vList: IInfraList;
+begin
+  vList := CreateList;
+  FPersistenceEngine.Load(Self, vList);  
+  if FSingleResult then 
+    Result := vList[0] as IInfratype
+  else
+    Result := vList;  
+end;
+
+function TSQLCommand.GetSingleResult: boolean;
+begin
+  Result := FSingleResult;
+end; 
+    
+procedure TSQLCommandQuery.SetClassID(const Value: TGUID);
+begin
+  FClassID := Value;
+end;
+
+procedure TSQLCommandQuery.SetListID(const Value: TGUID);
+begin
+  FListID := Value;
+end;
+
+procedure TSQLCommand.SetSingleResult(const Value: boolean);
+begin
+  FSingleResult := Value;
 end;
 
 { TSession }
 
 constructor TSession.Create(const pPersistenceEngine: IPersistenceEngine);
 begin
+  // *** perguntar a marcos o pq desta exceção
   if not Assigned(pPersistenceEngine) then
     raise EInfraArgumentError.Create('pPersistenceEngine');
   inherited Create;
   FPersistenceEngine := pPersistenceEngine;
-  FListCommand := TSQLCommandList.Create;
+  FCommandList := TSQLCommandList.Create;
 end;
 
-procedure TSession.Delete(const pCommandName: string; const pObj: IInfraObject);
+function TSession.Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
 begin
   AddCommand(pCommandName, pObj);
 end;
@@ -505,9 +531,9 @@ var
   i: integer;
 begin
   Result := 0;
-  for i := 0 to FListCommand.Count - 1 do
+  for i := 0 to FCommandList.Count - 1 do
   begin
-//    Result := result + (FPersistenceEngine.Execute(FListCommand.Items[i])).AsInteger;
+//    Result := result + (FPersistenceEngine.Execute(FCommandList.Items[i])).AsInteger;
   end;
 
 end;
@@ -519,54 +545,50 @@ begin
   ASqlCommand := TSQLCommand.Create(FPersistenceEngine);
   ASqlCommand.Name := pCommandName;
   ASqlCommand.SetParam(pObj);
-//  FListCommand.Add(ASqlCommand);
+//  FCommandList.Add(ASqlCommand);
 end;
 
-function TSession.Load(const pCommandName: string; const pClassID: TGUID): ISQLCommand;
+function TSession.Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
 begin
-  Result := TSQLCommand.Create(FPersistenceEngine);
+  Result := TSQLCommandQuery.Create(FPersistenceEngine);
   result.Name := pCommandName;
-  Result.ClassID := pClassID
+  Result.ClassID := pClassID;
+  Result.SingleResult := True;
 end;
 
-function TSession.Load(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
+function TSession.Load(const pCommandName: string; const pObj: IInfraObject): ISQLCommandQuery;
 begin
-  Result := TSQLCommand.Create(FPersistenceEngine);
-  result.Name := pCommandName;
+  Result := Load(pCommandName, pObj.TypeInfo.TypeID);
   Result.SetParam(pObj);
 end;
 
-function TSession.LoadList(const pCommandName: string): ISQLCommand;
+function TSession.LoadList(const pCommandName: string): ISQLCommandQuery;
 begin
-  Result := TSQLCommand.Create(FPersistenceEngine);
-  result.Name := pCommandName;
+  Result := TSQLCommandQuery.Create(FPersistenceEngine);
+  Result.Name := pCommandName;
+  Result.SingleResult := False;
 end;
 
-function TSession.LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommand;
+function TSession.LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
 begin
-  Result :=LoadList(pCommandName);
+  Result := LoadList(pCommandName);
   Result.ClassID := pClassID;
+  Result.ListID := IInfraList;
 end;
 
-function TSession.LoadList(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommand;
+function TSession.LoadList(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommandQuery;
 begin
-  Result :=LoadList(pCommandName,pClassID);
+  Result := LoadList(pCommandName, pClassID);
   Result.ListID := pListID;
 end;
 
-function TSession.LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommand;
+function TSession.LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery;
 begin
-  Result := TSQLCommand.Create(FPersistenceEngine);
-  result.setParam(pObj);
-  Result.ClassID := pObj.TypeInfo.TypeID
+  Result := LoadList(pCommandName, pObj.TypeInfo.TypeID, pListID);
+  Result.SetParam(pObj);
 end;
 
-function TSession.LoadList(const pCommandName: string; const pObj: IInfraObject; const pList: IInfraList): ISQLCommand;
-begin
-  //....
-end;
-
-procedure TSession.Save(const pCommandName: string; const pObj: IInfraObject);
+function TSession.Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
 begin
   AddCommand(pCommandName, pObj);
 end;
