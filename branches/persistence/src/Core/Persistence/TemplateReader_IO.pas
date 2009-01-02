@@ -1,21 +1,22 @@
-unit ReaderTemplate_IO;
+unit TemplateReader_IO;
 
 interface
 
 uses
   Classes,
   InfraCommon,
-  InfraPersistenceIntf;
+  InfraPersistenceIntf,
+  InfraPersistence;
 
 type
-  TTemplateReader = class(TBaseElement, ITemplateReader)
+  TTemplateReader_IO = class(TTemplateReader, ITemplateReader)
   private
     FConfiguration: IConfiguration;
-  protected
     function GetFilename(const pTemplateName: string): string;
+  protected
     function Read(const pTemplateName: string): string;
   public
-    constructor Create(pConfiguration: IConfiguration); reintroduce;
+    constructor Create(pConfiguration: IConfiguration); override;
   end;
 
 implementation
@@ -27,15 +28,14 @@ uses
 
 { TTemplateReader }
 
-constructor TTemplateReader.Create(pConfiguration: IConfiguration);
+constructor TTemplateReader_IO.Create(pConfiguration: IConfiguration);
 begin
   if not Assigned(pConfiguration) then
     raise EInfraArgumentError.Create('pConfiguration');
-  inherited Create;
   FConfiguration := pConfiguration;
 end;
 
-function TTemplateReader.GetFilename(const pTemplateName: string): string;
+function TTemplateReader_IO.GetFilename(const pTemplateName: string): string;
 begin
   with FConfiguration do
     Result := IncludeTrailingPathDelimiter(
@@ -44,22 +44,23 @@ begin
       GetValue(cCONFIGKEY_TEMPLATEEXT, 'sql');
 end;
 
-function TTemplateReader.Read(const pTemplateName: string): string;
+function TTemplateReader_IO.Read(const pTemplateName: string): string;
 var
   vFileName: string;
-  stm: TFileStream;
+  vStream: TFileStream;
   vFileSize: Integer;
 begin
+  // *** tem de gerar uma exceção caso o arquivo nao exista, acho que tem de
+  // *** procurar o arquivo com findfirst ou tratar o Result = Emptystr.
   vFileName := GetFilename(pTemplateName);
-
-  stm := TFileStream.Create(vFileName, fmOpenRead or fmShareDenyWrite);
+  vStream := TFileStream.Create(vFileName, fmOpenRead or fmShareDenyWrite);
   try
-    vFileSize := stm.Seek(0, soFromEnd);
-    stm.Seek(0, 0);
+    vFileSize := vStream.Seek(0, soFromEnd);
+    vStream.Seek(0, 0);
     SetLength(Result, vFileSize);
-    stm.Read(PChar(Result)^, vFileSize);
+    vStream.Read(PChar(Result)^, vFileSize);
   finally
-    stm.Free;
+    vStream.Free;
   end;
 end;
 

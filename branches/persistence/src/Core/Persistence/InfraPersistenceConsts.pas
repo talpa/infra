@@ -26,8 +26,9 @@ resourcestring
   cErrorConnectionNotFoundOnPool = 'Conexão não encontrada no Pool deste Provider';
   cErrorConnectionsLimitExceeded = 'Número máximo de conexões excedido';
   cErrorAlreadyClosedConnection = 'Conexão já fechada';
+  cErrorTemplateTryCreateClassBase = 'Classe base TemplateReader não deve ser instanciada';
   cErrorTemplateFileNotFound = 'Template %s não vazio ou não encontrado';
-  // cErrorTemplateTypeInvalid = 'Classe de leitura de templates inválida ou não definida';
+  cErrorTemplateTypeInvalid = 'Classe de leitura de templates inválida ou não definida';
   // cErrorTemplatePathNotDefined = 'Caminho dos templates não definido';
 
 implementation

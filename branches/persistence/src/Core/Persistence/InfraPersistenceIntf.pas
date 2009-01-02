@@ -13,7 +13,9 @@ uses
 type
   EInfraPersistenceError = Class(EInfraError);
   EInfraConnectionProviderError = class(EInfraPersistenceError);
-  EInfraTemplateNotFound = Class(EInfraPersistenceError);
+  // *** Talvvez devessemos criar um tipo de erro por classe 
+  EPersistenceTemplateUndefined  = Class(EInfraPersistenceError);
+  EPersistenceTryCreateTemplateBase = Class(EInfraPersistenceError);
 
   ISession = interface;                   
 
@@ -124,13 +126,17 @@ type
   IPersistenceEngine = interface(IBaseElement)
     ['{F1C7686A-43B6-4FE7-8BF1-6A9C6BC54AE4}']
     procedure SetConnection(const pConnection: IZConnection);
-    procedure Load(const pSqlCommand: ISqlCommand; const List: IInfraList);
+    procedure Load(const pSqlCommand: ISqlCommand; const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): IInfraInteger;
   end;
 
-  ITemplateReader = interface
+  ITemplateReader = interface(IElement)
     ['{AFD2D321-E26B-4E48-93FB-48FD24BCE62B}']
     function Read(const pTemplateName: string): string;
+  end;
+
+  ITemplateReader_IO = interface(ITemplateReader)
+    ['{01861C33-9789-4A30-8FCC-A018EA45FF13}']
   end;
 
 function PersistenceService: IInfraPersistenceService;
