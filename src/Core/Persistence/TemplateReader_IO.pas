@@ -12,8 +12,8 @@ type
   TTemplateReader_IO = class(TTemplateReader, ITemplateReader)
   private
     FConfiguration: IConfiguration;
-    function GetFilename(const pTemplateName: string): string;
   protected
+    function GetFilename(const pTemplateName: string): string;
     function Read(const pTemplateName: string): string;
   public
     constructor Create(pConfiguration: IConfiguration); override;
