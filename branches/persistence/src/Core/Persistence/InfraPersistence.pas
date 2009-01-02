@@ -7,7 +7,9 @@ uses
   {TStrings}Classes, Contnrs,
   {Zeos}ZDbcIntfs,
   {Infra}InfraCommon, 
-  {InfraInf}InfraCommonIntf, InfraValueTypeIntf, InfraPersistenceIntf;
+  {InfraInf}InfraCommonIntf,
+  InfraValueTypeIntf,
+  InfraPersistenceIntf;
 
 type
   TConfiguration = class(TBaseElement, IConfiguration)
@@ -140,7 +142,10 @@ type
 implementation
 
 uses
-  InfraPersistenceConsts, InfraBasicList, InfraConsts,List_SQLCommandList;
+  InfraPersistenceConsts,
+  List_SQLCommandList,
+  InfraBasicList,
+  InfraConsts;
 
 { TConfiguration }
 

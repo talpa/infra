@@ -1,0 +1,131 @@
+unit InfraTemplateReader_IOTests;
+
+interface
+
+uses
+  SysUtils,
+  TestFramework,
+  InfraCommonIntf,
+  InfraPersistenceIntf,
+  ReaderTemplate_IO;
+
+type
+  TTemplateReaderHacked = class(TTemplateReader)
+  end;
+
+  TTestTemplateReader_IO = class(TTestCase)
+  private
+    FReader: TTemplateReaderHacked;
+  protected
+    procedure SetUp; override;
+    procedure TearDown; override;
+  published
+    procedure TestCreateWithInvalidArgs;
+    procedure TestGetFileNameWithDefaults;
+    procedure TestGetFileNameConfig;
+    procedure TestReadFileNotExists;
+    procedure TestRead;
+  end;
+
+implementation
+
+uses
+  InfraTestsUtil, InfraPersistenceConsts, Windows, Classes;
+
+{ TTestTemplateReader_IO }
+
+procedure TTestTemplateReader_IO.SetUp;
+begin
+  inherited;
+  FReader := TTemplateReaderHacked.Create(TTestsUtil.GetNewConfiguration);
+end;
+
+procedure TTestTemplateReader_IO.TearDown;
+begin
+  FReader := nil;
+  inherited;
+end;
+
+procedure TTestTemplateReader_IO.TestCreateWithInvalidArgs;
+begin
+  ExpectedException := EInfraArgumentError;
+  TTemplateReader.Create(nil);
+  ExpectedException := nil;
+end;
+
+procedure TTestTemplateReader_IO.TestGetFileNameWithDefaults;
+var
+  vConfiguration: IConfiguration;
+  vReader: TTemplateReaderHacked;
+  vExpected: string;
+  vActual: string;
+begin
+  vConfiguration := TTestsUtil.GetNewConfiguration;
+  vReader := TTemplateReaderHacked.Create(vConfiguration);
+  vExpected := ExtractFilePath(ParamStr(0))+'produtos.sql';
+  vActual := vReader.GetFilename('produtos');
+  CheckEqualsString(vExpected, vActual, 'GetFileName falhou');
+end;
+
+procedure TTestTemplateReader_IO.TestGetFileNameConfig;
+var
+  vConfiguration: IConfiguration;
+  vReader: TTemplateReaderHacked;
+  vExpected: string;
+  vActual: string;
+begin
+  vConfiguration := TTestsUtil.GetNewConfiguration;
+  vConfiguration.SetValue(cCONFIGKEY_TEMPLATEPATH, 'c:\');
+  vConfiguration.SetValue(cCONFIGKEY_TEMPLATEEXT, 'tpl');
+  vReader := TTemplateReaderHacked.Create(vConfiguration);
+  vExpected := 'c:\produtos.tpl';
+  vActual := vReader.GetFilename('produtos');
+  CheckEqualsString(vExpected, vActual, 'GetFileName falhou');
+end;
+
+procedure TTestTemplateReader_IO.TestReadFileNotExists;
+var
+  FileName: array [0..MAX_PATH] of Char;
+begin
+  GetTempFileName('.\','tst',0,FileName);
+
+  ExpectedException := EFOpenError;
+  FReader.Read(FileName);
+  ExpectedException := nil;
+end;
+
+procedure TTestTemplateReader_IO.TestRead;
+var
+  FileName: string;
+  stm: TFileStream;
+  vExpected: string;
+  vActual: string;
+  vFullFileName: string;
+begin
+  FileName := 'teste_template_reader';
+
+  vExpected := 'select *'#13#10+
+    'from produtos'+#13#10+
+    'where codigo = :codigo'#13#10;
+
+  vFullFileName := FReader.GetFilename(FileName);
+
+  stm := TFileStream.Create(vFullFileName, fmCreate);
+  try
+    stm.Write(PChar(vExpected)^, Length(vExpected));
+  finally
+    stm.Free;
+  end;
+
+  try
+    vActual := FReader.Read(FileName);
+  finally
+    DeleteFile(PChar(vFullFileName));
+  end;
+
+  CheckEqualsString(vExpected, vActual, 'Read falhou: O conteúdo do arquivo difere');
+end;
+
+initialization
+  TestFramework.RegisterTest(TTestTemplateReader_IO.Suite);
+end.
