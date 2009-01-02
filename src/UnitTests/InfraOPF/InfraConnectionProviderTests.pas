@@ -8,7 +8,6 @@ type
   TTestConnectionProvider = class(TTestCase)
   private
     FConnProvider: IConnectionProvider;
-    function CreateConfiguration: IConfiguration;
   protected
     procedure SetUp; override;
     procedure TearDown; override;
@@ -33,21 +32,15 @@ uses
   InfraPersistenceConsts,
   InfraMocks,
   ZDbcIntfs,
-  InfraCommonIntf;
-
-function TTestConnectionProvider.CreateConfiguration: IConfiguration;
-begin
-  Result := TConfiguration.Create;
-  Result.SetValue(cCONFIGKEY_CONNECTIONTIME, 10);
-  Result.SetValue(cCONFIGKEY_MAXCONNECTIONS, 2);
-end;
+  InfraCommonIntf,
+  InfraTestsUtil;
 
 { TTestConnectionProvider }
 
 procedure TTestConnectionProvider.SetUp;
 begin
   inherited;
-  FConnProvider := TConnectionProvider.Create(TDriverManagerMock.Create, CreateConfiguration);
+  FConnProvider := TConnectionProvider.Create(TDriverManagerMock.Create, TTestsUtil.GetNewConfiguration);
 end;
 
 procedure TTestConnectionProvider.TearDown;
@@ -72,7 +65,7 @@ procedure TTestConnectionProvider.TestCreateWithoutConfiguration;
 begin
   inherited;
   ExpectedException := EInfraArgumentError;
-  TConnectionProvider.Create(nil, CreateConfiguration);
+  TConnectionProvider.Create(nil, TTestsUtil.GetNewConfiguration);
   ExpectedException := nil;
 end;
 

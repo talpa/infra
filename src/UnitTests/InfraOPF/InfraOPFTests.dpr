@@ -15,7 +15,10 @@ uses
   InfraMocks in 'InfraMocks.pas',
   InfraConnectionProviderTests in 'InfraConnectionProviderTests.pas',
   InfraConfigurationTests in 'InfraConfigurationTests.pas',
-  InfraPersistenceServiceTests in 'InfraPersistenceServiceTests.pas';
+  InfraPersistenceServiceTests in 'InfraPersistenceServiceTests.pas',
+  InfraPersistenceEngineTests in 'InfraPersistenceEngineTests.pas',
+  InfraTestsUtil in 'InfraTestsUtil.pas',
+  InfraTemplateReader_IOTests in 'InfraTemplateReader_IOTests.pas';
 
 {$R *.RES}
 
