@@ -128,9 +128,10 @@ type
   TPersistenceEngine = class(TBaseElement, IPersistenceEngine)
   private
     FConfiguration: IConfiguration;
+    function GetReader: ITemplateReader;
   protected
     procedure SetConnection(const pConnection: IZConnection);
-    procedure Load(const pSqlCommand: ISqlCommand; const List: IInfraList);
+    procedure Load(const pSqlCommand: ISqlCommand; const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): IInfraInteger;
   public
     constructor Create(pConfiguration: IConfiguration); reintroduce;
@@ -146,6 +147,13 @@ type
     function OpenSession: ISession; overload;
     procedure SetConnection(const pConnection: IZConnection);
     property Configuration: IConfiguration read GetConfiguration;
+  end;
+
+  TTemplateReader = class(TElement, ITemplateReader)
+  protected
+    function Read(const pTemplateName: string): string;
+  public
+    constructor Create(pConfiguration: IConfiguration); reintroduce; virtual;  
   end;
 
 implementation
@@ -601,27 +609,75 @@ begin
   FConfiguration := pConfiguration;
 end;
 
+function TPersistenceEngine.GetReader: ITemplateReader;
+var
+  vReaderClassName: string;
+  vReaderTypeInfo: IClassInfo;
+begin
+  vReaderClassName := FConfiguration.GetValue(cCONFIGKEY_TEMPLATETYPE, EmptyStr);
+  if vReaderClassName = EmptyStr then
+    Raise EPersistenceTemplateUndefined.Create(cErrorTemplateTypeInvalid);
+  vReaderTypeInfo := TypeService.GetType(vReaderClassName, True);
+  Result := TypeService.CreateInstance(vReaderTypeInfo) as ITemplateReader;
+end;
+
+{// Isso aqui executa uma query e e carrega o resultado na lista List
+function TPersistenceEngine.DoQuery(const pSqlCommand: ISqlCommand;
+  const List: IInfraList): IInfraList;
+//var
+//  vSQL: string;
+//  vST: IZPreparedStatement;
+//  vRS: IZResultSet;
+//  vObject: IInfraType;
+begin
+  // ### No hibernate:
+  // Acontece um laço em uma matriz chamada EntityPersisters. Esta
+  // matriz contem todos os persisters que precisam ser carregados
+  // para casos como herança ou esta classe possuir relacionamentos.
+//  vSQL := FEntityPersister.SQLSnapshotSelectString;
+//  vST := pSession.Connection.PrepareStatement(vSQL);
+//  SetParameters(vST, FEntityPersister.GetIdentifierColumns, pOID);
+//  vRS := vST.ExecuteQueryPrepared;
+//  Result := TInfraList.Create;
+//  try
+//    while vRS.Next do
+//    begin
+//      vObject := GetRowFromResultSet(pOID, pOptionalInstance, vRS);
+//      Result.Add(vObject);
+//    end;
+//  finally
+//    vRs.Close;
+//    vST.Close;
+//  end;
+end;
+}
+
 function TPersistenceEngine.Execute(
   const pSqlCommand: ISqlCommand): IInfraInteger;
+var
+  vReader: ITemplateReader;
 begin
-  // carregar a sql usando um reader com base no Name do pSqlCommand
+  vReader := GetReader;
+  // carregar a sql usando um reader com base no Name do pSqlCommand vReader.Read(pSqlCommand.Name)
   // preencher os params da sql com base nos Params do pSqlCommand
   // pegar o connection no connectionprovider
   // executa a sql e retornar  a quantidade de registros afetados
 end;
 
 procedure TPersistenceEngine.Load(const pSqlCommand: ISqlCommand;
-  const List: IInfraList);
+  const pList: IInfraList);
+var
+  vReader: ITemplateReader;
 begin
+  vReader := GetReader;
   // carregar a sql usando um reader com base no Name do pSqlCommand
   // preencher os params da sql com base nos Params do pSqlCommand
   // executa a sql e pega um IZStatement
-  // cria uma lista com base em ClassList do pSqlCommand, ou usa a lista passada como parâmetro
   // Faz um laço para pegar cada registro
   //    cria um objeto com base no ClassType do pSqlCommand,
   //    Seta o estado persistent e clean ao objeto criado
   //    faz a carga dos atributos com base no registro
-  //    Adiciona o novo objeto a lista
+  //    Adiciona o novo objeto em pList
   // retorna a lista
 end;
 
@@ -658,9 +714,19 @@ begin
   GetPersistenceEngine.SetConnection(pConnection);
 end;
 
-// Não entendi mas se por direto no Initialization acontece
-// Access Violations.
+{ TTemplateReader }
 
+constructor TTemplateReader.Create(pConfiguration: IConfiguration);
+begin
+  Raise EPersistenceTryCreateTemplateBase.Create(cErrorTemplateTryCreateClassBase);
+end;
+
+function TTemplateReader.Read(const pTemplateName: string): string;
+begin
+  Result := '';
+end;
+
+// Não entendi mas se por direto no Initialization acontece Access Violations.
 // ATENÇÃO: Vc não deve atribuir PersistenceService para uma variável de
 // instancia nem global sob pena de acontecer um AV no final da aplicação
 procedure InjectPersistenceService;
