@@ -2,29 +2,21 @@ unit List_SQLCommandList;
 
 interface
 
-{$I ..\Common\InfraCommon.Inc}
+{$I InfraPersistence.Inc} 
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
-  Contnrs,
+  InfraPersistenceIntf,
   InfraCommonIntf,
   InfraCommon,
-  InfraPersistenceIntf,
-  InfraValueTypeIntf;
+  InfraBasicList;
 
 type
-  {.$DEFINE EQUAL_INDEX_DEFAULT}
-  {$DEFINE EQUAL_VALUE_DEFAULT}
-  {.$DEFINE INVALID_INDEX_DEFAULT implementing here}
-  {$DEFINE INVALID_VALUE_DEFAULT}
-  _ITERABLELIST_BASE_ = TBaseElement;       // List's Class Base
-  _ITERABLELIST_INTF_ = ISQLCommandList;  // List's Interface Implementing
-  _ITERATOR_INTF_ = IInterface;             // List's Interface Implementing
-  _INDEX_ = string;                         // List's Item Index ===>>> string
-  _VALUE_ = IInfraType;                     // List's Item Value
-  {$I ..\Templates\InfraTempl_ListDynIndex.inc}
-    function InvalidIndex: _INDEX_;
-    function IsIndexEqual(const Index1, Index2: _INDEX_): boolean;
+  _ITERABLELIST_BASE_ = TElement;
+  _ITERABLELIST_INTF_ = ISQLCommandList;
+  _ITEM_INTF_ = ISQLCommand;
+  _ITERATOR_INTF_ = IInfraIterator;
+  {$I ..\Templates\InfraTempl_IntfList.inc}
   end;
 
   TSQLCommandList = class(_ITERABLELIST_);
@@ -32,12 +24,11 @@ type
 implementation
 
 uses
-  SysUtils,
-  InfraConsts;
+  SysUtils;
 
-{ TInfraSQLCommandParams }
+{ TSQLCommandList }
 
-{$I ..\Templates\InfraTempl_ListDynIndex.inc}
+{$I ..\Templates\InfraTempl_IntfList.inc}
 
 destructor _ITERABLELIST_.Destroy;
 begin
@@ -45,14 +36,4 @@ begin
   inherited;
 end;
 
-function _ITERABLELIST_.InvalidIndex: _INDEX_;
-begin
-  Result := EmptyStr;
-end;
-
-function _ITERABLELIST_.IsIndexEqual(const Index1, Index2: _INDEX_): boolean;
-begin
-  Result := AnsiSameText(Index1, Index2);
-end;
-
-end. 
+end.

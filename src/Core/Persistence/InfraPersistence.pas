@@ -4,11 +4,14 @@ interface
 uses
   SysUtils,
   SyncObjs,
-  {TStrings}Classes, Contnrs,
-  {Zeos}ZDbcIntfs,
-  {Infra}InfraCommon, 
-  {InfraInf}InfraCommonIntf,
-  InfraValueTypeIntf,
+  Classes, 
+  Contnrs,
+  {Zeos}
+  ZDbcIntfs,
+  {Infra}
+  InfraCommon, 
+  InfraCommonIntf, 
+  InfraValueTypeIntf, 
   InfraPersistenceIntf;
 
 type
@@ -23,15 +26,12 @@ type
   public
     constructor Create; override;
     destructor Destroy; override;
-
     function GetAsInteger(const pName: string): Integer; overload;
     function GetAsDouble(const pName: string): Double; overload;
     function GetAsString(const pName: string): string; overload;
-
     function GetValue(const pName: string; const pDefaultValue: Integer): Integer; overload;
     function GetValue(const pName: string; const pDefaultValue: Double): Double; overload;
     function GetValue(const pName: string; const pDefaultValue: string): string; overload;
-
     procedure SetValue(const pName: string; const Value: Integer); overload;
     procedure SetValue(const pName: string; const Value: Double); overload;
     procedure SetValue(const pName: string; const Value: string); overload;
@@ -111,7 +111,6 @@ type
   private
     FPersistenceEngine: IPersistenceEngine;
     FCommandList: ISQLCommandList;
-    procedure AddCommand(const pCommandName: string; const pObj: IInfraObject);
   protected
     function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
     function Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
@@ -152,10 +151,10 @@ type
 implementation
 
 uses
-  InfraPersistenceConsts,
-  List_SQLCommandList,
-  InfraBasicList,
-  InfraConsts;
+  InfraPersistenceConsts, 
+  InfraBasicList, 
+  InfraConsts,
+  List_SQLCommandList;
 
 { TConfiguration }
 
@@ -513,39 +512,11 @@ end;
 
 constructor TSession.Create(const pPersistenceEngine: IPersistenceEngine);
 begin
-  // *** perguntar a marcos o pq desta exceção
   if not Assigned(pPersistenceEngine) then
-    raise EInfraArgumentError.Create('pPersistenceEngine');
+    Raise EInfraArgumentError.Create('PersistenceEngine in Session.Create');
   inherited Create;
   FPersistenceEngine := pPersistenceEngine;
   FCommandList := TSQLCommandList.Create;
-end;
-
-function TSession.Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
-begin
-  AddCommand(pCommandName, pObj);
-end;
-
-function TSession.Flush: Integer;
-var
-  i: integer;
-begin
-  Result := 0;
-  for i := 0 to FCommandList.Count - 1 do
-  begin
-//    Result := result + (FPersistenceEngine.Execute(FCommandList.Items[i])).AsInteger;
-  end;
-
-end;
-
-procedure TSession.AddCommand(const pCommandName: string; const pObj: IInfraObject);
-var
-  ASqlCommand: ISQLCommand;
-begin
-  ASqlCommand := TSQLCommand.Create(FPersistenceEngine);
-  ASqlCommand.Name := pCommandName;
-  ASqlCommand.SetParam(pObj);
-//  FCommandList.Add(ASqlCommand);
 end;
 
 function TSession.Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
@@ -553,6 +524,7 @@ begin
   Result := TSQLCommandQuery.Create(FPersistenceEngine);
   result.Name := pCommandName;
   Result.ClassID := pClassID;
+  Result.ListID := IInfraList;
   Result.SingleResult := True;
 end;
 
@@ -566,6 +538,7 @@ function TSession.LoadList(const pCommandName: string): ISQLCommandQuery;
 begin
   Result := TSQLCommandQuery.Create(FPersistenceEngine);
   Result.Name := pCommandName;
+  Result.ListID := IInfraList;
   Result.SingleResult := False;
 end;
 
@@ -573,7 +546,6 @@ function TSession.LoadList(const pCommandName: string; const pClassID: TGUID): I
 begin
   Result := LoadList(pCommandName);
   Result.ClassID := pClassID;
-  Result.ListID := IInfraList;
 end;
 
 function TSession.LoadList(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommandQuery;
@@ -590,7 +562,33 @@ end;
 
 function TSession.Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
 begin
-  AddCommand(pCommandName, pObj);
+  Result := TSQLCommand.Create(FPersistenceEngine);
+  with Result do
+  begin
+    Name := pCommandName;
+    SetParam(pObj);
+  end;
+  FCommandList.Add(Result);
+end;
+
+function TSession.Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
+var
+  vState: IPersistentState;
+begin
+  if Supports(pObj, IPersistentState, vState) then
+  begin
+    vState.State := osDeleted;
+    Save(pCommandName, pObj);
+  end;
+end;
+
+function TSession.Flush: Integer;
+var
+  i: integer;
+begin
+  Result := 0;
+  for i := 0 to FCommandList.Count - 1 do
+    Result := Result + FPersistenceEngine.Execute(FCommandList[i]).AsInteger;  
 end;
 
 { TPersistenceEngine }
@@ -598,7 +596,7 @@ end;
 constructor TPersistenceEngine.Create(pConfiguration: IConfiguration);
 begin
   if not Assigned(pConfiguration) then
-    raise EInfraArgumentError.Create('pConfiguration');
+    raise EInfraArgumentError.Create('Configuration in PersistenceEngine.Create');
   inherited Create;
   FConfiguration := pConfiguration;
 end;
