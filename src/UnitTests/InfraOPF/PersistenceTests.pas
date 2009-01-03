@@ -51,7 +51,8 @@ begin
     PropertyItem[cCONFIGKEY_DATABASENAME] := 
       ExtractFilePath(Application.ExeName) + 'Data\DBDEMOS.FDB';
     PropertyItem[cCONFIGKEY_TEMPLATETYPE] := 'TemplateReader_IO';
-    PropertyItem[cCONFIGKEY_TEMPLATEPATH] := 'Data';
+    PropertyItem[cCONFIGKEY_TEMPLATEPATH] :=
+      ExtractFilePath(Application.ExeName) + 'Data';
   end;
 end;
 
