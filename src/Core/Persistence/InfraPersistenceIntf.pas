@@ -1,3 +1,4 @@
+// xxx
 unit InfraPersistenceIntf;
 
 interface
@@ -12,12 +13,12 @@ uses
 
 type
   EInfraPersistenceError = Class(EInfraError);
-  EInfraConnectionProviderError = class(EInfraPersistenceError);
-  // *** Talvvez devessemos criar um tipo de erro por classe 
-  EPersistenceTemplateUndefined  = Class(EInfraPersistenceError);
-  EPersistenceTryCreateTemplateBase = Class(EInfraPersistenceError);
+  EPersistenceConnectionProviderError = class(EInfraPersistenceError);
+  EPersistenceTemplateError  = Class(EInfraPersistenceError);  
+  EPersistenceengineError  = Class(EInfraPersistenceError);  
 
-  ISession = interface;                   
+  ISession = interface;  
+  ISQLCommandParams = interface;                  
 
   IConfiguration = interface(IBaseElement)
     ['{16AF1EFF-FB48-4BAD-BDC7-E0518E83E09E}']
@@ -63,25 +64,21 @@ type
     ['{8F2E7318-09C1-4EA2-BA6E-6724275E9043}']
     function GetName: String;
     procedure SetName(const Value: String);
-    procedure SetParam(const pParamName: string; const value: IInfraType); overload;
-    procedure SetParam(const pObj: IInfraType); overload;
-    procedure ClearParams;
-    property Name: string read GetName write SetName;    
+    function GetParams :ISQLCommandParams;
+    property Name: string read GetName write SetName;
+    property Params: ISQLCommandParams read GetParams;   
   end; 
-
 
   ISQLCommandQuery = interface(ISQLCommand)
     ['{437E64D0-7DD8-4D87-9B9F-DBEFAB200863}']
     function GetResult: IInfraType;
+    function GetList: IInfraList;
     function GetListID: TGUID;
-    function GetSingleResult: boolean;
     function GetClassID:TGUID;
     procedure SetListID(const Value: TGUID);
     procedure SetClassID(const Value: TGUID);
-    procedure SetSingleResult(const Value: boolean);
     property ClassID: TGUID read GetClassID write SetClassID;
     property ListID: TGUID read GetListID write SetListID;
-    property SingleResult: boolean read GetSingleResult write SetSingleResult;
   end;
 
   ISQLCommandParams = interface
@@ -90,15 +87,15 @@ type
     procedure SetItem(Index: String; Value: IInfraType);
     function GetCount: Integer;
     function Add(Index: String; Value: IInfraType): String;
+    procedure AddObject(const Value: IInfraObject);	
     procedure Delete(Index: String);
     procedure DeletePosition(Index: integer);
-    function NewIterator: IInterface;
     procedure Clear;
     function PositionOf(Index: String; Value: IInfraType): integer;
     function ValueOfPosition(Index: Integer): IInfraType;
     function IndexOfPosition(Index: Integer): String;
     property Count: Integer read GetCount;
-    property Items[Index: String]: IInfraType read GetItem write SetItem; default;
+    property Params[Index: String]: IInfraType read GetItem write SetItem; default;
   end;
 
   ISQLCommandList = interface
@@ -114,10 +111,8 @@ type
     ['{693A7815-9A5E-46C7-97DD-04D3E9C245AF}']
     function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
     function Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
-    function LoadList(const pCommandName: string): ISQLCommandQuery; overload;
-    function LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
-    function LoadList(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
+    function Load(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
+    function Load(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;

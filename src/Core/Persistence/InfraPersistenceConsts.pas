@@ -1,3 +1,4 @@
+// xxx
 unit InfraPersistenceConsts;
 
 interface
@@ -29,6 +30,7 @@ resourcestring
   cErrorTemplateTryCreateClassBase = 'Classe base TemplateReader não deve ser instanciada';
   cErrorTemplateFileNotFound = 'Template %s não vazio ou não encontrado';
   cErrorTemplateTypeInvalid = 'Classe de leitura de templates inválida ou não definida';
+  cErrorPersistenceEngineParamNotFound = 'Parâmetro %s não encontrado';
   // cErrorTemplatePathNotDefined = 'Caminho dos templates não definido';
 
 implementation
