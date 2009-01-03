@@ -1,20 +1,23 @@
+// xxx
 unit InfraPersistence;
 
 interface
+
 uses
   SysUtils,
   SyncObjs,
-  Classes, 
+  Classes,
   Contnrs,
   {Zeos}
   ZDbcIntfs,
   {Infra}
-  InfraCommon, 
-  InfraCommonIntf, 
-  InfraValueTypeIntf, 
-  InfraPersistenceIntf;
-
-type
+  InfraCommon,
+  InfraCommonIntf,
+  InfraValueTypeIntf,
+  InfraPersistenceIntf,
+  InfraPersistenceAnnotationIntf;
+  
+type  
   TConfiguration = class(TBaseElement, IConfiguration)
     FProperties: TStrings;
     function GetProperties: TStrings;
@@ -68,26 +71,19 @@ type
     procedure SetIsPersistent(Value: Boolean);
     procedure SetState(Value: TPersistentStateKind);
     property IsPersistent: Boolean read GetIsPersistent write SetIsPersistent;
-    property State: TPersistentStateKind read GetState
-      write SetState;
+    property State: TPersistentStateKind read GetState write SetState;
   end;
-
+  
   TSQLCommand = class(TBaseElement, ISQLCommand)
   private
     FName: string;
-    FObj: IInfraType;
-    FParams: ISQLCommandParams;
-    FSingleResult :Boolean;
+    FParams: ISQLCommandParams;    
   protected
     FPersistenceEngine: IPersistenceEngine;
     function GetName: string;
-    function GetSingleResult: boolean;
+    function GetParams:ISQLCommandParams;
     procedure SetName(const Value: string);
-    procedure SetParam(const pParamName: string; const Value: IInfraType); overload;
-    procedure SetParam(const pObj: IInfraType); overload;
-    procedure SetSingleResult(const Value: boolean);
-    procedure ClearParams;
-    property SingleResult: boolean read GetSingleResult write SetSingleResult;
+    property Params: ISQLCommandParams read GetParams;
   public
     constructor Create(pPersistenceEngine: IPersistenceEngine); reintroduce;
   end;
@@ -96,11 +92,12 @@ type
   private
     FClassID: TGUID;
     FListID: TGUID;
-  function CreateList: IInfraList;
+    function CreateList: IInfraList;
   protected
     function GetResult: IInfraType;
+    function GetList: IInfraList;
     function GetListID: TGUID;
-    function GetClassID:TGUID;
+    function GetClassID: TGUID;
     procedure SetListID(const Value: TGUID);
     procedure SetClassID(const Value: TGUID);
     property ClassID: TGUID read GetClassID write SetClassID;
@@ -112,12 +109,14 @@ type
     FPersistenceEngine: IPersistenceEngine;
     FCommandList: ISQLCommandList;
   protected
-    function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
-    function LoadList(const pCommandName: string): ISQLCommandQuery; overload;
-    function LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
-    function LoadList(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
+    function Load(const pCommandName: string; 
+      const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
+    function Load(const pCommandName: string; 
+      const pClassID: TGUID): ISQLCommandQuery; overload;
+    function Load(const pCommandName: string; 
+      const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
+    function Load(const pCommandName: string; 
+      const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
@@ -128,7 +127,15 @@ type
   TPersistenceEngine = class(TBaseElement, IPersistenceEngine)
   private
     FConfiguration: IConfiguration;
+    FConnection : IZConnection;
     function GetReader: ITemplateReader;
+    procedure SetParameters(const pStatement: IZPreparedStatement; 
+      const pSqlCommand: ISqlCommand);
+    function GetRowFromResultSet(
+      const pSqlCommand: ISQLCommand; 
+      const pResultSet: IZResultSet): IInfraObject;
+    procedure SetPropertyFromResultSet(const pAttribute: IInfraType; 
+      const pResultSet: IZResultSet; pIndex: Integer);
   protected
     procedure SetConnection(const pConnection: IZConnection);
     procedure Load(const pSqlCommand: ISqlCommand; const pList: IInfraList);
@@ -148,21 +155,22 @@ type
     procedure SetConnection(const pConnection: IZConnection);
     property Configuration: IConfiguration read GetConfiguration;
   end;
-
+  
   TTemplateReader = class(TElement, ITemplateReader)
   protected
     function Read(const pTemplateName: string): string;
   public
-    constructor Create(pConfiguration: IConfiguration); reintroduce; virtual;  
+    constructor Create(pConfiguration: IConfiguration); reintroduce; virtual;
   end;
 
 implementation
 
 uses
-  InfraPersistenceConsts, 
-  InfraBasicList, 
+  InfraPersistenceConsts,
+  InfraBasicList,
   InfraConsts,
-  List_SQLCommandList;
+  List_SQLCommandList,
+  InfraValueType;
 
 { TConfiguration }
 
@@ -261,15 +269,14 @@ end;
   @param AConfiguration Um objeto do tipo IConfiguration que contém todas as
     informações para criar uma nova conexão
 }
-
 constructor TConnectionProvider.Create(pDriverManager: IZDriverManager; pConfiguration: IConfiguration);
 var
   iMax: Integer;
 begin
   if not Assigned(pDriverManager) then
-    raise EInfraArgumentError.Create('pDriverManager');
+    raise EInfraArgumentError.Create('DriverManager in ConnectionProvider.Create');
   if not Assigned(pConfiguration) then
-    raise EInfraArgumentError.Create('pConfiguration');
+    raise EInfraArgumentError.Create('Configuration in ConnectionProvider.Create');
   inherited Create;
   FCriticalSection := TCriticalSection.Create;
   FDriverManager := pDriverManager;
@@ -297,13 +304,12 @@ end;
 
 procedure TConnectionProvider.Close;
 var
-  i: Integer;
+  i: integer;
 begin
   for i := Low(FPool) to High(FPool) do
     if Assigned(FPool[i]) then
       ReleaseConnection(FPool[i]);
 end;
-
 {**
   Localiza um objeto no Pool. Se este não for encontrado retorna nil
   @param pConnection Objeto a ser localizado
@@ -327,18 +333,14 @@ end;
   Libera uma conexão de volta ao pool para ser reutilizada
   @param pConnection Conexão a ser liberada
 }
-
 procedure TConnectionProvider.ReleaseConnection(const pConnection: IZConnection);
 begin
   if FindConnection(pConnection) = nil then
-    raise EInfraConnectionProviderError.Create(cErrorConnectionNotFoundOnPool);
-
+    raise EPersistenceConnectionProviderError.Create(cErrorConnectionNotFoundOnPool);
   if pConnection.IsClosed then
-    raise EInfraConnectionProviderError.Create(cErrorAlreadyClosedConnection);
-
+    raise EPersistenceConnectionProviderError.Create(cErrorAlreadyClosedConnection);
   // Ao fechar a conexao, ela, automaticamente, fica disponível no pool
   pConnection.Close;
-
   // TODO: Criar Thread para verificar o tempo de expiração do objeto
   // ...
 end;
@@ -348,7 +350,6 @@ end;
   E, caso a encontre, retorna-a.
   @return Retorna um objeto do tipo IZConnection
 }
-
 function TConnectionProvider.GetFreeConnection: IZConnection;
 var
   i: Integer;
@@ -376,7 +377,6 @@ end;
   Caso contrário, levanta uma exceção EInfraConnectionProviderError
   @return Retorna um objeto do tipo IZConnection
 }
-
 function TConnectionProvider.CreateConnection: IZConnection;
 var
   i: Integer;
@@ -387,9 +387,8 @@ begin
       FPool[i] := FDriverManager.GetConnection(BuildConnectionString(FConfiguration));
       Result := FPool[i];
       Exit;
-    end;
-
-  raise EInfraConnectionProviderError.Create(cErrorConnectionsLimitExceeded);
+    end;                 
+  raise EPersistenceConnectionProviderError.Create(cErrorConnectionsLimitExceeded);
 end;
 
 {**
@@ -398,7 +397,6 @@ end;
   levanta uma exceção EInfraConnectionProviderError
   @return Retorna um objeto do tipo IZConnection
 }
-
 function TConnectionProvider.GetConnection: IZConnection;
 begin
   FCriticalSection.Acquire;
@@ -441,11 +439,6 @@ begin
   FPersistenceEngine := pPersistenceEngine;
 end;
 
-procedure TSQLCommand.ClearParams;
-begin
-  FParams.Clear;
-end;
-
 function TSQLCommand.GetName: string;
 begin
   Result := FName;
@@ -453,18 +446,13 @@ end;
 
 procedure TSQLCommand.SetName(const Value: string);
 begin
-  if not AnsiSameText(FName, Value) then 
+  if not AnsiSameText(FName, Value) then
     FName := Value;
 end;
 
-procedure TSQLCommand.SetParam(const pParamName: string; const Value: IInfraType);
+function TSQLCommand.GetParams: ISQLCommandParams;
 begin
-  FParams.Add(pParamName, Value);
-end;
-
-procedure TSQLCommand.SetParam(const pObj: IInfraType);
-begin
-  FObj := pObj;
+  Result := FParams;
 end;
 
 { TSQLCommandQuery }
@@ -489,17 +477,16 @@ var
   vList: IInfraList;
 begin
   vList := CreateList;
-  FPersistenceEngine.Load(Self, vList);  
-  if FSingleResult then 
-    Result := vList[0] as IInfratype
-  else
-    Result := vList;  
+  FPersistenceEngine.Load(Self, vList);
+  // *** deveria gerar exceção caso o load acima retornar mais de um objeto na lista????
+  Result := vList[0] as IInfratype;
 end;
 
-function TSQLCommand.GetSingleResult: boolean;
+function TSQLCommandQuery.GetList: IInfraList;
 begin
-  Result := FSingleResult;
-end; 
+  Result := CreateList;
+  FPersistenceEngine.Load(Self, Result);  
+end;
     
 procedure TSQLCommandQuery.SetClassID(const Value: TGUID);
 begin
@@ -511,17 +498,12 @@ begin
   FListID := Value;
 end;
 
-procedure TSQLCommand.SetSingleResult(const Value: boolean);
-begin
-  FSingleResult := Value;
-end;
-
 { TSession }
 
 constructor TSession.Create(const pPersistenceEngine: IPersistenceEngine);
 begin
   if not Assigned(pPersistenceEngine) then
-    Raise EInfraArgumentError.Create('PersistenceEngine in Session.Create');
+    raise EInfraArgumentError.Create('PersistenceEngine in Session.Create');
   inherited Create;
   FPersistenceEngine := pPersistenceEngine;
   FCommandList := TSQLCommandList.Create;
@@ -530,42 +512,28 @@ end;
 function TSession.Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
 begin
   Result := TSQLCommandQuery.Create(FPersistenceEngine);
-  result.Name := pCommandName;
-  Result.ClassID := pClassID;
   Result.ListID := IInfraList;
-  Result.SingleResult := True;
-end;
-
-function TSession.Load(const pCommandName: string; const pObj: IInfraObject): ISQLCommandQuery;
-begin
-  Result := Load(pCommandName, pObj.TypeInfo.TypeID);
-  Result.SetParam(pObj);
-end;
-
-function TSession.LoadList(const pCommandName: string): ISQLCommandQuery;
-begin
-  Result := TSQLCommandQuery.Create(FPersistenceEngine);
-  Result.Name := pCommandName;
-  Result.ListID := IInfraList;
-  Result.SingleResult := False;
-end;
-
-function TSession.LoadList(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
-begin
-  Result := LoadList(pCommandName);
+  Result := Load(pCommandName);
   Result.ClassID := pClassID;
 end;
 
-function TSession.LoadList(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommandQuery;
+function TSession.Load(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommandQuery;
 begin
-  Result := LoadList(pCommandName, pClassID);
+  Result := Load(pCommandName, pClassID);
   Result.ListID := pListID;
 end;
 
-function TSession.LoadList(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery;
+function TSession.Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery;
 begin
-  Result := LoadList(pCommandName, pObj.TypeInfo.TypeID, pListID);
-  Result.SetParam(pObj);
+  Result := Load(pCommandName, pObj.TypeInfo.TypeID);
+  if Assigned(pObj) then
+    Result.Params.AddObject(pObj);
+end;
+
+function TSession.Load(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery;
+begin
+  Result := Load(pCommandName, pObj.TypeInfo.TypeID, pListID);
+  Result.Params.AddObject(pObj);
 end;
 
 function TSession.Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
@@ -574,7 +542,7 @@ begin
   with Result do
   begin
     Name := pCommandName;
-    SetParam(pObj);
+    Params.AddObject(pObj);
   end;
   FCommandList.Add(Result);
 end;
@@ -596,7 +564,7 @@ var
 begin
   Result := 0;
   for i := 0 to FCommandList.Count - 1 do
-    Result := Result + FPersistenceEngine.Execute(FCommandList[i]).AsInteger;  
+    Result := Result + FPersistenceEngine.Execute(FCommandList[i]).AsInteger;
 end;
 
 { TPersistenceEngine }
@@ -616,75 +584,115 @@ var
 begin
   vReaderClassName := FConfiguration.GetValue(cCONFIGKEY_TEMPLATETYPE, EmptyStr);
   if vReaderClassName = EmptyStr then
-    Raise EPersistenceTemplateUndefined.Create(cErrorTemplateTypeInvalid);
+    raise EPersistenceTemplateError.Create(cErrorTemplateTypeInvalid);
   vReaderTypeInfo := TypeService.GetType(vReaderClassName, True);
   Result := TypeService.CreateInstance(vReaderTypeInfo) as ITemplateReader;
 end;
 
-{// Isso aqui executa uma query e e carrega o resultado na lista List
-function TPersistenceEngine.DoQuery(const pSqlCommand: ISqlCommand;
-  const List: IInfraList): IInfraList;
-//var
-//  vSQL: string;
-//  vST: IZPreparedStatement;
-//  vRS: IZResultSet;
-//  vObject: IInfraType;
-begin
-  // ### No hibernate:
-  // Acontece um laço em uma matriz chamada EntityPersisters. Esta
-  // matriz contem todos os persisters que precisam ser carregados
-  // para casos como herança ou esta classe possuir relacionamentos.
-//  vSQL := FEntityPersister.SQLSnapshotSelectString;
-//  vST := pSession.Connection.PrepareStatement(vSQL);
-//  SetParameters(vST, FEntityPersister.GetIdentifierColumns, pOID);
-//  vRS := vST.ExecuteQueryPrepared;
-//  Result := TInfraList.Create;
-//  try
-//    while vRS.Next do
-//    begin
-//      vObject := GetRowFromResultSet(pOID, pOptionalInstance, vRS);
-//      Result.Add(vObject);
-//    end;
-//  finally
-//    vRs.Close;
-//    vST.Close;
-//  end;
-end;
+{
+  carregar a sql usando um reader com base no Name do pSqlCommand vReader.Read(pSqlCommand.Name)
+  preencher os params da sql com base nos Params do pSqlCommand
+  pegar o connection no connectionprovider
+  executa a sql  e retornar  a quantidade de registros afetados
 }
-
-function TPersistenceEngine.Execute(
-  const pSqlCommand: ISqlCommand): IInfraInteger;
+function TPersistenceEngine.Execute(const pSqlCommand: ISqlCommand): IInfraInteger;
 var
   vReader: ITemplateReader;
+  vSQL: string;
+  vST: IZPreparedStatement;
+
 begin
   vReader := GetReader;
-  // carregar a sql usando um reader com base no Name do pSqlCommand vReader.Read(pSqlCommand.Name)
-  // preencher os params da sql com base nos Params do pSqlCommand
-  // pegar o connection no connectionprovider
-  // executa a sql e retornar  a quantidade de registros afetados
+  vSQL := vReader.Read(pSqlCommand.Name);
+  vST := FConnection.PrepareStatement(vSQL);
+  SetParameters(vST, pSqlCommand);
+  Result := TInfraInteger.NewFrom(vST.ExecuteUpdatePrepared);
 end;
 
-procedure TPersistenceEngine.Load(const pSqlCommand: ISqlCommand;
+{ carregar a sql usando um reader com base no Name do pSqlCommand
+  preencher os params da sql com base nos Params do pSqlCommand
+  executa a sql e pega um IZStatement
+  Faz um laço para pegar cada registro
+  cria um objeto com base no ClassType do pSqlCommand,
+  Seta o estado persistent e clean ao objeto criado
+  faz a carga dos atributos com base no registro
+  Adiciona o novo objeto em pList retorna a lista }
+procedure TPersistenceEngine.Load(const pSqlCommand: ISqlCommand; 
   const pList: IInfraList);
 var
   vReader: ITemplateReader;
+  vSQL: string;
+  vST: IZPreparedStatement;
+  vRS: IZResultSet;
+  vObject: IInfraObject;
 begin
   vReader := GetReader;
-  // carregar a sql usando um reader com base no Name do pSqlCommand
-  // preencher os params da sql com base nos Params do pSqlCommand
-  // executa a sql e pega um IZStatement
-  // Faz um laço para pegar cada registro
-  //    cria um objeto com base no ClassType do pSqlCommand,
-  //    Seta o estado persistent e clean ao objeto criado
-  //    faz a carga dos atributos com base no registro
-  //    Adiciona o novo objeto em pList
-  // retorna a lista
+  vSQL := vReader.Read(pSqlCommand.Name);
+  try
+   vST := FConnection.PrepareStatement(vSQL);
+   SetParameters(vST, pSqlCommand);
+   vRS := vST.ExecuteQueryPrepared;
+   while vRS.Next do
+   begin
+     vObject := GetRowFromResultSet(pSqlCommand, vRS);
+     pList.Add(vObject);
+   end;   
+  finally
+    vRs.Close;
+    vST.Close;
+  end;
 end;
 
-procedure TPersistenceEngine.SetConnection(
-  const pConnection: IZConnection);
+procedure TPersistenceEngine.SetConnection(const pConnection: IZConnection);
 begin
   // preencher o connection provider com o pConnection
+end;
+
+function TPersistenceEngine.GetRowFromResultSet(const pSqlCommand: ISQLCommand; 
+  const pResultSet: IZResultSet): IInfraObject;
+var
+  vIndex: integer;
+  vAttribute: IInfraType;
+begin
+  Result := TypeService.CreateInstance((pSqlCommand as ISQLCommandQuery).GetClassID) as IInfraObject;
+  if Assigned(Result) then
+  begin
+    for vIndex :=0 to pResultSet.GetMetadata.GetColumnCount-1 do 
+    begin
+      vAttribute := Result.TypeInfo.GetProperty(
+        Result, pResultSet.GetMetadata.GetColumnName(vIndex)) as IInfraType;
+      SetPropertyFromResultSet(vAttribute, pResultSet, vIndex);
+    end;
+  end;
+end;
+
+procedure TPersistenceEngine.SetPropertyFromResultSet(
+  const pAttribute: IInfraType; const pResultSet: IZResultSet; pIndex: Integer);
+begin
+  // *** Teria de tratar o InfraType aqui se for um Object ou InfraList
+  // *** por que provavelmente estará apontando para outro objeto e 
+  // *** talvez tem que carregar com base em colunas de um join no template.
+  (pAttribute.TypeInfo as IZTypeAnnotation).NullSafeGet(pResultSet, 
+    pIndex, pAttribute)
+end;
+
+procedure TPersistenceEngine.SetParameters(const pStatement: IZPreparedStatement; 
+  const pSqlCommand: ISqlCommand);
+var
+  vIndex: integer;
+  vTypeInfo: IClassInfo;
+  vParamValue: IInfraType;
+  vParams: TStrings;
+begin
+  vParams := pStatement.GetParameters;
+  for vIndex := 0 to vParams.Count-1 do
+  begin
+    vParamValue := pSqlCommand.Params[vParams[vIndex]];
+    if Assigned(vParamValue) then
+      (vTypeInfo as IZTypeAnnotation).NullSafeSet(pStatement, vIndex,  vParamValue)
+    else
+      Raise EPersistenceengineError.CreateFmt(cErrorPersistenceEngineParamNotFound, [vParams[vIndex]]);
+  end;
 end;
 
 { TInfraPersistenceService }
@@ -718,7 +726,7 @@ end;
 
 constructor TTemplateReader.Create(pConfiguration: IConfiguration);
 begin
-  Raise EPersistenceTryCreateTemplateBase.Create(cErrorTemplateTryCreateClassBase);
+  raise EPersistenceTemplateError.Create(cErrorTemplateTryCreateClassBase);
 end;
 
 function TTemplateReader.Read(const pTemplateName: string): string;
@@ -737,5 +745,7 @@ end;
 
 initialization
   InjectPersistenceService;
-
+  
 end.
+
+

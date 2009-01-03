@@ -114,7 +114,7 @@ begin
   lConnection2 := FConnProvider.GetConnection;
   lConnection2.Open;
 
-  ExpectedException := EInfraConnectionProviderError;
+  ExpectedException := EPersistenceConnectionProviderError;
   lConnection3 := FConnProvider.GetConnection;
   ExpectedException := nil;
 end;
@@ -141,7 +141,7 @@ begin
   lConnection1 := TDriverManagerMock.Create.GetConnection('');
   lConnection1.Open;
 
-  ExpectedException := EInfraConnectionProviderError;
+  ExpectedException := EPersistenceConnectionProviderError;
   FConnProvider.ReleaseConnection(lConnection1);
   ExpectedException := nil;
 end;
@@ -153,7 +153,7 @@ begin
   lConnection1 := FConnProvider.GetConnection;
   lConnection1.Close; // Só pra ficar claro
 
-  ExpectedException := EInfraConnectionProviderError;
+  ExpectedException := EPersistenceConnectionProviderError;
   FConnProvider.ReleaseConnection(lConnection1);
   ExpectedException := nil;
 end;

@@ -1,3 +1,4 @@
+// xxx
 unit List_SQLCommandParam;
 
 interface
@@ -25,6 +26,7 @@ type
   {$I ..\Templates\InfraTempl_ListDynIndex.inc}
     function InvalidIndex: _INDEX_;
     function IsIndexEqual(const Index1, Index2: _INDEX_): boolean;
+    procedure AddObject(const Value: IInfraObject);
   end;
 
   TSQLCommandParams = class(_ITERABLELIST_);
@@ -53,6 +55,28 @@ end;
 function _ITERABLELIST_.IsIndexEqual(const Index1, Index2: _INDEX_): boolean;
 begin
   Result := AnsiSameText(Index1, Index2);
+end;
+
+procedure _ITERABLELIST_.AddObject(const Value: IInfraObject);
+var
+  vIterator: IPropertyInfoIterator;
+  vPropertyValue: IInfraType;
+begin
+  if Assigned(Value) then
+  begin
+    vIterator := TypeService.GetType(Value.TypeInfo.TypeID).GetProperties;
+    while not vIterator.IsDone do
+    begin
+      vPropertyValue := TypeService.CreateInstance(
+        vIterator.CurrentItem.GetTypeInfo.TypeID) as IInfraType;
+      if not vPropertyValue.IsNull then
+      begin
+        vPropertyValue.Assign(vIterator.CurrentItem.GetValue(Value) as IInfraType);
+        Add(vIterator.CurrentItem.Name, vPropertyValue);
+      end;
+      vIterator.Next;
+    end;
+  end;
 end;
 
 end.
