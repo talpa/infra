@@ -156,12 +156,17 @@ type
     procedure SetConnection(const pConnection: IZConnection);
     property Configuration: IConfiguration read GetConfiguration;
   end;
-  
+
   TTemplateReader = class(TElement, ITemplateReader)
+  private
+    FConfiguration: IConfiguration;
   protected
     function Read(const pTemplateName: string): string;
+    function GetConfiguration: IConfiguration;
+    procedure SetConfiguration(const Value: IConfiguration);
+    property Configuration: IConfiguration read GetConfiguration write SetConfiguration;
   public
-    constructor Create(pConfiguration: IConfiguration); reintroduce; virtual;
+    constructor Create; reintroduce; virtual;
   end;
 
 implementation
@@ -520,6 +525,7 @@ end;
 function TSession.Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
 begin
   Result := TSQLCommandQuery.Create(FPersistenceEngine);
+  Result.Name := pCommandName;
   Result.ListID := IInfraList;
   Result.ClassID := pClassID;
 end;
@@ -594,6 +600,7 @@ begin
     raise EPersistenceTemplateError.Create(cErrorTemplateTypeInvalid);
   vReaderTypeInfo := TypeService.GetType(vReaderClassName, True);
   Result := TypeService.CreateInstance(vReaderTypeInfo) as ITemplateReader;
+  Result.Configuration := FConfiguration;
 end;
 
 {
@@ -635,15 +642,16 @@ var
 begin
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
+  // *** se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro do vReader.Read????
   try
-   vST := FConnection.PrepareStatement(vSQL);
-   SetParameters(vST, pSqlCommand);
-   vRS := vST.ExecuteQueryPrepared;
-   while vRS.Next do
-   begin
-     vObject := GetRowFromResultSet(pSqlCommand, vRS);
-     pList.Add(vObject);
-   end;   
+    vST := FConnection.PrepareStatement(vSQL);
+    SetParameters(vST, pSqlCommand);
+    vRS := vST.ExecuteQueryPrepared;
+    while vRS.Next do
+    begin
+      vObject := GetRowFromResultSet(pSqlCommand, vRS);
+      pList.Add(vObject);
+    end;
   finally
     vRs.Close;
     vST.Close;
@@ -731,9 +739,20 @@ end;
 
 { TTemplateReader }
 
-constructor TTemplateReader.Create(pConfiguration: IConfiguration);
+constructor TTemplateReader.Create;
 begin
   raise EPersistenceTemplateError.Create(cErrorTemplateTryCreateClassBase);
+end;
+
+function TTemplateReader.GetConfiguration: IConfiguration;
+begin
+  Result := FConfiguration;
+end;
+
+procedure TTemplateReader.SetConfiguration(
+  const Value: IConfiguration);
+begin
+  FConfiguration := Value;
 end;
 
 function TTemplateReader.Read(const pTemplateName: string): string;
