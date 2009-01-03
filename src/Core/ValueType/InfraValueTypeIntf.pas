@@ -263,7 +263,8 @@ function GetRefCountedPointerFromInterface(const Intf: IInterface): Pointer;
 
 implementation
 
-uses InfraValueTypeRegister;
+uses
+  InfraValueTypeRegister;
 
 function GetRefCountedPointerFromInterface(const Intf: IInterface): Pointer;
 begin

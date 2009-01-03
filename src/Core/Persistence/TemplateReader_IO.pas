@@ -10,13 +10,9 @@ uses
 
 type
   TTemplateReader_IO = class(TTemplateReader, ITemplateReader)
-  private
-    FConfiguration: IConfiguration;
   protected
     function GetFilename(const pTemplateName: string): string;
     function Read(const pTemplateName: string): string;
-  public
-    constructor Create(pConfiguration: IConfiguration); override;
   end;
 
 implementation
@@ -28,16 +24,9 @@ uses
 
 { TTemplateReader }
 
-constructor TTemplateReader_IO.Create(pConfiguration: IConfiguration);
-begin
-  if not Assigned(pConfiguration) then
-    raise EInfraArgumentError.Create('pConfiguration');
-  FConfiguration := pConfiguration;
-end;
-
 function TTemplateReader_IO.GetFilename(const pTemplateName: string): string;
 begin
-  with FConfiguration do
+  with Configuration do
     Result := IncludeTrailingPathDelimiter(
       GetValue(cCONFIGKEY_TEMPLATEPATH, ExtractFilePath(ParamStr(0))))+
       pTemplateName+'.'+

@@ -232,13 +232,24 @@ procedure TClassInfoTests.TestProperties;
 var
   i: integer;
   It: IPropertyInfoIterator;
+  FPropertyInfo: IPropertyInfo;
+  Value: IInfraType;
+  p:  IPerson;
 begin
+  p := TPerson.Create;
+  p.Name.AsString := 'Marcos';
+  p.Email.AsString := 'mrbar2000@gmail.com';
+
   i := 0;
   It := FPersonInfo.GetProperties;
   CheckNotNull(It, 'PropertyInfo Iterator not created');
   if Assigned(It) then
     while not It.IsDone do
     begin
+
+      //FPropertyInfo := ;
+      Value := It.CurrentItem.GetValue(p) as IInfraType;
+
       Inc(i);
       It.Next;
     end;

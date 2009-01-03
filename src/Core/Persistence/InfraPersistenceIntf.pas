@@ -132,6 +132,9 @@ type
   ITemplateReader = interface(IElement)
     ['{AFD2D321-E26B-4E48-93FB-48FD24BCE62B}']
     function Read(const pTemplateName: string): string;
+    function GetConfiguration: IConfiguration;
+    procedure SetConfiguration(const Value: IConfiguration);
+    property Configuration: IConfiguration read GetConfiguration write SetConfiguration;
   end;
 
   ITemplateReader_IO = interface(ITemplateReader)
@@ -142,107 +145,14 @@ function PersistenceService: IInfraPersistenceService;
 
 implementation
 
+uses InfraPersistenceRegister;
+
 function PersistenceService: IInfraPersistenceService;
 begin
   Result := ApplicationContext as IInfraPersistenceService;
 end;
 
-  {
-    function GetConnectionProvider: IConnectionProvider;
-     ***
-
-     1) Ver como seria estabelecido filtros nos loads. uma ideia é ter um parametro no template com o caracter #
-        que poderia ser substituido atraves da propriedade Template.SetParam do Session. ex:
-        
-        MySession.Template.SetParam('ClausulaWhere', 'Cidade.ds_uf = '+QuotedStr('Ba'));
-        No exemplo acima Cidade é o alias definido para a tabela no template.
-        
-        Seguindo esta abordagem seria interessante depois ver uma forma de interpretar a stringo valor passado no SetParam
-        para que o programador implemente visando apenas atributos das classes em vez de nomes de campos. ex:
-
-        MySession.Template.SetParam('ClausulaWhere', 'Cidade.Estado = '+QuotedStr('Ba'));
-        
-     2) O Save e o Delete do Session deveria gerar uma exceção ou deveria retornar a quantidade de registros afetados?
-     
-     3) Nesta abordagem, precisamos de OpenSession para cada operação que vamos fazer, por que cada session tem seu proprio 
-        template.
-
-    s := ps.Opensession;
-
-    p := pessoa.create;
-    p.oid.AsInteger := 25;
-    s.Load('SelectPessoaByOid', p);
-    s
-    ou 
-
-    s.Load('SelectPessoa1',Reflect.GetType(IPessoa));
-   
-   
-    p := pessoa.create;
-    p.oid.AsInteger := 25;
-    
-    s.sqlcommands.param(gaga);
-    s.Load('SelectPessoaByid', p);
-    
-   
-   IParam;
-     Name: InfraString;
-     Value: Infratype;
-   IParams = lista IParam
-   
-   
-   
-   sc := Load >>>> ISQLCommand
-   sc.SetParams(InfraObject);
-   sc.GetResult <<<< InfraObject
-
-   sc := Load >>>> ISQLCommand
-   sc.SetParams(InfraObject);
-   sc.Param.Add(NameString, InfraType);
-   sc.GetResult <<<< InfraObject
-
-   sc := Load >>>> ISQLCommand
-   sc.Param.Add(NameString, InfraType);
-   sc.GetResult <<<< InfraObject
-   
-   
-   p := Load('pessoaporoid', obj).GetResult as IPessoa;
-   
-   p := Load(obj).GetResult as IPessoa;
-   
-   close;
-   sql.text := '.....';
-   sql.params[0] :=....
-   sql.params[0] :=....
-   sql.params[0] :=....
-   sql.params[0] :=....
-   sql.open
-  
-   sc := load.param.add().getsult  
-   
-   s.Load(TemplateName, InfraObject).GetResult as IPessoa;
-
-
-
-    session.load(....)
-    begin
-      result := criar o sqlcommand
-      usa o leitor para carregar o sql no result
-      preencher outros atributos do result com base nos parametros do load
-    end;
-
-    sqlcommand.getresult
-    begin
-      Result := criar a lista do tipo que está em TypeInfoList ou TInfraList
-      pe.Load(Self, Result);
-    end;
-
-    s.load(...).GetResult as IPessoa;
-    s.loadlist(...).GetResult as IPessoas;
-    
-    sessio
-    É responsabilidade do session retornar o objeto ou a lista dependendo do que foi solicitado pelo programador.
-  }
+initialization
+  InfraPersistenceRegister.RegisterOnReflection;
 
 end.
-

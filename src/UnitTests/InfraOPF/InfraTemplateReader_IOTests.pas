@@ -37,7 +37,8 @@ uses
 procedure TTestTemplateReader_IO.SetUp;
 begin
   inherited;
-  FReader := TTemplateReaderHacked.Create(TTestsUtil.GetNewConfiguration);
+  FReader := TTemplateReaderHacked.Create;
+  FReader.Configuration := TTestsUtil.GetNewConfiguration;
 end;
 
 procedure TTestTemplateReader_IO.TearDown;
@@ -48,9 +49,9 @@ end;
 
 procedure TTestTemplateReader_IO.TestCreateWithInvalidArgs;
 begin
-  ExpectedException := EInfraArgumentError;
-  TTemplateReader_IO.Create(nil);
-  ExpectedException := nil;
+//  ExpectedException := EInfraArgumentError;
+//  TTemplateReader_IO.Create;
+//  ExpectedException := nil;
 end;
 
 procedure TTestTemplateReader_IO.TestGetFileNameWithDefaults;
@@ -61,7 +62,8 @@ var
   vActual: string;
 begin
   vConfiguration := TTestsUtil.GetNewConfiguration;
-  vReader := TTemplateReaderHacked.Create(vConfiguration);
+  vReader := TTemplateReaderHacked.Create;
+  vReader.Configuration := vConfiguration;
   vExpected := ExtractFilePath(ParamStr(0))+'produtos.sql';
   vActual := vReader.GetFilename('produtos');
   CheckEqualsString(vExpected, vActual, 'GetFileName falhou');
@@ -77,7 +79,8 @@ begin
   vConfiguration := TTestsUtil.GetNewConfiguration;
   vConfiguration.SetValue(cCONFIGKEY_TEMPLATEPATH, 'c:\');
   vConfiguration.SetValue(cCONFIGKEY_TEMPLATEEXT, 'tpl');
-  vReader := TTemplateReaderHacked.Create(vConfiguration);
+  vReader := TTemplateReaderHacked.Create;
+  vReader.Configuration := vConfiguration;
   vExpected := 'c:\produtos.tpl';
   vActual := vReader.GetFilename('produtos');
   CheckEqualsString(vExpected, vActual, 'GetFileName falhou');
