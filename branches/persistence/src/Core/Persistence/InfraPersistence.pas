@@ -45,8 +45,7 @@ type
   TConnectionProvider = class(TBaseElement, IConnectionProvider)
   private
     FConfiguration: IConfiguration;
-    FDriverManager: IZDriverManager; // O DriverManager que será usado pra criar as conexões
-    FPool: array of IZConnection; // O pool
+    FSlots: array of IZConnection; // O pool
     FCriticalSection: TCriticalSection;
     function BuildConnectionString(pConfiguration: IConfiguration): string;
     procedure CloseConnections; // CriticalSection usado para evitar conflitos em aplicações multi-thread
@@ -55,7 +54,7 @@ type
     function CreateConnection: IZConnection; // Cria uma nova conexao
     function FindConnection(const pConnection: IZConnection): IZConnection; // Procura por uma conexao no pool
   public
-    constructor Create(pDriverManager: IZDriverManager; pConfiguration: IConfiguration); reintroduce;
+    constructor Create(pConfiguration: IConfiguration); reintroduce;
     destructor Destroy; override;
     function GetConnection: IZConnection; // Caso tenha conexoes disponíveis no Pool bloqueia uma e retorna-a
     procedure Close; // Fecha todas as conexões do pool
@@ -128,7 +127,7 @@ type
   TPersistenceEngine = class(TBaseElement, IPersistenceEngine)
   private
     FConfiguration: IConfiguration;
-    FConnection : IZConnection;
+    FConnnectionProvider: IConnectionProvider;
     function GetReader: ITemplateReader;
     procedure SetParameters(const pStatement: IZPreparedStatement; 
       const pSqlCommand: ISqlCommand);
@@ -281,26 +280,23 @@ end;
   @param AConfiguration Um objeto do tipo IConfiguration que contém todas as
     informações para criar uma nova conexão
 }
-constructor TConnectionProvider.Create(pDriverManager: IZDriverManager; pConfiguration: IConfiguration);
+constructor TConnectionProvider.Create(pConfiguration: IConfiguration);
 var
   iMax: Integer;
 begin
-  if not Assigned(pDriverManager) then
-    raise EInfraArgumentError.Create('DriverManager in ConnectionProvider.Create');
   if not Assigned(pConfiguration) then
     raise EInfraArgumentError.Create('Configuration in ConnectionProvider.Create');
   inherited Create;
   FCriticalSection := TCriticalSection.Create;
-  FDriverManager := pDriverManager;
   FConfiguration := pConfiguration;
   iMax := FConfiguration.GetValue(cCONFIGKEY_MAXCONNECTIONS, cGlobalMaxConnections);
-  SetLength(FPool, iMax);
+  SetLength(FSlots, iMax);
 end;
 
 destructor TConnectionProvider.Destroy;
 begin
   CloseConnections;
-  SetLength(FPool, 0);
+  SetLength(FSlots, 0);
   FCriticalSection.Free;
   inherited;
 end;
@@ -309,18 +305,18 @@ procedure TConnectionProvider.CloseConnections;
 var
   i: Integer;
 begin
-  for i := Low(FPool) to High(FPool) do
-    if Assigned(FPool[i]) then
-      FPool[i].Close;
+  for i := Low(FSlots) to High(FSlots) do
+    if Assigned(FSlots[i]) then
+      FSlots[i].Close;
 end;
 
 procedure TConnectionProvider.Close;
 var
   i: integer;
 begin
-  for i := Low(FPool) to High(FPool) do
-    if Assigned(FPool[i]) then
-      ReleaseConnection(FPool[i]);
+  for i := Low(FSlots) to High(FSlots) do
+    if Assigned(FSlots[i]) then
+      ReleaseConnection(FSlots[i]);
 end;
 {**
   Localiza um objeto no Pool. Se este não for encontrado retorna nil
@@ -333,10 +329,10 @@ var
   i: Integer;
 begin
   Result := nil;
-  for i := Low(FPool) to High(FPool) do
-    if FPool[i] = pConnection then
+  for i := Low(FSlots) to High(FSlots) do
+    if FSlots[i] = pConnection then
     begin
-      Result := FPool[i];
+      Result := FSlots[i];
       Break;
     end;
 end;
@@ -367,10 +363,11 @@ var
   i: Integer;
 begin
   Result := nil;
-  for i := Low(FPool) to High(FPool) do
-    if Assigned(FPool[i]) and FPool[i].IsClosed then
+  for i := Low(FSlots) to High(FSlots) do
+    if not Assigned(FSlots[i]) or
+      (Assigned(FSlots[i]) and FSlots[i].IsClosed) then
     begin
-      Result := FPool[i];
+      Result := FSlots[i];
       Break;
     end;
 end;
@@ -381,7 +378,7 @@ begin
     '://' + pConfiguration.GetAsString(cCONFIGKEY_HOSTNAME) +
     '/' + pConfiguration.GetAsString(cCONFIGKEY_DATABASENAME) +
     '?username=' + pConfiguration.GetAsString(cCONFIGKEY_USERNAME) +
-    ';password=' + pConfiguration.GetAsString(cCONFIGKEY_DATABASENAME);
+    ';password=' + pConfiguration.GetAsString(cCONFIGKEY_PASSWORD);
 end;
 
 {**
@@ -393,13 +390,13 @@ function TConnectionProvider.CreateConnection: IZConnection;
 var
   i: Integer;
 begin
-  for i := Low(FPool) to High(FPool) do
-    if not Assigned(FPool[i]) then
+  for i := Low(FSlots) to High(FSlots) do
+    if not Assigned(FSlots[i]) then
     begin
-      FPool[i] := FDriverManager.GetConnection(BuildConnectionString(FConfiguration));
-      Result := FPool[i];
+      FSlots[i] := DriverManager.GetConnection(BuildConnectionString(FConfiguration));
+      Result := FSlots[i];
       Exit;
-    end;                 
+    end;
   raise EPersistenceConnectionProviderError.Create(cErrorConnectionsLimitExceeded);
 end;
 
@@ -413,9 +410,9 @@ function TConnectionProvider.GetConnection: IZConnection;
 begin
   FCriticalSection.Acquire;
   try
-    Result := GetFreeConnection;
-    if not Assigned(Result) then
-      Result := CreateConnection;
+    // *** alterado até que o pool funcione
+    // Result := CreateConnection;
+    Result := DriverManager.GetConnection(BuildConnectionString(FConfiguration));
   finally
     FCriticalSection.Release;
   end;
@@ -584,10 +581,11 @@ end;
 
 constructor TPersistenceEngine.Create(pConfiguration: IConfiguration);
 begin
+  inherited Create;
   if not Assigned(pConfiguration) then
     raise EInfraArgumentError.Create('Configuration in PersistenceEngine.Create');
-  inherited Create;
   FConfiguration := pConfiguration;
+  FConnnectionProvider := TConnectionProvider.Create(pConfiguration);
 end;
 
 function TPersistenceEngine.GetReader: ITemplateReader;
@@ -618,7 +616,7 @@ var
 begin
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
-  vST := FConnection.PrepareStatement(vSQL);
+  vST := FConnnectionProvider.GetConnection.PrepareStatement(vSQL);
   SetParameters(vST, pSqlCommand);
   Result := TInfraInteger.NewFrom(vST.ExecuteUpdatePrepared);
 end;
@@ -644,7 +642,7 @@ begin
   vSQL := vReader.Read(pSqlCommand.Name);
   // *** se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro do vReader.Read????
   try
-    vST := FConnection.PrepareStatement(vSQL);
+    vST := FConnnectionProvider.GetConnection.PrepareStatementWithParams(vSQL, nil);
     SetParameters(vST, pSqlCommand);
     vRS := vST.ExecuteQueryPrepared;
     while vRS.Next do

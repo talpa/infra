@@ -40,7 +40,7 @@ uses
 procedure TTestConnectionProvider.SetUp;
 begin
   inherited;
-  FConnProvider := TConnectionProvider.Create(TDriverManagerMock.Create, TTestsUtil.GetNewConfiguration);
+  FConnProvider := TConnectionProvider.Create(TTestsUtil.GetNewConfiguration);
 end;
 
 procedure TTestConnectionProvider.TearDown;
@@ -57,7 +57,7 @@ end;
 procedure TTestConnectionProvider.TestCreateWithoutDriverManager;
 begin
   ExpectedException := EInfraArgumentError;
-  TConnectionProvider.Create(TDriverManagerMock.Create, nil);
+  TConnectionProvider.Create(nil);
   ExpectedException := nil;
 end;
 
@@ -65,7 +65,7 @@ procedure TTestConnectionProvider.TestCreateWithoutConfiguration;
 begin
   inherited;
   ExpectedException := EInfraArgumentError;
-  TConnectionProvider.Create(nil, TTestsUtil.GetNewConfiguration);
+  TConnectionProvider.Create(TTestsUtil.GetNewConfiguration);
   ExpectedException := nil;
 end;
 
