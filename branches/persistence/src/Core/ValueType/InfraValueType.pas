@@ -1015,8 +1015,7 @@ end;
 
 function TInfraObject.GetProperty(const PropertyName: string): IProperty;
 begin
-  Supports(TypeInfo.GetProperty(Self as IElement, PropertyName),
-    IProperty, Result);
+  Supports(TypeInfo.GetProperty(Self as IElement, PropertyName), IProperty, Result);
 end;
 
 procedure TInfraObject.InfraInitInstance;
