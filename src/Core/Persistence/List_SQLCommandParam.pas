@@ -60,19 +60,19 @@ end;
 procedure _ITERABLELIST_.AddObject(const Value: IInfraObject);
 var
   vIterator: IPropertyInfoIterator;
-  vPropertyValue: IInfraType;
+  vParamValue, vPropertyValue: IInfraType;  
 begin
   if Assigned(Value) then
   begin
     vIterator := TypeService.GetType(Value.TypeInfo.TypeID).GetProperties;
     while not vIterator.IsDone do
     begin
-      vPropertyValue := TypeService.CreateInstance(
-        vIterator.CurrentItem.GetTypeInfo.TypeID) as IInfraType;
+      vPropertyValue := vIterator.CurrentItem.GetValue(Value) as IInfraType;
       if not vPropertyValue.IsNull then
       begin
-        vPropertyValue.Assign(vIterator.CurrentItem.GetValue(Value) as IInfraType);
-        Add(vIterator.CurrentItem.Name, vPropertyValue);
+        vParamValue := TypeService.CreateInstance(vIterator.CurrentItem.GetTypeInfo.TypeID) as IInfraType;
+        vParamValue.Assign(vPropertyValue);
+        Add(vIterator.CurrentItem.Name, vParamValue);
       end;
       vIterator.Next;
     end;

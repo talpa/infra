@@ -18,7 +18,11 @@ uses
   InfraPersistenceServiceTests in 'InfraPersistenceServiceTests.pas',
   InfraPersistenceEngineTests in 'InfraPersistenceEngineTests.pas',
   InfraTestsUtil in 'InfraTestsUtil.pas',
-  InfraTemplateReader_IOTests in 'InfraTemplateReader_IOTests.pas';
+  InfraTemplateReader_IOTests in 'InfraTemplateReader_IOTests.pas',
+  PersistenceTests in 'PersistenceTests.pas',
+  PersistenceModel in 'PersistenceModel.pas',
+  PersistenceModelIntf in 'PersistenceModelIntf.pas',
+  PersistenceModelReflex in 'PersistenceModelReflex.pas';
 
 {$R *.RES}
 

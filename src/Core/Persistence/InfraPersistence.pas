@@ -20,15 +20,9 @@ uses
 type  
   TConfiguration = class(TBaseElement, IConfiguration)
     FProperties: TStrings;
+  protected
     function GetProperties: TStrings;
     function GetPropertyItem(const pName: string): string;
-    procedure SetPropertyItem(const pName: string; const Value: string);
-  protected
-    property Properties: TStrings read GetProperties;
-    property PropertyItem[const pName: string]: string read GetPropertyItem write SetPropertyItem;
-  public
-    constructor Create; override;
-    destructor Destroy; override;
     function GetAsInteger(const pName: string): Integer; overload;
     function GetAsDouble(const pName: string): Double; overload;
     function GetAsString(const pName: string): string; overload;
@@ -38,6 +32,13 @@ type
     procedure SetValue(const pName: string; const Value: Integer); overload;
     procedure SetValue(const pName: string; const Value: Double); overload;
     procedure SetValue(const pName: string; const Value: string); overload;
+    procedure SetPropertyItem(const pName: string; const Value: string);
+    procedure Clear;
+    property Properties: TStrings read GetProperties;
+    property PropertyItem[const pName: string]: string read GetPropertyItem write SetPropertyItem;
+  public
+    constructor Create; override;
+    destructor Destroy; override;
   end;
 
   /// Classe responsável por prover conexões com o SGDB
@@ -170,9 +171,15 @@ uses
   InfraBasicList,
   InfraConsts,
   List_SQLCommandList,
+  List_SQLCommandParam,
   InfraValueType;
 
 { TConfiguration }
+
+procedure TConfiguration.Clear;
+begin
+FProperties.clear;
+end;
 
 constructor TConfiguration.Create;
 begin
@@ -437,6 +444,7 @@ constructor TSQLCommand.Create(pPersistenceEngine: IPersistenceEngine);
 begin
   inherited Create;
   FPersistenceEngine := pPersistenceEngine;
+  FParams := TSQLCommandParams.Create;
 end;
 
 function TSQLCommand.GetName: string;
@@ -513,7 +521,6 @@ function TSession.Load(const pCommandName: string; const pClassID: TGUID): ISQLC
 begin
   Result := TSQLCommandQuery.Create(FPersistenceEngine);
   Result.ListID := IInfraList;
-  Result := Load(pCommandName);
   Result.ClassID := pClassID;
 end;
 
