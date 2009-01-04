@@ -140,6 +140,8 @@ type
     procedure SetPropertyFromResultSet(const pAttribute: IInfraType;
       const pResultSet: IZResultSet; pIndex: Integer);
   protected
+    procedure DoLoad(const pST: IZPreparedStatement; const pSqlCommand:
+        ISqlCommand; const pList: IInfraList);
     procedure SetConnection(const pConnection: IZConnection);
     procedure Load(const pSqlCommand: ISqlCommand; const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): IInfraInteger;
@@ -634,17 +636,35 @@ function TPersistenceEngine.Execute(const pSqlCommand: ISqlCommand): IInfraInteg
 var
   vReader: ITemplateReader;
   vSQL: string;
-  vST: IZPreparedStatement;
+  vStatement: IZPreparedStatement;
 begin
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
   FParse.Parse(vSQL);
   // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui antes de chamar o PrepareStatementWithParams
   // *** 2) Acho que poderia chamar o PrepareStatementWithParams passando o FParse.Params.GetParams
-  vST := FConnnectionProvider.GetConnection.PrepareStatement(vSQL);
-  SetParameters(FParse, vST, pSqlCommand);
-  // *** 3) Acho que pode retornar um simples Integer.         
-  Result := TInfraInteger.NewFrom(vST.ExecuteUpdatePrepared);
+  vStatement := FConnnectionProvider.GetConnection.PrepareStatement(vSQL);
+  SetParameters(FParse, vStatement, pSqlCommand);
+  // *** 3) Acho que pode retornar um simples Integer.
+  Result := TInfraInteger.NewFrom(vStatement.ExecuteUpdatePrepared);
+end;
+
+procedure TPersistenceEngine.DoLoad(const pST: IZPreparedStatement; const
+    pSqlCommand: ISqlCommand; const pList: IInfraList);
+var
+  vResultSet: IZResultSet;
+  vObject: IInfraObject;
+begin
+  vResultSet := pST.ExecuteQueryPrepared;
+  try
+    while vResultSet.Next do
+    begin
+      vObject := GetRowFromResultSet(pSqlCommand, vResultSet);
+      pList.Add(vObject);
+    end;
+  finally
+    vResultSet.Close;
+  end;
 end;
 
 { carregar a sql usando um reader com base no Name do pSqlCommand
@@ -660,28 +680,24 @@ procedure TPersistenceEngine.Load(const pSqlCommand: ISqlCommand;
 var
   vReader: ITemplateReader;
   vSQL: string;
-  vST: IZPreparedStatement;
-  vRS: IZResultSet;
-  vObject: IInfraObject;
+  vStatement: IZPreparedStatement;
 begin
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
-  // *** 1) se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro do vReader.Read????
+  // *** 1) se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro
+  // do vReader.Read????
   FParse.Parse(vSQL);
-  // *** 2) Acho que os parâmetros macros de FParse devem ser substituidos aqui antes de chamar o PrepareStatementWithParams
+  // *** 2) Acho que os parâmetros macros de FParse devem ser substituidos aqui
+  // antes de chamar o PrepareStatementWithParams
   try
-    // *** 3) Não deveriamos passar os nomes dos parametros ali no PrepareStatementWithParams. Desta forma podemos passar apenas o vST e o SQLCommand para o SetParameters.
-    vST := FConnnectionProvider.GetConnection.PrepareStatementWithParams(vSQL, nil);
-    SetParameters(FParse, vST, pSqlCommand);
-    vRS := vST.ExecuteQueryPrepared;
-    while vRS.Next do
-    begin
-      vObject := GetRowFromResultSet(pSqlCommand, vRS);
-      pList.Add(vObject);
-    end;
+    // *** 3) Não deveriamos passar os nomes dos parametros ali no PrepareStatementWithParams.
+    // Desta forma podemos passar apenas o vStatement e o SQLCommand para o SetParameters.
+    vStatement := FConnnectionProvider.GetConnection.PrepareStatementWithParams(vSQL, nil);
+    SetParameters(FParse, vStatement, pSqlCommand);
+
+    DoLoad(vStatement, pSqlCommand, pList);
   finally
-    vRs.Close;
-    vST.Close;
+    vStatement.Close;
   end;
 end;
 
@@ -690,7 +706,7 @@ begin
   // preencher o connection provider com o pConnection
 end;
 
-function TPersistenceEngine.GetRowFromResultSet(const pSqlCommand: ISQLCommand; 
+function TPersistenceEngine.GetRowFromResultSet(const pSqlCommand: ISQLCommand;
   const pResultSet: IZResultSet): IInfraObject;
 var
   vIndex: integer;
@@ -712,9 +728,9 @@ procedure TPersistenceEngine.SetPropertyFromResultSet(
   const pAttribute: IInfraType; const pResultSet: IZResultSet; pIndex: Integer);
 begin
   // *** Teria de tratar o InfraType aqui se for um Object ou InfraList
-  // *** por que provavelmente estará apontando para outro objeto e 
+  // *** por que provavelmente estará apontando para outro objeto e
   // *** talvez tem que carregar com base em colunas de um join no template.
-  (pAttribute.TypeInfo as IZTypeAnnotation).NullSafeGet(pResultSet, 
+  (pAttribute.TypeInfo as IZTypeAnnotation).NullSafeGet(pResultSet,
     pIndex, pAttribute)
 end;
 
