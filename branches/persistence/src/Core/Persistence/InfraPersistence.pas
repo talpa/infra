@@ -113,9 +113,9 @@ type
       const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
     function Load(const pCommandName: string; 
       const pClassID: TGUID): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string; 
+    function Load(const pCommandName: string;
       const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string; 
+    function Load(const pCommandName: string;
       const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
@@ -128,15 +128,16 @@ type
   private
     FConfiguration: IConfiguration;
     FConnnectionProvider: IConnectionProvider;
+    FParse: IParseParams;
     function GetReader: ITemplateReader;
     procedure SetParameters(
       const pParams: IParseParams;
       const pStatement: IZPreparedStatement;
       const pSqlCommand: ISqlCommand);
     function GetRowFromResultSet(
-      const pSqlCommand: ISQLCommand; 
+      const pSqlCommand: ISQLCommand;
       const pResultSet: IZResultSet): IInfraObject;
-    procedure SetPropertyFromResultSet(const pAttribute: IInfraType; 
+    procedure SetPropertyFromResultSet(const pAttribute: IInfraType;
       const pResultSet: IZResultSet; pIndex: Integer);
   protected
     procedure SetConnection(const pConnection: IZConnection);
@@ -186,7 +187,7 @@ type
     function GetParams: TStrings;
     function GetMacroParams: TStrings;
   public
-    constructor Create; virtual;
+    constructor Create; override;
     destructor Destroy; override;
   end;
 
@@ -634,14 +635,15 @@ var
   vReader: ITemplateReader;
   vSQL: string;
   vST: IZPreparedStatement;
-  vParse : IParseParams;
 begin
   vReader := GetReader;
-  vParse := TParseParams.Create;
   vSQL := vReader.Read(pSqlCommand.Name);
-  vParse.Parse(vSQL);
+  FParse.Parse(vSQL);
+  // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui antes de chamar o PrepareStatementWithParams
+  // *** 2) Acho que poderia chamar o PrepareStatementWithParams passando o FParse.Params.GetParams
   vST := FConnnectionProvider.GetConnection.PrepareStatement(vSQL);
-  SetParameters(vParse,vST,pSqlCommand);         
+  SetParameters(FParse, vST, pSqlCommand);
+  // *** 3) Acho que pode retornar um simples Integer.         
   Result := TInfraInteger.NewFrom(vST.ExecuteUpdatePrepared);
 end;
 
@@ -661,16 +663,16 @@ var
   vST: IZPreparedStatement;
   vRS: IZResultSet;
   vObject: IInfraObject;
-  vParse : IParseParams;
 begin
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
-  // *** se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro do vReader.Read????
-   vParse := TParseParams.Create;
-   vParse.Parse(vSQL);
+  // *** 1) se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro do vReader.Read????
+  FParse.Parse(vSQL);
+  // *** 2) Acho que os parâmetros macros de FParse devem ser substituidos aqui antes de chamar o PrepareStatementWithParams
   try
+    // *** 3) Não deveriamos passar os nomes dos parametros ali no PrepareStatementWithParams. Desta forma podemos passar apenas o vST e o SQLCommand para o SetParameters.
     vST := FConnnectionProvider.GetConnection.PrepareStatementWithParams(vSQL, nil);
-    SetParameters(vParse,vST,pSqlCommand);
+    SetParameters(FParse, vST, pSqlCommand);
     vRS := vST.ExecuteQueryPrepared;
     while vRS.Next do
     begin
@@ -784,15 +786,6 @@ begin
   Result := '';
 end;
 
-// Não entendi mas se por direto no Initialization acontece Access Violations.
-// ATENÇÃO: Vc não deve atribuir PersistenceService para uma variável de
-// instancia nem global sob pena de acontecer um AV no final da aplicação
-procedure InjectPersistenceService;
-begin
-  (ApplicationContext as IBaseElement).Inject(
-    IInfraPersistenceService, TInfraPersistenceService.Create);
-end;
-
 { TParseParams }
 
 const
@@ -872,7 +865,6 @@ begin
   vValue := PChar(FSQL);
   vCurPos := vValue;
   vLiteral := False;
-  vIsMacro := False;
   vEmbeddedLiteral := False;
   repeat
     while (vCurPos^ in LeadBytes) do Inc(vCurPos, 2);
@@ -925,6 +917,15 @@ end;
 function TParseParams.GetParams: TStrings;
 begin
   Result := FParams;
+end;
+
+// Não entendi mas se por direto no Initialization acontece Access Violations.
+// ATENÇÃO: Vc não deve atribuir PersistenceService para uma variável de
+// instancia nem global sob pena de acontecer um AV no final da aplicação
+procedure InjectPersistenceService;
+begin
+  (ApplicationContext as IBaseElement).Inject(
+    IInfraPersistenceService, TInfraPersistenceService.Create);
 end;
 
 initialization
