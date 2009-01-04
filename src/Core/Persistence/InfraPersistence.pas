@@ -129,7 +129,9 @@ type
     FConfiguration: IConfiguration;
     FConnnectionProvider: IConnectionProvider;
     function GetReader: ITemplateReader;
-    procedure SetParameters(const pStatement: IZPreparedStatement; 
+    procedure SetParameters(
+      const pParams: IParseParams;
+      const pStatement: IZPreparedStatement;
       const pSqlCommand: ISqlCommand);
     function GetRowFromResultSet(
       const pSqlCommand: ISQLCommand; 
@@ -632,12 +634,14 @@ var
   vReader: ITemplateReader;
   vSQL: string;
   vST: IZPreparedStatement;
-
+  vParse : IParseParams;
 begin
   vReader := GetReader;
+  vParse := TParseParams.Create;
   vSQL := vReader.Read(pSqlCommand.Name);
+  vParse.Parse(vSQL);
   vST := FConnnectionProvider.GetConnection.PrepareStatement(vSQL);
-  SetParameters(vST, pSqlCommand);
+  SetParameters(vParse,vST,pSqlCommand);         
   Result := TInfraInteger.NewFrom(vST.ExecuteUpdatePrepared);
 end;
 
@@ -657,13 +661,16 @@ var
   vST: IZPreparedStatement;
   vRS: IZResultSet;
   vObject: IInfraObject;
+  vParse : IParseParams;
 begin
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
   // *** se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro do vReader.Read????
+   vParse := TParseParams.Create;
+   vParse.Parse(vSQL);
   try
     vST := FConnnectionProvider.GetConnection.PrepareStatementWithParams(vSQL, nil);
-    SetParameters(vST, pSqlCommand);
+    SetParameters(vParse,vST,pSqlCommand);
     vRS := vST.ExecuteQueryPrepared;
     while vRS.Next do
     begin
@@ -709,15 +716,14 @@ begin
     pIndex, pAttribute)
 end;
 
-procedure TPersistenceEngine.SetParameters(const pStatement: IZPreparedStatement; 
-  const pSqlCommand: ISqlCommand);
+procedure TPersistenceEngine.SetParameters(const pParams: IParseParams; const pStatement: IZPreparedStatement; const pSqlCommand: ISqlCommand);
 var
   vIndex: integer;
   vTypeInfo: IClassInfo;
   vParamValue: IInfraType;
   vParams: TStrings;
 begin
-  vParams := pStatement.GetParameters;
+  vParams := pParams.GetParams;
   for vIndex := 0 to vParams.Count-1 do
   begin
     vParamValue := pSqlCommand.Params[vParams[vIndex]];
