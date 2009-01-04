@@ -90,11 +90,11 @@ end;
 procedure TPersistenceTests.TestParse;
 var
   vP: IParseParams;
-  sL: TStrings;
 begin
-  vP := TParseParams.Create('Select #MacroParam* ::Teste ##abc #:yyy #:xxx from teste where x = :teste1');
-  sL := vP.GetParams;
-  ShowMessage(Sl.Text);
+  vP := TParseParams.Create;
+  vP.Parse('Select #MacroParam* ::Teste ##abc #:yyy #:xxx from teste where x = :teste1');
+  ShowMessage(vP.GetParams.Text);
+  ShowMessage(vP.GetMacroParams.Text);
   // CheckEquals('teste1', sL[0], 'Não sao identicos');
 end;
 

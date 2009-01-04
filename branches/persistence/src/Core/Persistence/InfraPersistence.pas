@@ -171,8 +171,8 @@ type
   TParseParams = class(TBaseElement, IParseParams)
   private
     FParams: TStrings;
+    FMacroParams: TStrings;
     FSQL: String;
-    procedure Parse;
     function IsLiteral(CurChar: Char): Boolean;
     function NameDelimiter(CurChar: Char): Boolean;
     procedure StripChar(TempBuf: PChar; Len: Word);
@@ -180,9 +180,11 @@ type
     function IsParameter(CurPos: PChar; Literal: Boolean): Boolean;
     function IsFalseParameter(CurPos: PChar; Literal: Boolean): Boolean;
   protected
+    procedure Parse(const pSQL: string);
     function GetParams: TStrings;
+    function GetMacroParams: TStrings;
   public
-    constructor Create(const pSQL: string); reintroduce;
+    constructor Create; virtual;
     destructor Destroy; override;
   end;
 
@@ -788,26 +790,20 @@ end;
 { TParseParams }
 
 const
-  Literals = ['''', '"', '`'];
+  cLiterals = ['''', '"', '`'];
 
-constructor TParseParams.Create(const pSQL: string);
+constructor TParseParams.Create;
 begin
-  inherited Create;
+  inherited;
   FParams := TStringList.Create;
-  FSQL := pSQL;
+  FMacroParams := TStringList.Create;
 end;
 
 destructor TParseParams.Destroy;
 begin
   FParams.Free;
+  FMacroParams.Free;
   inherited;
-end;
-
-function TParseParams.GetParams: TStrings;
-begin
-  FParams.Clear;
-  Parse;
-  Result := FParams;
 end;
 
 function TParseParams.NameDelimiter(CurChar: Char): Boolean;
@@ -817,30 +813,30 @@ end;
 
 function TParseParams.IsLiteral(CurChar: Char): Boolean;
 begin
-  Result := CurChar in Literals;
+  Result := CurChar in cLiterals;
 end;
 
 procedure TParseParams.StripChar(TempBuf: PChar; Len: Word);
 begin
-  if TempBuf^ in Literals then
+  if TempBuf^ in cLiterals then
     StrMove(TempBuf, TempBuf + 1, Len - 1);
-  if TempBuf[StrLen(TempBuf) - 1] in Literals then
+  if TempBuf[StrLen(TempBuf) - 1] in cLiterals then
     TempBuf[StrLen(TempBuf) - 1] := #0;
 end;
 
 function TParseParams.StripLiterals(Buffer: PChar): string;
 var
-  Len: Word;
-  TempBuf: PChar;
+  vLen: Word;
+  vTempBuf: PChar;
 begin
-  Len := StrLen(Buffer) + 1;
-  TempBuf := AllocMem(Len);
+  vLen := StrLen(Buffer) + 1;
+  vTempBuf := AllocMem(vLen);
   try
-    StrCopy(TempBuf, Buffer);
-    StripChar(TempBuf, Len);
-    Result := StrPas(TempBuf);
+    StrCopy(vTempBuf, Buffer);
+    StripChar(vTempBuf, vLen);
+    Result := StrPas(vTempBuf);
   finally
-    FreeMem(TempBuf, Len);
+    FreeMem(vTempBuf, vLen);
   end;
 end;
 
@@ -856,59 +852,76 @@ begin
     ( (CurPos^ in [':', '#']) and ((CurPos + 1)^ in [':', '#']) )
 end;
 
-procedure TParseParams.Parse;
+procedure TParseParams.Parse(const pSQL: string);
 var
-  Value, CurPos, StartPos: PChar;
-  CurChar: Char;
-  Literal: Boolean;
-  EmbeddedLiteral: Boolean;
-  Name: string;
+  vValue, vCurPos, vStartPos: PChar;
+  vCurChar: Char;
+  vLiteral: Boolean;
+  vEmbeddedLiteral, vIsMacro: Boolean;
+  vName: string;
 begin
-  Value := PChar(FSQL);
+  FSQL := pSQL;
   FParams.Clear;
-  CurPos := Value;
-  Literal := False;
-  EmbeddedLiteral := False;
+  FMacroParams.Clear;
+  vValue := PChar(FSQL);
+  vCurPos := vValue;
+  vLiteral := False;
+  vIsMacro := False;
+  vEmbeddedLiteral := False;
   repeat
-    while (CurPos^ in LeadBytes) do Inc(CurPos, 2);
-    CurChar := CurPos^;
-    if IsParameter(CurPos, Literal) then
+    while (vCurPos^ in LeadBytes) do Inc(vCurPos, 2);
+    vCurChar := vCurPos^;
+    if IsParameter(vCurPos, vLiteral) then
     begin
-      StartPos := CurPos;
-      while (CurChar <> #0) and (Literal or not NameDelimiter(CurChar)) do
+      vIsMacro := (vCurChar = '#');
+      vStartPos := vCurPos;
+      while (vCurChar <> #0) and (vLiteral or not NameDelimiter(vCurChar)) do
       begin
-        Inc(CurPos);
-        while (CurPos^ in LeadBytes) do Inc(CurPos, 2);
-        CurChar := CurPos^;
-        if IsLiteral(Curchar) then
+        Inc(vCurPos);
+        while (vCurPos^ in LeadBytes) do Inc(vCurPos, 2);
+        vCurChar := vCurPos^;
+        if IsLiteral(vCurchar) then
         begin
-          Literal := Literal xor True;
-          if CurPos = StartPos + 1 then EmbeddedLiteral := True;
+          vLiteral := vLiteral xor True;
+          if vCurPos = vStartPos + 1 then vEmbeddedLiteral := True;
         end;
       end;
-      CurPos^ := #0;
-      if EmbeddedLiteral then
+      vCurPos^ := #0;
+      if vEmbeddedLiteral then
       begin
-        Name := StripLiterals(StartPos + 1);
-        EmbeddedLiteral := False;
+        vName := StripLiterals(vStartPos + 1);
+        vEmbeddedLiteral := False;
       end
-      else Name := StrPas(StartPos + 1);
-      FParams.Add(Name);
-      CurPos^ := CurChar;
-      StartPos^ := '?';
-      Inc(StartPos);
-      StrMove(StartPos, CurPos, StrLen(CurPos) + 1);
-      CurPos := StartPos;
+      else vName := StrPas(vStartPos + 1);
+      if vIsMacro then
+        FMacroParams.Add(vName)
+      else
+        FParams.Add(vName);
+      vCurPos^ := vCurChar;
+      vStartPos^ := '?';
+      Inc(vStartPos);
+      StrMove(vStartPos, vCurPos, StrLen(vCurPos) + 1);
+      vCurPos := vStartPos;
     end
-    else if IsFalseParameter(CurPos, Literal) then
-      StrMove(CurPos, CurPos + 1, StrLen(CurPos) + 1)
-    else if IsLiteral(CurChar) then
-      Literal := Literal xor True;
-    Inc(CurPos);
-  until CurChar = #0;
+    else if IsFalseParameter(vCurPos, vLiteral) then
+      StrMove(vCurPos, vCurPos + 1, StrLen(vCurPos) + 1)
+    else if IsLiteral(vCurChar) then
+      vLiteral := vLiteral xor True;
+    Inc(vCurPos);
+  until vCurChar = #0;
+end;
+
+function TParseParams.GetMacroParams: TStrings;
+begin
+  Result := FMacroParams;
+end;
+
+function TParseParams.GetParams: TStrings;
+begin
+  Result := FParams;
 end;
 
 initialization
   InjectPersistenceService;
-  
+
 end.
