@@ -168,6 +168,24 @@ type
     constructor Create; reintroduce; virtual;
   end;
 
+  TParseParams = class(TBaseElement, IParseParams)
+  private
+    FParams: TStrings;
+    FSQL: String;
+    procedure Parse;
+    function IsLiteral(CurChar: Char): Boolean;
+    function NameDelimiter(CurChar: Char): Boolean;
+    procedure StripChar(TempBuf: PChar; Len: Word);
+    function StripLiterals(Buffer: PChar): string;
+    function IsParameter(CurPos: PChar; Literal: Boolean): Boolean;
+    function IsFalseParameter(CurPos: PChar; Literal: Boolean): Boolean;
+  protected
+    function GetParams: TStrings;
+  public
+    constructor Create(const pSQL: string); reintroduce;
+    destructor Destroy; override;
+  end;
+
 implementation
 
 uses
@@ -767,9 +785,130 @@ begin
     IInfraPersistenceService, TInfraPersistenceService.Create);
 end;
 
+{ TParseParams }
+
+const
+  Literals = ['''', '"', '`'];
+
+constructor TParseParams.Create(const pSQL: string);
+begin
+  inherited Create;
+  FParams := TStringList.Create;
+  FSQL := pSQL;
+end;
+
+destructor TParseParams.Destroy;
+begin
+  FParams.Free;
+  inherited;
+end;
+
+function TParseParams.GetParams: TStrings;
+begin
+  FParams.Clear;
+  Parse;
+  Result := FParams;
+end;
+
+function TParseParams.NameDelimiter(CurChar: Char): Boolean;
+begin
+  Result := CurChar in [' ', ',', ';', ')', '*', #13, #10];
+end;
+
+function TParseParams.IsLiteral(CurChar: Char): Boolean;
+begin
+  Result := CurChar in Literals;
+end;
+
+procedure TParseParams.StripChar(TempBuf: PChar; Len: Word);
+begin
+  if TempBuf^ in Literals then
+    StrMove(TempBuf, TempBuf + 1, Len - 1);
+  if TempBuf[StrLen(TempBuf) - 1] in Literals then
+    TempBuf[StrLen(TempBuf) - 1] := #0;
+end;
+
+function TParseParams.StripLiterals(Buffer: PChar): string;
+var
+  Len: Word;
+  TempBuf: PChar;
+begin
+  Len := StrLen(Buffer) + 1;
+  TempBuf := AllocMem(Len);
+  try
+    StrCopy(TempBuf, Buffer);
+    StripChar(TempBuf, Len);
+    Result := StrPas(TempBuf);
+  finally
+    FreeMem(TempBuf, Len);
+  end;
+end;
+
+function TParseParams.IsParameter(CurPos: PChar; Literal: Boolean): Boolean;
+begin
+  Result := not Literal and
+    ( (CurPos^ in [':', '#']) and not ((CurPos + 1)^ in [':', '#']) )
+end;
+
+function TParseParams.IsFalseParameter(CurPos: PChar; Literal: Boolean): Boolean;
+begin
+  Result := not Literal and
+    ( (CurPos^ in [':', '#']) and ((CurPos + 1)^ in [':', '#']) )
+end;
+
+procedure TParseParams.Parse;
+var
+  Value, CurPos, StartPos: PChar;
+  CurChar: Char;
+  Literal: Boolean;
+  EmbeddedLiteral: Boolean;
+  Name: string;
+begin
+  Value := PChar(FSQL);
+  FParams.Clear;
+  CurPos := Value;
+  Literal := False;
+  EmbeddedLiteral := False;
+  repeat
+    while (CurPos^ in LeadBytes) do Inc(CurPos, 2);
+    CurChar := CurPos^;
+    if IsParameter(CurPos, Literal) then
+    begin
+      StartPos := CurPos;
+      while (CurChar <> #0) and (Literal or not NameDelimiter(CurChar)) do
+      begin
+        Inc(CurPos);
+        while (CurPos^ in LeadBytes) do Inc(CurPos, 2);
+        CurChar := CurPos^;
+        if IsLiteral(Curchar) then
+        begin
+          Literal := Literal xor True;
+          if CurPos = StartPos + 1 then EmbeddedLiteral := True;
+        end;
+      end;
+      CurPos^ := #0;
+      if EmbeddedLiteral then
+      begin
+        Name := StripLiterals(StartPos + 1);
+        EmbeddedLiteral := False;
+      end
+      else Name := StrPas(StartPos + 1);
+      FParams.Add(Name);
+      CurPos^ := CurChar;
+      StartPos^ := '?';
+      Inc(StartPos);
+      StrMove(StartPos, CurPos, StrLen(CurPos) + 1);
+      CurPos := StartPos;
+    end
+    else if IsFalseParameter(CurPos, Literal) then
+      StrMove(CurPos, CurPos + 1, StrLen(CurPos) + 1)
+    else if IsLiteral(CurChar) then
+      Literal := Literal xor True;
+    Inc(CurPos);
+  until CurChar = #0;
+end;
+
 initialization
   InjectPersistenceService;
   
 end.
-
-

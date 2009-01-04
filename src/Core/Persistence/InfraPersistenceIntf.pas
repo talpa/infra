@@ -141,6 +141,11 @@ type
     ['{01861C33-9789-4A30-8FCC-A018EA45FF13}']
   end;
 
+  IParseParams = interface(IBaseElement)
+    ['{C0D4B607-4224-44C0-A93C-F10658AE9738}']
+    function GetParams: TStrings;
+  end;
+
 function PersistenceService: IInfraPersistenceService;
 
 implementation
