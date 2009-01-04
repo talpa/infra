@@ -10,11 +10,9 @@ Uses
    InfraValueTypeIntf;
 
 Type
-  TZTypeSetter = procedure (const pStatement: IZPreparedStatement;
-    pIndex: Integer; const pParamValue: IInfraType);
+  TZTypeSetter = procedure (const pStatement: IZPreparedStatement;  pIndex: Integer; const pParamValue: IInfraType);
 
-  TZTypeGetter = procedure (const pResultSet: IZResultSet;
-    pIndex: Integer; const pPropertyValue: IInfraType);
+  TZTypeGetter = procedure (const pResultSet: IZResultSet; pIndex: Integer; const pPropertyValue: IInfraType);
 
   IZTypeAnnotation = interface(IElement)
     ['{224B7552-1AB1-456B-B5C5-C7A85BA60580}']
