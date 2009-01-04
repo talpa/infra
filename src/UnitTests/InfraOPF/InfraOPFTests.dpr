@@ -22,7 +22,8 @@ uses
   PersistenceTests in 'PersistenceTests.pas',
   PersistenceModel in 'PersistenceModel.pas',
   PersistenceModelIntf in 'PersistenceModelIntf.pas',
-  PersistenceModelReflex in 'PersistenceModelReflex.pas';
+  PersistenceModelReflex in 'PersistenceModelReflex.pas',
+  InfraParseParamsTests in 'InfraParseParamsTests.pas';
 
 {$R *.RES}
 
