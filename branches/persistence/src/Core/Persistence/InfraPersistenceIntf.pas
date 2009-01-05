@@ -12,10 +12,11 @@ uses
   InfraValueTypeIntf;
 
 type
-  EInfraPersistenceError = Class(EInfraError);
+  EInfraPersistenceError = class(EInfraError);
   EPersistenceConnectionProviderError = class(EInfraPersistenceError);
-  EPersistenceTemplateError = Class(EInfraPersistenceError);
-  EPersistenceEngineError = Class(EInfraPersistenceError);
+  EPersistenceTemplateError = class(EInfraPersistenceError);
+  EPersistenceEngineError = class(EInfraPersistenceError);
+  EInfraParserError = class(EInfraError);
 
   ISession = interface;  
   ISQLCommandParams = interface;                  

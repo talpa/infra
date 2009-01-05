@@ -33,6 +33,13 @@ type
     procedure TestParserUpdate;
     procedure TestParserDelete;
     procedure TestParserParamsRepeated;
+    procedure TestParserParamNoName;
+    procedure TestParserMacroNoName;
+    procedure TestParserParamInvalid1;
+    procedure TestParserParamInvalid2;
+    procedure TestParserMacroInvalid1;
+    procedure TestParserMacroInvalid2;
+    procedure TestParserMacrosAndParams;
   end;
 
 implementation
@@ -118,7 +125,93 @@ begin
   CheckEqualsString('id', vParams[3]);
 end;
 
+procedure TTestParseParams.TestParserParamNoName;
+const
+  cSql = 'update tabela set id = :id, codigo = :codigo, nome = :nome where id = :';
+var
+  vParser: IParseParams;
+begin
+  vParser := TParseParams.Create;
+  ExpectedException := EInfraParserError;
+  vParser.Parse(cSql);
+  ExpectedException := nil;
+end;
+
+procedure TTestParseParams.TestParserMacrosAndParams;
+const
+  cSql = 'select #macro1 from #macro2 where id = :id or codigo = :codigo order by #macro3';
+var
+  vParser: IParseParams;
+  vParams: TStrings;
+  vMacros: TStrings;
+begin
+  vParser := TParseParams.Create;
+  vParser.Parse(cSql);
+  vParams := vParser.GetParams;
+  CheckEquals(2, vParams.Count);
+  CheckEqualsString('id', vParams[0]);
+  CheckEqualsString('codigo', vParams[1]);
+
+  vMacros := vParser.GetMacroParams;
+  CheckEquals(3, vMacros.Count);
+  CheckEqualsString('macro1', vMacros[0]);
+  CheckEqualsString('macro2', vMacros[1]);
+  CheckEqualsString('macro3', vMacros[2]);
+end;
+
+procedure TTestParseParams.TestParserMacroNoName;
+const
+  cSql = 'update # set codigo = :codigo, nome = :nome where id = :id';
+var
+  vParser: IParseParams;
+begin
+  vParser := TParseParams.Create;
+  ExpectedException := EInfraParserError;
+  vParser.Parse(cSql);
+  ExpectedException := nil;
+end;
+
+procedure TTestParseParams.TestParserMacroInvalid1;
+var
+  vParser: IParseParams;
+begin
+  vParser := TParseParams.Create;
+  ExpectedException := EInfraParserError;
+  vParser.Parse('select * from tabela where ##');
+  ExpectedException := nil;
+end;
+
+procedure TTestParseParams.TestParserMacroInvalid2;
+var
+  vParser: IParseParams;
+begin
+  vParser := TParseParams.Create;
+  ExpectedException := EInfraParserError;
+  vParser.Parse('select * from tabela where #.');
+  ExpectedException := nil;
+end;
+
+procedure TTestParseParams.TestParserParamInvalid1;
+var
+  vParser: IParseParams;
+begin
+  vParser := TParseParams.Create;
+  ExpectedException := EInfraParserError;
+  vParser.Parse('select * from tabela where id = :.');
+  ExpectedException := nil;
+end;
+
+procedure TTestParseParams.TestParserParamInvalid2;
+var
+  vParser: IParseParams;
+begin
+  vParser := TParseParams.Create;
+  ExpectedException := EInfraParserError;
+  vParser.Parse('select * from tabela where id = ::');
+  ExpectedException := nil;
+end;
+
 initialization
   TestFramework.RegisterTest(TTestParseParams.Suite);
-  
+
 end.
