@@ -22,8 +22,7 @@ implementation
 uses
   PersistenceModelIntf, 
   InfraCommonIntf, 
-  InfraValueTypeIntf,
-  InfraPersistenceAnnotationIntf;
+  InfraValueTypeIntf;
 
 {
 function RegisterAccountOnReflection: IClassInfo;
