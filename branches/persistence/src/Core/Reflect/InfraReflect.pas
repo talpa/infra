@@ -801,7 +801,7 @@ begin
   Result := FindPropertyInfo(PropertyToSearch);
   if not Assigned(Result) and Assigned(SuperClass) then
     Result := SuperClass.GetPropertyInfo(PropertyToSearch, ThrowException);
-  if Assigned(Result) and (Result.Name <> pName) then
+  if Assigned(Result) and not SameText(Result.Name, pName) then
     Result := Result.TypeInfo.GetPropertyInfo(
       Copy(pName, CommaPosition+1, Length(pName)), ThrowException);
   if ThrowException and not Assigned(Result) then
@@ -829,7 +829,7 @@ begin
   else
     PropertyInfo := GetPropertyInfo(PropertyToSearch, True);
   Result := PropertyInfo.GetValue(Obj);
-  if (PropertyInfo.Name <> pName) and Assigned(Result) then
+  if not SameText(PropertyInfo.Name, pName) and Assigned(Result) then
     Result := GetProperty(Result as IElement,
       Copy(pName, CommaPosition+1, Length(pName)), PropertyInfo.TypeInfo);
 end;

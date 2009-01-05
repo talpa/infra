@@ -3,9 +3,8 @@ unit InfraPersistenceAnnotation;
 interface
 
 Uses
-  InfraPersistenceAnnotationIntf,
-  InfraCommonIntf,
-  InfraCommon;
+  InfraCommon,
+  InfraPersistenceIntf;
 
 Type
   TZTypeAnnotation = Class(TElement, IZTypeAnnotation)
@@ -20,13 +19,16 @@ Type
     property NullSafeSet: TZTypeSetter read GetNullSafeSetter;
   end;
 
-
-
+  procedure RegisterZeosTypeMapping;
+  
 implementation
 
 uses
-  {Zeos} ZDbcIntfs,
-  InfraValueTypeIntf;
+  {Infra}
+  InfraCommonIntf,
+  InfraValueTypeIntf,
+  {Zeos}
+  ZDbcIntfs;
 
 { TZTypeAnnotation }
 
@@ -51,128 +53,128 @@ procedure SetAsString(const pStatement: IZPreparedStatement; pIndex: Integer;
   const pParamValue: IInfraType);
 begin
   if pParamValue.IsNull then
-    pStatement.SetNull(pIndex+1, stString)
+    pStatement.SetNull(pIndex, stString)
   else
-    pStatement.SetString(pIndex+1, (pParamValue as IInfraString).AsString)
+    pStatement.SetString(pIndex, (pParamValue as IInfraString).AsString)
 end;
 
 procedure GetString(const pResultSet: IZResultSet; pIndex: Integer;
   const pPropertyValue: IInfraType);
 begin
-  if pResultSet.IsNull(pIndex+1) then
+  if pResultSet.IsNull(pIndex) then
     pPropertyValue.Clear
   else
-    (pPropertyValue as IInfraString).AsString := pResultSet.GetString(pIndex+1);
+    (pPropertyValue as IInfraString).AsString := pResultSet.GetString(pIndex);
 end;
 
 procedure SetAsInteger(const pStatement: IZPreparedStatement; pIndex: Integer;
   const pParamValue: IInfraType);
 begin
   if pParamValue.IsNull then
-    pStatement.SetNull(pIndex+1, stInteger)
+    pStatement.SetNull(pIndex, stInteger)
   else
-    pStatement.SetInt(pIndex+1, (pParamValue as IInfraInteger).AsInteger)
+    pStatement.SetInt(pIndex, (pParamValue as IInfraInteger).AsInteger)
 end;
 
 procedure GetInteger(const pResultSet: IZResultSet; pIndex: Integer;
   const pPropertyValue: IInfraType);
 begin
-  if pResultSet.IsNull(pIndex+1) then
+  if pResultSet.IsNull(pIndex) then
     pPropertyValue.Clear
   else
-    (pPropertyValue as IInfraInteger).AsInteger := pResultSet.GetInt(pIndex+1);
+    (pPropertyValue as IInfraInteger).AsInteger := pResultSet.GetInt(pIndex);
 end;
 
 procedure SetAsDouble(const pStatement: IZPreparedStatement; pIndex: Integer;
   const pParamValue: IInfraType);
 begin
   if pParamValue.IsNull then
-    pStatement.SetNull(pIndex+1, stDouble)
+    pStatement.SetNull(pIndex, stDouble)
   else
-    pStatement.SetDouble(pIndex+1, (pParamValue as IInfraDouble).AsDouble)
+    pStatement.SetDouble(pIndex, (pParamValue as IInfraDouble).AsDouble)
 end;
 
 procedure GetDouble(const pResultSet: IZResultSet; pIndex: Integer;
   const pPropertyValue: IInfraType);
 begin
-  if pResultSet.IsNull(pIndex+1) then
+  if pResultSet.IsNull(pIndex) then
     pPropertyValue.Clear
   else
-    (pPropertyValue as IInfraDouble).AsDouble := pResultSet.GetDouble(pIndex+1);
+    (pPropertyValue as IInfraDouble).AsDouble := pResultSet.GetDouble(pIndex);
 end;
 
 procedure SetAsBoolean(const pStatement: IZPreparedStatement; pIndex: Integer;
   const pParamValue: IInfraType);
 begin
   if pParamValue.IsNull then
-    pStatement.SetNull(pIndex+1, stBoolean)
+    pStatement.SetNull(pIndex, stBoolean)
   else
-    pStatement.SetBoolean(pIndex+1, (pParamValue as IInfraBoolean).AsBoolean)
+    pStatement.SetBoolean(pIndex, (pParamValue as IInfraBoolean).AsBoolean)
 end;
 
 procedure GetBoolean(const pResultSet: IZResultSet; pIndex: Integer;
   const pPropertyValue: IInfraType);
 begin
-  if pResultSet.IsNull(pIndex+1) then
+  if pResultSet.IsNull(pIndex) then
     pPropertyValue.Clear
   else
     (pPropertyValue as IInfraBoolean).AsBoolean :=
-      pResultSet.GetBoolean(pIndex+1);
+      pResultSet.GetBoolean(pIndex);
 end;
 
 procedure SetAsDate(const pStatement: IZPreparedStatement; pIndex: Integer;
   const pParamValue: IInfraType);
 begin
   if pParamValue.IsNull then
-    pStatement.SetNull(pIndex+1, stDate)
+    pStatement.SetNull(pIndex, stDate)
   else
-    pStatement.SetDate(pIndex+1, (pParamValue as IInfraDate).AsDate)
+    pStatement.SetDate(pIndex, (pParamValue as IInfraDate).AsDate)
 end;
 
 procedure GetDate(const pResultSet: IZResultSet; pIndex: Integer;
   const pPropertyValue: IInfraType);
 begin
-  if pResultSet.IsNull(pIndex+1) then
+  if pResultSet.IsNull(pIndex) then
     pPropertyValue.Clear
   else
-    (pPropertyValue as IInfraDate).AsDate := pResultSet.GetDate(pIndex+1);
+    (pPropertyValue as IInfraDate).AsDate := pResultSet.GetDate(pIndex);
 end;
 
 procedure SetAsTime(const pStatement: IZPreparedStatement; pIndex: Integer;
   const pParamValue: IInfraType);
 begin
   if pParamValue.IsNull then
-    pStatement.SetNull(pIndex+1, stTime)
+    pStatement.SetNull(pIndex, stTime)
   else
-    pStatement.SetTime(pIndex+1, (pParamValue as IInfraTime).AsTime)
+    pStatement.SetTime(pIndex, (pParamValue as IInfraTime).AsTime)
 end;
 
 procedure GetTime(const pResultSet: IZResultSet; pIndex: Integer;
   const pPropertyValue: IInfraType);
 begin
-  if pResultSet.IsNull(pIndex+1) then
+  if pResultSet.IsNull(pIndex) then
     pPropertyValue.Clear
   else
-    (pPropertyValue as IInfraTime).AsTime := pResultSet.GetTime(pIndex+1);
+    (pPropertyValue as IInfraTime).AsTime := pResultSet.GetTime(pIndex);
 end;
 
 procedure SetAsDateTime(const pStatement: IZPreparedStatement; pIndex: Integer;
   const pParamValue: IInfraType);
 begin
   if pParamValue.IsNull then
-    pStatement.SetNull(pIndex+1, stTimestamp)
+    pStatement.SetNull(pIndex, stTimestamp)
   else
-    pStatement.SetTimestamp(pIndex+1, (pParamValue as IInfraDateTime).AsDateTime);
+    pStatement.SetTimestamp(pIndex, (pParamValue as IInfraDateTime).AsDateTime);
 end;
 
 procedure GetDateTime(const pResultSet: IZResultSet; pIndex: Integer;
   const pPropertyValue: IInfraType);
 begin
-  if pResultSet.IsNull(pIndex+1) then
+  if pResultSet.IsNull(pIndex) then
     pPropertyValue.Clear
   else
     (pPropertyValue as IInfraDateTime).AsDateTime :=
-      pResultSet.GetTimeStamp(pIndex+1);
+      pResultSet.GetTimeStamp(pIndex);
 end;
 
 procedure RegisterZeosTypeMapping;
@@ -215,7 +217,4 @@ begin
   end;
 end;
 
-initialization
-  RegisterZeosTypeMapping;
-  
 end.

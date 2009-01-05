@@ -14,8 +14,7 @@ uses
   InfraCommon,
   InfraCommonIntf,
   InfraValueTypeIntf,
-  InfraPersistenceIntf,
-  InfraPersistenceAnnotationIntf;
+  InfraPersistenceIntf;
   
 type  
   TConfiguration = class(TBaseElement, IConfiguration)
@@ -130,20 +129,16 @@ type
     FConnnectionProvider: IConnectionProvider;
     FParse: IParseParams;
     function GetReader: ITemplateReader;
-    procedure SetParameters(
-      const pParams: IParseParams;
-      const pStatement: IZPreparedStatement;
+    procedure SetParameters(const pStatement: IZPreparedStatement;
       const pSqlCommand: ISqlCommand);
     function GetRowFromResultSet(
-      const pSqlCommand: ISQLCommand;
+      const pSqlCommand: ISQLCommandQuery;
       const pResultSet: IZResultSet): IInfraObject;
-    procedure SetPropertyFromResultSet(const pAttribute: IInfraType;
-      const pResultSet: IZResultSet; pIndex: Integer);
   protected
     procedure DoLoad(const pST: IZPreparedStatement; const pSqlCommand:
-        ISqlCommand; const pList: IInfraList);
+      ISQLCommandQuery; const pList: IInfraList);
     procedure SetConnection(const pConnection: IZConnection);
-    procedure Load(const pSqlCommand: ISqlCommand; const pList: IInfraList);
+    procedure Load(const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): IInfraInteger;
   public
     constructor Create(pConfiguration: IConfiguration); reintroduce;
@@ -301,7 +296,6 @@ end;
 {**
   Cria uma nova instância de TInfraConnectionProvider.
   @param MaxSize Tamanho máximo do Pool de conexões
-  @param ADriverManager Um objeto do tipo IZDriverManager que criará as conexões
   @param AConfiguration Um objeto do tipo IConfiguration que contém todas as
     informações para criar uma nova conexão
 }
@@ -520,7 +514,7 @@ end;
 function TSQLCommandQuery.GetList: IInfraList;
 begin
   Result := CreateList;
-  FPersistenceEngine.Load(Self, Result);  
+  FPersistenceEngine.Load(Self, Result);
 end;
     
 procedure TSQLCommandQuery.SetClassID(const Value: TGUID);
@@ -549,7 +543,8 @@ begin
   Result := TSQLCommandQuery.Create(FPersistenceEngine);
   Result.Name := pCommandName;
   Result.ListID := IInfraList;
-  Result.ClassID := pClassID;
+  if not IsEqualGUID(pClassID, NullGUID) then
+    Result.ClassID := pClassID;
 end;
 
 function TSession.Load(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommandQuery;
@@ -560,7 +555,10 @@ end;
 
 function TSession.Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery;
 begin
-  Result := Load(pCommandName, pObj.TypeInfo.TypeID);
+  if Assigned(pObj) then
+    Result := Load(pCommandName, pObj.TypeInfo.TypeID)
+  else
+    Result := Load(pCommandName, NullGUID);
   if Assigned(pObj) then
     Result.Params.AddObject(pObj);
 end;
@@ -611,6 +609,7 @@ begin
     raise EInfraArgumentError.Create('Configuration in PersistenceEngine.Create');
   FConfiguration := pConfiguration;
   FConnnectionProvider := TConnectionProvider.Create(pConfiguration);
+  FParse := TParseParams.Create;
 end;
 
 function TPersistenceEngine.GetReader: ITemplateReader;
@@ -637,20 +636,22 @@ var
   vReader: ITemplateReader;
   vSQL: string;
   vStatement: IZPreparedStatement;
+  vConnection: IZConnection;
 begin
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
   FParse.Parse(vSQL);
   // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui antes de chamar o PrepareStatementWithParams
   // *** 2) Acho que poderia chamar o PrepareStatementWithParams passando o FParse.Params.GetParams
-  vStatement := FConnnectionProvider.GetConnection.PrepareStatement(vSQL);
-  SetParameters(FParse, vStatement, pSqlCommand);
+  vConnection := FConnnectionProvider.GetConnection;
+  vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
+  SetParameters(vStatement, pSqlCommand);
   // *** 3) Acho que pode retornar um simples Integer.
   Result := TInfraInteger.NewFrom(vStatement.ExecuteUpdatePrepared);
 end;
 
-procedure TPersistenceEngine.DoLoad(const pST: IZPreparedStatement; const
-    pSqlCommand: ISqlCommand; const pList: IInfraList);
+procedure TPersistenceEngine.DoLoad(const pST: IZPreparedStatement;
+  const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
 var
   vResultSet: IZResultSet;
   vObject: IInfraObject;
@@ -659,7 +660,8 @@ begin
   try
     while vResultSet.Next do
     begin
-      vObject := GetRowFromResultSet(pSqlCommand, vResultSet);
+      vObject :=
+        GetRowFromResultSet(pSqlCommand, vResultSet);
       pList.Add(vObject);
     end;
   finally
@@ -675,12 +677,13 @@ end;
   Seta o estado persistent e clean ao objeto criado
   faz a carga dos atributos com base no registro
   Adiciona o novo objeto em pList retorna a lista }
-procedure TPersistenceEngine.Load(const pSqlCommand: ISqlCommand; 
+procedure TPersistenceEngine.Load(const pSqlCommand: ISQLCommandQuery; 
   const pList: IInfraList);
 var
   vReader: ITemplateReader;
   vSQL: string;
   vStatement: IZPreparedStatement;
+  vConnection: IZConnection;
 begin
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
@@ -690,11 +693,9 @@ begin
   // *** 2) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   // antes de chamar o PrepareStatementWithParams
   try
-    // *** 3) Não deveriamos passar os nomes dos parametros ali no PrepareStatementWithParams.
-    // Desta forma podemos passar apenas o vStatement e o SQLCommand para o SetParameters.
-    vStatement := FConnnectionProvider.GetConnection.PrepareStatementWithParams(vSQL, nil);
-    SetParameters(FParse, vStatement, pSqlCommand);
-
+    vConnection := FConnnectionProvider.GetConnection;
+    vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
+    SetParameters(vStatement, pSqlCommand);
     DoLoad(vStatement, pSqlCommand, pList);
   finally
     vStatement.Close;
@@ -706,49 +707,63 @@ begin
   // preencher o connection provider com o pConnection
 end;
 
-function TPersistenceEngine.GetRowFromResultSet(const pSqlCommand: ISQLCommand;
+// *** 1) Como poderiamos carregar Objetos/Listas relacionados ao objeto atual a
+// ***    partir de colunas vindos no resultset frutos de um join?
+function TPersistenceEngine.GetRowFromResultSet(
+  const pSqlCommand: ISQLCommandQuery;
   const pResultSet: IZResultSet): IInfraObject;
 var
   vIndex: integer;
   vAttribute: IInfraType;
+  vZeosType: IZTypeAnnotation;
+  vAliasName: string;
 begin
-  Result := TypeService.CreateInstance((pSqlCommand as ISQLCommandQuery).GetClassID) as IInfraObject;
+  // *** Será que isso deveria estar aqui?????
+  if IsEqualGUID(pSqlCommand.GetClassID, NullGUID) then
+    Raise EPersistenceEngineError.Create(
+      cErrorPersistenceEngineObjectIDUndefined);
+  Result := TypeService.CreateInstance(pSqlCommand.GetClassID) as IInfraObject;
   if Assigned(Result) then
   begin
-    for vIndex :=0 to pResultSet.GetMetadata.GetColumnCount-1 do 
+    // A lista de colunas do ResultSet.GetMetadata do Zeos começa do 1.
+    for vIndex := 1 to pResultSet.GetMetadata.GetColumnCount do
     begin
-      vAttribute := Result.TypeInfo.GetProperty(
-        Result, pResultSet.GetMetadata.GetColumnName(vIndex)) as IInfraType;
-      SetPropertyFromResultSet(vAttribute, pResultSet, vIndex);
+      vAliasName := pResultSet.GetMetadata.GetColumnLabel(vIndex);
+      vAttribute :=
+        Result.TypeInfo.GetProperty(Result, vAliasName) as IInfraType;
+      if not Assigned(vAttribute) then
+        Raise EPersistenceEngineError.CreateFmt(
+          cErrorPersistenceEngineAttributeNotFound,
+          [vAliasName, pResultSet.GetMetadata.GetColumnName(vIndex)]);
+      if Supports(vAttribute.TypeInfo, IZTypeAnnotation, vZeosType) then
+        vZeosType.NullSafeGet(pResultSet, vIndex, vAttribute)
+      else
+        Raise EPersistenceEngineError.CreateFmt(
+          cErrorPersistenceEngineCannotMapAttribute, [vAttribute.TypeInfo.Name]);
     end;
   end;
 end;
 
-procedure TPersistenceEngine.SetPropertyFromResultSet(
-  const pAttribute: IInfraType; const pResultSet: IZResultSet; pIndex: Integer);
-begin
-  // *** Teria de tratar o InfraType aqui se for um Object ou InfraList
-  // *** por que provavelmente estará apontando para outro objeto e
-  // *** talvez tem que carregar com base em colunas de um join no template.
-  (pAttribute.TypeInfo as IZTypeAnnotation).NullSafeGet(pResultSet,
-    pIndex, pAttribute)
-end;
-
-procedure TPersistenceEngine.SetParameters(const pParams: IParseParams; const pStatement: IZPreparedStatement; const pSqlCommand: ISqlCommand);
+// *** o que acontece caso tenhamos um template com nomes de parametros repetidos?
+procedure TPersistenceEngine.SetParameters(
+  const pStatement: IZPreparedStatement; const pSqlCommand: ISqlCommand);
 var
   vIndex: integer;
-  vTypeInfo: IClassInfo;
   vParamValue: IInfraType;
   vParams: TStrings;
+  vZeosType: IZTypeAnnotation;
 begin
-  vParams := pParams.GetParams;
+  vParams := pStatement.GetParameters;
   for vIndex := 0 to vParams.Count-1 do
   begin
     vParamValue := pSqlCommand.Params[vParams[vIndex]];
-    if Assigned(vParamValue) then
-      (vTypeInfo as IZTypeAnnotation).NullSafeSet(pStatement, vIndex,  vParamValue)
+    if Assigned(vParamValue)
+      and Supports(vParamValue.TypeInfo, IZTypeAnnotation, vZeosType) then
+      // Aumenta o vIndex por que no Zeos as colunas começam de 1
+      vZeosType.NullSafeSet(pStatement, vIndex+1, vParamValue)
     else
-      Raise EPersistenceengineError.CreateFmt(cErrorPersistenceEngineParamNotFound, [vParams[vIndex]]);
+      Raise EPersistenceEngineError.CreateFmt(
+        cErrorPersistenceEngineParamNotFound, [vParams[vIndex]]);
   end;
 end;
 
@@ -948,3 +963,5 @@ initialization
   InjectPersistenceService;
 
 end.
+
+
