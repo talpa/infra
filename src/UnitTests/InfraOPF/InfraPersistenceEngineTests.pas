@@ -71,7 +71,7 @@ end;
 procedure TTestPersistenceEngine.TestLoadWithInvalidArgs2;
 begin
   ExpectedException := EInfraArgumentError;
-  FPersistenceEngine.Load(TSQLCommand.Create(FPersistenceEngine), nil);
+  FPersistenceEngine.Load(TSQLCommandQuery.Create(FPersistenceEngine), nil);
   ExpectedException := nil;
 end;
 

@@ -101,15 +101,13 @@ begin
 end;
 
 function RegisterAccountOnReflection: IClassInfo;
-var
-  vPropInfo: IPropertyInfo;
 begin
   with TypeService do
   begin
     with AddType(IAccount, 'Account', TAccount, IInfraObject, GetType(IInfraObject)) do
     begin
       AddConstructorInfo('Create', nil, @TAccount.Create);
-      AddPropertyInfo('ID', GetType(IInfraInteger), @TAccount.GetID, @TAccount.SetID);
+      AddPropertyInfo('Id', GetType(IInfraInteger), @TAccount.GetID, @TAccount.SetID);
       AddPropertyInfo('Name', GetType(IInfraString), @TAccount.GetName, @TAccount.SetName);
       AddPropertyInfo('AccountNumber', GetType(IInfraString), @TAccount.GetAccountNumber, @TAccount.SetAccountNumber);
       AddPropertyInfo('InitialBalance', GetType(IInfraDouble), @TAccount.GetInitialBalance, @TAccount.SetInitialBalance);

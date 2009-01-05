@@ -30,7 +30,10 @@ resourcestring
   cErrorTemplateTryCreateClassBase = 'Classe base TemplateReader não deve ser instanciada';
   cErrorTemplateFileNotFound = 'Template %s não vazio ou não encontrado';
   cErrorTemplateTypeInvalid = 'Classe de leitura de templates inválida ou não definida';
+  cErrorPersistenceEngineObjectIDUndefined = 'Tipo de objeto não definido no SQLCommand';
   cErrorPersistenceEngineParamNotFound = 'Parâmetro %s não encontrado';
+  cErrorPersistenceEngineAttributeNotFound = 'Atributo não encontrado para o alias %s (coluna: %s)';
+  cErrorPersistenceEngineCannotMapAttribute = 'Não foi possivel mapear valor para o atributo %s';
   // cErrorTemplatePathNotDefined = 'Caminho dos templates não definido';
 
 implementation

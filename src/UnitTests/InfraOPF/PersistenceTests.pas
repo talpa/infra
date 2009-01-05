@@ -11,13 +11,12 @@ uses
 type
   TPersistenceTests = class(TTestCase)
   private
-    FConfiguration: IConfiguration;
   protected
     procedure SetUp; override;
     procedure TearDown; override;
   published
-    procedure TestLoadObjectByOID;
-    procedure TestParse;
+    procedure TestLoadWithObject;
+    procedure TestLoadWithParams;
   end;
 
 implementation
@@ -61,24 +60,30 @@ end;
 procedure TPersistenceTests.TearDown;
 begin
   inherited;
+  
 end;
 
-procedure TPersistenceTests.TestLoadObjectByOID;
+procedure TPersistenceTests.TestLoadWithObject;
 var
   vSession: ISession;
   vObj: IAccount;
   vSQLCommand: ISQLCommandQuery;
 begin
-  // Abre uma nova sessão a ser utilizada para carregar e popular o objeto
+  // *** Acho que aqui deveria fazer algo para deixar a aplicação num estado
+  // *** apto a este teste.
+
+  // abre uma nova sessão e cria um objeto preenchendo apenas as propriedades
+  // que irão servir de parâmetro para a busca
   vSession := PersistenceService.OpenSession;
-  
   vObj := TAccount.Create;
   vObj.Id.AsInteger := 1;
-  
-  // carrega o objeto Account com base no oid fornecido.
+
+  // Prepara a carga, definindo um objeto como parâmetro
   vSQLCommand := vSession.Load('LoadAccountbyId', vObj);
-  vObj := vSQLCommand.GetResult as IAccount; 
-  
+
+  // Executa a carga do objeto
+  vObj := vSQLCommand.GetResult as IAccount;
+
   // verifica se o objeto realmente foi carregado.
   CheckNotNull(vObj, 'Objecto não foi carregado');
   CheckEquals('BB 1361', vObj.Name.AsString, 'Nome conta incompatível');
@@ -87,15 +92,33 @@ begin
   CheckTrue(SameValue(1524.25, vObj.CurrentBalance.AsDouble), 'Saldo atual incompatível');
 end;
 
-procedure TPersistenceTests.TestParse;
+procedure TPersistenceTests.TestLoadWithParams;
 var
-  vP: IParseParams;
+  vSession: ISession;
+  vObj: IAccount;
+  vSQLCommand: ISQLCommandQuery;
 begin
-  vP := TParseParams.Create;
-  vP.Parse('Select #MacroParam* ::Teste ##abc #:yyy #:xxx from teste where x = :teste1');
-  ShowMessage(vP.GetParams.Text);
-  ShowMessage(vP.GetMacroParams.Text);
-  // CheckEquals('teste1', sL[0], 'Não sao identicos');
+  // *** Acho que aqui deveria fazer algo para deixar a aplicação num estado
+  // *** apto a este teste.
+
+  // abre uma nova sessão e cria um objeto preenchendo apenas as propriedades
+  // que irão servir de parâmetro para a busca
+  vSession := PersistenceService.OpenSession;
+
+  // Prepara a carga, definindo um parâmetro comum.
+  vSQLCommand := vSession.Load('LoadAccountbyId');
+  vSQLCommand.ClassID := IAccount;
+  vSQLCommand.Params['Id'] := TInfraInteger.NewFrom(1);
+
+  // Executa a carga do objeto
+  vObj := vSQLCommand.GetResult as IAccount;
+
+  // verifica se o objeto realmente foi carregado.
+  CheckNotNull(vObj, 'Objecto não foi carregado');
+  CheckEquals('BB 1361', vObj.Name.AsString, 'Nome conta incompatível');
+  CheckEquals('1361-2', vObj.AccountNumber.AsString, 'Número da conta incompatível');
+  CheckTrue(SameValue(125.3, vObj.InitialBalance.AsDouble), 'Saldo inicial incompatível');
+  CheckTrue(SameValue(1524.25, vObj.CurrentBalance.AsDouble), 'Saldo atual incompatível');
 end;
 
 initialization

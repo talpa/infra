@@ -1,3 +1,18 @@
+{
+  1) Acho que nao precisa de um teste para cada instrução pois nao é um parser
+     de sqls e sim de parametros existente em uma string.
+
+  2) Deve testar a questão de parâmetros macro exemplo:
+     SQL = 'Select #Macro1 from teste where x = :Param1'
+     Isso deveria retornar 1 item em GetParams e 1 item em GetMacroParams
+
+  3) Deve testar a questão de falsos parâmetros exemplo:
+     SQL = 'Select ##Macro1 from teste'
+     SQL = 'Select #:Macro1 from teste'
+     SQL = 'Select ::Macro1 from teste'
+     SQL = 'Select :#Macro1 from teste'
+     Estes nao deveriam ser considerados parâmetros pelo que está implementado
+}
 unit InfraParseParamsTests;
 
 interface
@@ -17,7 +32,6 @@ type
     procedure TestParserInsert;
     procedure TestParserUpdate;
     procedure TestParserDelete;
-
     procedure TestParserParamsRepeated;
   end;
 
@@ -106,4 +120,5 @@ end;
 
 initialization
   TestFramework.RegisterTest(TTestParseParams.Suite);
+  
 end.

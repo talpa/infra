@@ -264,20 +264,27 @@ begin
   Pessoa := TPerson.Create;
   Pessoa.Name.AsString := 'Marcos';
   Pessoa.Email.AsString := 'mrbar2000@gmail.com';
+
   Value := FPersoninfo.GetProperty(Pessoa as IElement, 'Name') as IInfraString;
   CheckEquals(Pessoa.Name.AsString, Value.AsString,
     'Wrong person´s name getting by reflection');
+
   Value := FPersoninfo.GetProperty(Pessoa as IElement, 'Email') as IInfraString;
   CheckEquals(Pessoa.Email.AsString, Value.AsString,
     'Wrong person´s mail getting by reflection');
+
   Value := FPersoninfo.GetProperty(Pessoa as IElement,
     'Address.Street') as IInfraString;
   CheckEquals(Pessoa.Address.Street.AsString, Value.AsString,
     'Wrong person''''s Address.Street getting by reflection');
+
   Value := FPersoninfo.GetProperty(Pessoa as IElement,
     'Address.Quarter') as IInfraString;
   CheckEquals(Pessoa.Address.Quarter.AsString, Value.AsString,
     'Wrong person''''s Address.Quarter getting by reflection');
+
+  Value := FPersoninfo.GetProperty(Pessoa as IElement, 'NAME') as IInfraString;
+  CheckNotNull(Value, 'Propriedade NAME não foi encontrado. GetProperty deveria ser CaseInsensitive');
 end;
 
 procedure TClassInfoTests.TestPropertyInfo;
@@ -286,6 +293,9 @@ var
 begin
   FProperty := FPersonInfo.GetPropertyInfo('Email');
   CheckNotNull(FProperty, 'Email property should be in Person');
+
+  FProperty := FPersonInfo.GetPropertyInfo('EMAIL');
+  CheckNotNull(FProperty, 'EMAIL property should be in Person. GetPropertyInfo deveria ser CaseInsensitive');
 
   FProperty := FStudentInfo.GetPropertyInfo('Email');
   CheckNotNull(FProperty, 'Email property should be in Student');
