@@ -25,6 +25,15 @@ Marcos
 - Projetar e implementar a carga automatica de relacionamentos 1-1, 1-n, n-n a partir de anotações;
 - Copiar o q for relevante da documentação de outros frameworks existentes no mercado para melhoria da documentação da persistencia;
 
+- Criar um esquema de cache para os templates já lidos:
+  Assim os templates não será preciso ficar sendo carregados de arquivo a cada load. 
+  Ao carregar um objeto pela primeira vez, um objeto de cache seria criado e preenchido inicialmente com a SQL, Tipos de Lista e de classe;
+  Ver a necessidade e possibilidade de um garbage para este cache;
+
+- Definir o tipo de lista no registro de uma classe:
+  Adicionar no AddType da reflexão o tipo de lista para a classe que está sendo registrada, por padrao nil ou nullguid;
+  Isso vai evitar na maioria dos cassos ter de passar o tipo de lista para o Session.Load.
+
 Marcelo
 - Padronizar ou refatorar os nomes das classes de Template e de Exception da Persistencia;
 - Criar diagramas UML da Persistencia;
