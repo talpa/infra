@@ -25,11 +25,24 @@ type
     procedure TestParserParamNoName;
     procedure TestParserMacroNoName;
     procedure TestParserMacrosAndParams;
+    procedure TestParserMacrosAndParamsAndComments;
   end;
 
 implementation
 
 { TTestParseParams }
+
+procedure TTestParseParams.SetUp;
+begin
+  inherited;
+  FParser := TParseParams.Create;
+end;
+
+procedure TTestParseParams.TearDown;
+begin
+  FParser := nil;
+  inherited;
+end;
 
 procedure TTestParseParams.TestParserInsert;
 const
@@ -138,19 +151,41 @@ begin
   ExpectedException := nil;
 end;
 
-procedure TTestParseParams.SetUp;
+procedure TTestParseParams.TestParserMacrosAndParamsAndComments;
+const
+  cSql = '/* comentario multi-linha '#13#10+
+    ' linha 2 do comentario #macro_ignorada1'#13#10+
+    ' linha 3 do comentario :codigo'#13#10+
+    '*/#inst1 select #macro1 --teste de comentario :codigo'#13#10+
+    'from #macro2 /* outro comentario multi-linha '#13#10+
+    ' linha 2 do comentario '#13#10+
+    ' linha 3 do comentario #macro_ignorada2'#13#10+
+    '*/'#13#10+
+    'where id = :id '#13#10+
+    '  or codigo = :codigo '#13#10+
+    '  or campo3 = ::campo3 '#13#10+
+    '#inst2 order by #macro3 ##macro4';
+var
+  vParams: TStrings;
+  vMacros: TStrings;
 begin
-  inherited;
-  FParser := TParseParams.Create;
-end;
+  FParser.Parse(cSql);
+  vParams := FParser.GetParams;
+  CheckEquals(2, vParams.Count);
+  CheckEqualsString('id', vParams[0]);
+  CheckEqualsString('codigo', vParams[1]);
 
-procedure TTestParseParams.TearDown;
-begin
-  FParser := nil;
-  inherited;
+  vMacros := FParser.GetMacroParams;
+  CheckEquals(5, vMacros.Count);
+  CheckEqualsString('inst1', vMacros[0]);
+  CheckEqualsString('macro1', vMacros[1]);
+  CheckEqualsString('macro2', vMacros[2]);
+  CheckEqualsString('inst2', vMacros[3]);
+  CheckEqualsString('macro3', vMacros[4]);
 end;
 
 initialization
   TestFramework.RegisterTest(TTestParseParams.Suite);
 
 end.
+
