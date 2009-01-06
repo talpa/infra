@@ -32,9 +32,6 @@ type
     procedure SetValue(const pName: string; const Value: Integer); overload;
     procedure SetValue(const pName: string; const Value: Double); overload;
     procedure SetValue(const pName: string; const Value: string); overload;
-    function GetPropertyItem(const pName: string): string;
-    procedure SetPropertyItem(const pName: string; const Value: string);
-    property PropertyItem[const pName: string]: string read GetPropertyItem write SetPropertyItem;
     procedure Clear;
   end;
 

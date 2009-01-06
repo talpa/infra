@@ -45,15 +45,15 @@ begin
   // que o tipo de Connection específico poderar ler sem problema.
   with PersistenceService.Configuration do
   begin
-    PropertyItem[cCONFIGKEY_DRIVER] := 'firebird-2.0';
-    PropertyItem[cCONFIGKEY_USERNAME] := 'SYSDBA';
-    PropertyItem[cCONFIGKEY_PASSWORD] := 'masterkey';
-    PropertyItem[cCONFIGKEY_HOSTNAME] := 'localhost';
-    PropertyItem[cCONFIGKEY_DATABASENAME] :=
-      ExtractFilePath(Application.ExeName) + 'Data\DBDEMOS.FDB';
-    PropertyItem[cCONFIGKEY_TEMPLATETYPE] := 'TemplateReader_IO';
-    PropertyItem[cCONFIGKEY_TEMPLATEPATH] :=
-      ExtractFilePath(Application.ExeName) + 'Data';
+    SetValue(cCONFIGKEY_DRIVER, 'firebird-2.0');
+    SetValue(cCONFIGKEY_USERNAME, 'SYSDBA');
+    SetValue(cCONFIGKEY_PASSWORD, 'masterkey');
+    SetValue(cCONFIGKEY_HOSTNAME, 'localhost');
+    SetValue(cCONFIGKEY_DATABASENAME,
+      ExtractFilePath(Application.ExeName) + 'data\dbdemos.fdb');
+    SetValue(cCONFIGKEY_TEMPLATETYPE, 'TemplateReader_IO');
+    SetValue(cCONFIGKEY_TEMPLATEPATH,
+      ExtractFilePath(Application.ExeName) + 'Data');
   end;
 end;
 
