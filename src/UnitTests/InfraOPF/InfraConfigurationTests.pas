@@ -5,7 +5,7 @@ interface
 uses SysUtils, Classes, TestFramework, InfraPersistenceIntf;
 
 type
-  TTestConnectionProvider = class(TTestCase)
+  TTestConfiguration = class(TTestCase)
   private
     FConfiguration: IConfiguration;
   protected
@@ -33,19 +33,19 @@ uses
 
 { TTestConnectionProvider }
 
-procedure TTestConnectionProvider.Setup;
+procedure TTestConfiguration.Setup;
 begin
   inherited;
   FConfiguration := TConfiguration.Create;
 end;
 
-procedure TTestConnectionProvider.TearDown;
+procedure TTestConfiguration.TearDown;
 begin
   FConfiguration := nil; // Necessário para evitar AV
   inherited;
 end;
 
-procedure TTestConnectionProvider.TestGetValueAsInteger;
+procedure TTestConfiguration.TestGetValueAsInteger;
 const
   vExpected = 10;
 var
@@ -56,7 +56,7 @@ begin
   CheckEquals(vActual, vExpected);
 end;
 
-procedure TTestConnectionProvider.TestGetValueAsIntegerAgain;
+procedure TTestConfiguration.TestGetValueAsIntegerAgain;
 const
   vExpected = 20;
 var
@@ -67,7 +67,7 @@ begin
   CheckEquals(vActual, vExpected);
 end;
 
-procedure TTestConnectionProvider.TestGetValueAsIntegerInvalid;
+procedure TTestConfiguration.TestGetValueAsIntegerInvalid;
 const
   vExpected = -1;
 var
@@ -78,7 +78,7 @@ begin
   CheckEquals(vActual, vExpected);
 end;
 
-procedure TTestConnectionProvider.TestGetValueAsIntegerNoKey;
+procedure TTestConfiguration.TestGetValueAsIntegerNoKey;
 const
   vExpected = 25;
 var
@@ -88,7 +88,7 @@ begin
   CheckEquals(vActual, vExpected);
 end;
 
-procedure TTestConnectionProvider.TestPropertyItem;
+procedure TTestConfiguration.TestPropertyItem;
 const
   sExpected01 = 'Valor1';
   sExpected02 = 'Valor2';
@@ -100,7 +100,7 @@ begin
   CheckEqualsString(sExpected02, FConfiguration.GetAsString('teste2'));
 end;
 
-procedure TTestConnectionProvider.TestGetValueAsDouble;
+procedure TTestConfiguration.TestGetValueAsDouble;
 const
   vExpected = 1.73;
 var
@@ -111,7 +111,7 @@ begin
   CheckEquals(vActual, vExpected, 0.00001);
 end;
 
-procedure TTestConnectionProvider.TestGetValueAsDoubleAgain;
+procedure TTestConfiguration.TestGetValueAsDoubleAgain;
 const
   vExpected = 21.47;
 var
@@ -122,7 +122,7 @@ begin
   CheckEquals(vActual, vExpected, 0.00001);
 end;
 
-procedure TTestConnectionProvider.TestGetValueAsDoubleNoKey;
+procedure TTestConfiguration.TestGetValueAsDoubleNoKey;
 const
   vExpected = -1200.1234;
 var
@@ -132,7 +132,7 @@ begin
   CheckEquals(vActual, vExpected, 0.00001);
 end;
 
-procedure TTestConnectionProvider.TestGetValueAsDoubleInvalid;
+procedure TTestConfiguration.TestGetValueAsDoubleInvalid;
 const
   vExpected = 21.47;
 var
@@ -143,7 +143,7 @@ begin
   CheckEquals(vActual, vExpected, 0.00001);
 end;
 
-procedure TTestConnectionProvider.TestGetValueAsString;
+procedure TTestConfiguration.TestGetValueAsString;
 const
   vExpected = 'valor_Esperado';
 var
@@ -154,7 +154,7 @@ begin
   CheckEqualsString(vActual, vExpected);
 end;
 
-procedure TTestConnectionProvider.TestGetValueAsStringAgain;
+procedure TTestConfiguration.TestGetValueAsStringAgain;
 const
   vExpected = 'Valor_Esperado';
 var
@@ -165,7 +165,7 @@ begin
   CheckEqualsString(vActual, vExpected);
 end;
 
-procedure TTestConnectionProvider.TestGetValueAsStringNoKey;
+procedure TTestConfiguration.TestGetValueAsStringNoKey;
 const
   vExpected = 'Valor_Esperado';
 var
@@ -176,6 +176,6 @@ begin
 end;
 
 initialization
-  TestFramework.RegisterTest(TTestConnectionProvider.Suite);
+  TestFramework.RegisterTest(TTestConfiguration.Suite);
 end.
 
