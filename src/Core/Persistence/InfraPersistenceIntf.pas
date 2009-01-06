@@ -127,7 +127,7 @@ type
     ['{F1C7686A-43B6-4FE7-8BF1-6A9C6BC54AE4}']
     procedure SetConnection(const pConnection: IZConnection);
     procedure Load(const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
-    function Execute(const pSqlCommand: ISqlCommand): IInfraInteger;
+    function Execute(const pSqlCommand: ISqlCommand): Integer;
   end;
 
   ITemplateReader = interface(IElement)

@@ -1,4 +1,3 @@
-// xxx
 unit InfraPersistence;
 
 interface
@@ -139,7 +138,7 @@ type
       ISQLCommandQuery; const pList: IInfraList);
     procedure SetConnection(const pConnection: IZConnection);
     procedure Load(const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
-    function Execute(const pSqlCommand: ISqlCommand): IInfraInteger;
+    function Execute(const pSqlCommand: ISqlCommand): Integer;
   public
     constructor Create(pConfiguration: IConfiguration); reintroduce;
   end;
@@ -597,7 +596,7 @@ var
 begin
   Result := 0;
   for i := 0 to FCommandList.Count - 1 do
-    Result := Result + FPersistenceEngine.Execute(FCommandList[i]).AsInteger;
+    Result := Result + FPersistenceEngine.Execute(FCommandList[i]);
 end;
 
 { TPersistenceEngine }
@@ -631,7 +630,7 @@ end;
   pegar o connection no connectionprovider
   executa a sql  e retornar  a quantidade de registros afetados
 }
-function TPersistenceEngine.Execute(const pSqlCommand: ISqlCommand): IInfraInteger;
+function TPersistenceEngine.Execute(const pSqlCommand: ISqlCommand): Integer;
 var
   vReader: ITemplateReader;
   vSQL: string;
@@ -647,7 +646,7 @@ begin
   vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
   SetParameters(vStatement, pSqlCommand);
   // *** 3) Acho que pode retornar um simples Integer.
-  Result := TInfraInteger.NewFrom(vStatement.ExecuteUpdatePrepared);
+  Result := vStatement.ExecuteUpdatePrepared;
 end;
 
 procedure TPersistenceEngine.DoLoad(const pST: IZPreparedStatement;
@@ -963,5 +962,3 @@ initialization
   InjectPersistenceService;
 
 end.
-
-

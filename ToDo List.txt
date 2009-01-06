@@ -1,0 +1,36 @@
+=== Separado por responsabilidade de jogar no issues ===
+
+Marcos George
+- Montar Classe para execução direta de instruções contra o banco para poder ser usado nos testes;
+- Testar e corrigir se necessária a implementação do Save e Flush;
+- Corrigir os testes unitários q foram quebrados;
+- Concluir a documentação das classes de persistencia já implementadas;
+- Criar um documento de padronização no wiki, contendo:
+  * Padrão da legenda de descricao do commit no SVN: CHG = change, NEW = Novidades, BUG = Bugfixes;
+  * Mostrar como sempre deve-se verificar as alterações em todas as units antes de dar o commit;
+  * Definir o modelo de reunioes
+    Nos domingos ou nas segundas pra estabelecer metas
+    Às quintas para fazer um apanhado das mudancas e ver se será possível bater a meta (ou fechar, pra ter uma versão funcional no final da semana)
+
+Marcos
+- Refatorar o ConnectionProvider implementando o Pool de connexões thread-safe e os testes unitários e documentação para tal;
+  temos que montar uma tarefa relacionada ao pool (acho que este cara deve ser até uma unit separada, pela caracteristica do individuo)
+- Dividir o persistence engine para que o preenchimento do objeto fique separada da carga;
+- Melhorar a persistencia de forma ao template comportar macro substituição;
+- Projetar e implementar a carga automatica de relacionamentos 1-1, 1-n, n-n a partir de anotações;
+- Converter o parse de parametros para usar expressao regulares (segundo o teste feito por MG)
+  Expressoes regulares para achar os parametros:
+  Remover: (\/\*(.*)\*\/|--(.*)|##\w+|#:\w+|:#\w+|::\w+)
+  Obter para FParams: \#\w+
+  Obter para FMacroParams: \:\w+
+- Copiar o q for relevante da documentação de outros frameworks existentes no mercado para melhoria da documentação da persistencia;
+
+Marcelo
+- Padronizar ou refatorar os nomes das classes de Template e de Exception da Persistencia;
+- Criar diagramas UML da Persistencia;
+- Criar um Reader que gere instruções sql dinamicamente com base em anotações;
+- Criar uma camada de comunicação tcp e http baseado em synapse, ics, indy ou podendo escolher qualquer uma destas tecnologias;
+- Portar o framework para freepascal;
+- Compatibilizar com as outras versões do delphi acima da 6;
+- Criar um framework de serialização de objetos infra usando a reflexão e os infratypes;
+- Criar um serializador no formato AMF para poder ler objetos remotos flex (ver especificação do formato na adobe);
