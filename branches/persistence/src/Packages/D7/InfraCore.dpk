@@ -53,6 +53,7 @@ contains
   List_ClassInfo in '..\..\Core\Reflect\List_ClassInfo.pas',
   List_MemberInfo in '..\..\Core\Reflect\List_MemberInfo.pas',
   List_ParameterInfo in '..\..\Core\Reflect\List_ParameterInfo.pas',
-  List_RelationInfo in '..\..\Core\Reflect\List_RelationInfo.pas';
+  List_RelationInfo in '..\..\Core\Reflect\List_RelationInfo.pas',
+  RegExpr in '..\..\Core\Common\RegExpr.pas';
 
 end.

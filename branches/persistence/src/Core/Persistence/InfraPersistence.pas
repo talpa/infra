@@ -171,13 +171,6 @@ type
   private
     FParams: TStrings;
     FMacroParams: TStrings;
-    FSQL: String;
-    function IsLiteral(CurChar: Char): Boolean;
-    function NameDelimiter(CurChar: Char): Boolean;
-    procedure StripChar(TempBuf: PChar; Len: Word);
-    function StripLiterals(Buffer: PChar): string;
-    function IsParameter(CurPos: PChar; Literal: Boolean): Boolean;
-    function IsFalseParameter(CurPos: PChar; Literal: Boolean): Boolean;
   protected
     procedure Parse(const pSQL: string);
     function GetParams: TStrings;
@@ -195,7 +188,7 @@ uses
   InfraConsts,
   List_SQLCommandList,
   List_SQLCommandParam,
-  InfraValueType;
+  InfraValueType, RegExpr;
 
 { TConfiguration }
 
@@ -835,108 +828,37 @@ begin
   inherited;
 end;
 
-function TParseParams.NameDelimiter(CurChar: Char): Boolean;
-begin
-  Result := CurChar in [' ', ',', ';', ')', '*', #13, #10];
-end;
-
-function TParseParams.IsLiteral(CurChar: Char): Boolean;
-begin
-  Result := CurChar in cLiterals;
-end;
-
-procedure TParseParams.StripChar(TempBuf: PChar; Len: Word);
-begin
-  if TempBuf^ in cLiterals then
-    StrMove(TempBuf, TempBuf + 1, Len - 1);
-  if TempBuf[StrLen(TempBuf) - 1] in cLiterals then
-    TempBuf[StrLen(TempBuf) - 1] := #0;
-end;
-
-function TParseParams.StripLiterals(Buffer: PChar): string;
-var
-  vLen: Word;
-  vTempBuf: PChar;
-begin
-  vLen := StrLen(Buffer) + 1;
-  vTempBuf := AllocMem(vLen);
-  try
-    StrCopy(vTempBuf, Buffer);
-    StripChar(vTempBuf, vLen);
-    Result := StrPas(vTempBuf);
-  finally
-    FreeMem(vTempBuf, vLen);
-  end;
-end;
-
-function TParseParams.IsParameter(CurPos: PChar; Literal: Boolean): Boolean;
-begin
-  Result := not Literal and
-    ( (CurPos^ in [':', '#']) and not ((CurPos + 1)^ in [':', '#']) )
-end;
-
-function TParseParams.IsFalseParameter(CurPos: PChar; Literal: Boolean): Boolean;
-begin
-  Result := not Literal and
-    ( (CurPos^ in [':', '#']) and ((CurPos + 1)^ in [':', '#']) )
-end;
-
 procedure TParseParams.Parse(const pSQL: string);
 var
-  vValue, vCurPos, vStartPos: PChar;
-  vCurChar: Char;
-  vLiteral: Boolean;
-  vEmbeddedLiteral, vIsMacro: Boolean;
-  vName: string;
+  vSql: string;
+  vRegEx: TRegExpr;
 begin
-  FSQL := pSQL;
   FParams.Clear;
   FMacroParams.Clear;
-  vValue := PChar(FSQL);
-  vCurPos := vValue;
-  vLiteral := False;
-  vEmbeddedLiteral := False;
-  repeat
-    while (vCurPos^ in LeadBytes) do Inc(vCurPos, 2);
-    vCurChar := vCurPos^;
-    if IsParameter(vCurPos, vLiteral) then
-    begin
-      vIsMacro := (vCurChar = '#');
-      vStartPos := vCurPos;
-      while (vCurChar <> #0) and (vLiteral or not NameDelimiter(vCurChar)) do
-      begin
-        Inc(vCurPos);
-        while (vCurPos^ in LeadBytes) do Inc(vCurPos, 2);
-        vCurChar := vCurPos^;
-        if IsLiteral(vCurchar) then
-        begin
-          vLiteral := vLiteral xor True;
-          if vCurPos = vStartPos + 1 then vEmbeddedLiteral := True;
-        end;
-      end;
-      vCurPos^ := #0;
-      if vEmbeddedLiteral then
-      begin
-        vName := StripLiterals(vStartPos + 1);
-        vEmbeddedLiteral := False;
-      end
-      else vName := StrPas(vStartPos + 1);
-      if vIsMacro then
-        FMacroParams.Add(vName)
-      else
-        FParams.Add(vName);
-      vCurPos^ := vCurChar;
-      vStartPos^ := '?';
-      Inc(vStartPos);
-      StrMove(vStartPos, vCurPos, StrLen(vCurPos) + 1);
-      vCurPos := vStartPos;
-    end
-    else if IsFalseParameter(vCurPos, vLiteral) then
-      StrMove(vCurPos, vCurPos + 1, StrLen(vCurPos) + 1)
-    else if IsLiteral(vCurChar) then
-      vLiteral := vLiteral xor True;
-    Inc(vCurPos);
-  until vCurChar = #0;
+
+  vRegEx := TRegExpr.Create;
+  try
+    vRegEx.Expression := '(\/\*(.*?)\*\/)|##\w+|::\w+|--(.*?)$';
+    vRegEx.ModifierM := True;
+    vSql := vRegEx.Replace(pSQL, '', False)+' ';
+
+    vRegEx.Expression := '[:#]$|\s[:#]\s';
+    if vRegEx.Exec (vSql) then
+      raise EInfraParserError.Create('Parâmetro inválido');
+
+    vRegEx.Expression := '[\s\(]:(\w+)[^w]|[\s\(]#(\w+)[^w]|^#(\w+)[^w]';
+    if vRegEx.Exec (vSql) then
+    repeat
+      if vRegEx.MatchPos[1] > 0 then
+        FParams.Add (System.Copy (vSql, vRegEx.MatchPos[1], vRegEx.MatchLen[1]));
+      if vRegEx.MatchPos[2] > 0 then
+        FMacroParams.Add (System.Copy (vSql, vRegEx.MatchPos[2], vRegEx.MatchLen[2]));
+      if vRegEx.MatchPos[3] > 0 then
+        FMacroParams.Add (System.Copy (vSql, vRegEx.MatchPos[3], vRegEx.MatchLen[3]));
+    until not vRegEx.ExecNext;
+  finally
+    vRegEx.Free;
+  end;
 end;
 
 function TParseParams.GetMacroParams: TStrings;
