@@ -17,6 +17,8 @@ type
   published
     procedure TestLoadWithObject;
     procedure TestLoadWithParams;
+    procedure TestSaveWithObject;
+    procedure TestDeleteWithObject;
   end;
 
 implementation
@@ -61,6 +63,37 @@ procedure TPersistenceTests.TearDown;
 begin
   inherited;
   
+end;
+
+procedure TPersistenceTests.TestDeleteWithObject;
+var
+  vSession: ISession;
+  vObj: IAccount;
+  vCont :integer;
+begin
+  vSession := PersistenceService.OpenSession;
+  vObj := TAccount.Create;
+  vObj.Id.AsInteger := 2 ;
+  vSession.Delete('DeleteAccountByID', vObj);
+  vCont:=vSession.Flush;
+  CheckEquals(1, vCont, 'Não foi possivel apagar o registro');
+end;
+
+procedure TPersistenceTests.TestSaveWithObject;
+var
+  vSession: ISession;
+  vObj: IAccount;
+  vCont :integer;
+begin
+  vSession := PersistenceService.OpenSession;
+  vObj := TAccount.Create;
+  vObj.Id.AsInteger := 2;
+  vObj.AccountNumber.AsString:='1361-2';
+  vObj.InitialBalance.AsDouble:=125.3;
+  vObj.CurrentBalance.AsDouble:=1524.25;
+  vSession.Save('SaveAccount', vObj);
+  vCont:=vSession.Flush;
+  CheckEquals(1, vCont, 'Não foi possivel salvar o registro');
 end;
 
 procedure TPersistenceTests.TestLoadWithObject;
