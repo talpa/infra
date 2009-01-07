@@ -1,45 +1,102 @@
-=== Separado por responsabilidade de jogar no issues ===
+[DONE - Marcos George]
+- Montar classe DBUnit
+  Esta classe é para acesso direto ao banco para facilitar os testes unitários de classes como o PersistenceEngine
 
-Marcos George
-DONE: Montar Classe para execução direta de instruções contra o banco para poder ser usado nos testes;
 - Testar e corrigir se necessária a implementação do Save e Flush;
+
+[DONE - Marcos George]
 - Corrigir os testes unitários q foram quebrados;
-- Concluir a documentação das classes de persistencia já implementadas;
+
+- Fazer documentação das classes de persistencia;
+
 - Criar um documento de padronização no wiki, contendo:
-  * Padrão da legenda de descricao do commit no SVN: CHG = change, NEW = Novidades, BUG = Bugfixes;
-  * Mostrar como sempre deve-se verificar as alterações em todas as units antes de dar o commit;
-  * Definir o modelo de reunioes
-    Nos domingos ou nas segundas pra estabelecer metas
-    Às quintas para fazer um apanhado das mudancas e ver se será possível bater a meta (ou fechar, pra ter uma versão funcional no final da semana)
-DONE: Converter o parse de parametros para usar expressao regulares (segundo o teste feito por MG)
-  Expressoes regulares para achar os parametros:
+  Padrão da legenda de descricao do commit no SVN: CHG = change, NEW = Novidades, BUG = Bugfixes;
+  Mostrar como sempre deve-se verificar as alterações em todas as units antes de dar o commit;
+  Definir o modelo de reunioes
+  Nos domingos ou nas segundas pra estabelecer metas
+  Às quintas para fazer um apanhado das mudancas e ver se será possível bater a meta (ou fechar, pra ter uma versão funcional no final da semana)
+
+[DONE - Marcos George]
+- Criar um ParseParams usando expressão regular
+  Converter o parse de parametros atual para usar expressao regulares
+  Possíveis Expressoes regulares para achar os parametros:
   Remover: (\/\*(.*)\*\/|--(.*)|##\w+|#:\w+|:#\w+|::\w+)
   Obter para FParams: \#\w+
   Obter para FMacroParams: \:\w+
 
-Marcos
-- Refatorar o ConnectionProvider implementando o Pool de connexões thread-safe e os testes unitários e documentação para tal;
-  temos que montar uma tarefa relacionada ao pool (acho que este cara deve ser até uma unit separada, pela caracteristica do individuo)
-- Dividir o persistence engine para que o preenchimento do objeto fique separada da carga;
-- Melhorar a persistencia de forma ao template comportar macro substituição;
-- Projetar e implementar a carga automatica de relacionamentos 1-1, 1-n, n-n a partir de anotações;
-- Copiar o q for relevante da documentação de outros frameworks existentes no mercado para melhoria da documentação da persistencia;
+- Padronizar ou refatorar os nomes das classes de Template e de Exception da Persistencia;
+  EInfraError, 
+      EPersistenceError
+          EPersistenceTemplateError 
+          EPersistenceConnectionProviderError 
+          EPersistenceTemplatePersistenceEngineError 
+  Somente classes base deveria ter Infra como prefixo ou o nome das units principais.
+
+- Refatorar o ConnectionProvider
+  O ConnectionProvider deve servir como um Pool de conexões;
+  E deve ser Thread-Safe, eu criei um pool deste tipo para o DynamicTier (outro framework de minha autoria).
+  Ele usa semáforos e foi baseado nos artigos de Cary Jensen:
+  http://dn.codegear.com/article/29908
+  http://dn.codegear.com/article/30027
+  Podemos usar até os artigos dele para extrair a documentação necessária para nosso ConnectionProvider.
+  Minha implementação está amarrada ao DBExpress mas pode ser facilmente convertida para o ZEOS.
+  Pela característica do Pool, talvez ele devesse estar em uma unit separada.
+
+- Separar o peenchimento do objeto do PersistenceEngine
+  O PersistenceEngine está com muita responsabilidade. Podemos criar uma classe chamado: TObjectLoader, TObjectFiller, TEntityLoader ou outro;
+  Este objeto seria responsável por preencher os atributos do objeto a partir de um resultset passado para o mesmo.
+  para ficar Dividir o persistence engine para que o preenchimento do objeto fique separada da carga
+  Isso vai melhorar a qualidade facilitar dos testes unitários tambem.
+
+- Dar suporte a macrosubstituição no template
+  Podemos montar instruções sql mais dinâmicas algo como por exemplo:
+  "Select campo1, campo2 from #Macro1 where ..."
+  Hoje a classe que faz parse de parametros já está pronta para isto, mas a carga não.
+  Uma macro é como um parâmetro qualquer, logo pode-se usar a propriedade SQLCommand.Params definir o valor a ser substituido.
+  Durante o PersistenceEngine.Load/Execute, antes de o passar o sql para o Statement podemos fazer a macro-substituição.
+
+- Carga automática de relacionamentos;
+  Existe no TypeService um método chamado AddRelation, que registra a relação entre duas classes, a cardinalidade e os typeinfo do destino, seja este destino uma classe ou uma lista.
+  Pela cardinalidade podemos determinar o tipo de relação 1-1, 1-n, n-1
+  Com isso a reflexão nos proporciona os requisitos necessário para que durante a carga dos atributos dos objetos verificarmos se suporta infraobject ou infralist e então efetuar a carga.
+  Por padrão a carga será OnDemand (lazy) e podemos usar AOP para isso, podemos criar um aspecto que intercepte o método getter do atributo (o objeto ou a lista), isso quer dizer que quando o método for executado o aspecto será disparado e então fazemos a carga lazy do mesmo.
+  Uma anotação pode ser criada para determinar se a carga será direta, então quando acontecer a carga do objeto a carga estiver tudo que estiver anotado com isso será carregado na hora;
+  Quando o atributo for carregado devemos remover a interceptação (jointpoint) do método para que a carga nao acontece na proxima vez que acessarmos o mesmo atributo.
+
+- Copiar documentação relevante.
+  Já existem muitos frameworks de persistencia no mercado, muitos com uma boa documentação.
+  Poderiamos estar lendo estas documentações e definindo a documentação da persistência do Infra;
 
 - Criar um esquema de cache para os templates já lidos:
   Assim os templates não será preciso ficar sendo carregados de arquivo a cada load. 
   Ao carregar um objeto pela primeira vez, um objeto de cache seria criado e preenchido inicialmente com a SQL, Tipos de Lista e de classe;
   Ver a necessidade e possibilidade de um garbage para este cache;
 
-- Definir o tipo de lista no registro de uma classe:
+- Definir o tipo de lista já no registro de uma classe:
   Adicionar no AddType da reflexão o tipo de lista para a classe que está sendo registrada, por padrao nil ou nullguid;
   Isso vai evitar na maioria dos cassos ter de passar o tipo de lista para o Session.Load.
 
-Marcelo
-- Padronizar ou refatorar os nomes das classes de Template e de Exception da Persistencia;
 - Criar diagramas UML da Persistencia;
-- Criar um Reader que gere instruções sql dinamicamente com base em anotações;
-- Criar uma camada de comunicação tcp e http baseado em synapse, ics, indy ou podendo escolher qualquer uma destas tecnologias;
+
+- Criar um TemplateReader para gere gração dinâmica de sqls
+  Isso pode ser feito baseado em anotações;
+  Podemos verificar se a class tem uma determina anotacao presente sendo e gerar as sql baseada nas anotacao da classe
+  Caso encontre esta anotacao utiliza-se o TemplateReader específico de anotações que vai gerar a sql dinamicamente.
+  Caso contrário pode ir ao configuration ver se tem um outro TemplateReader a ser utilizado.
+
 - Portar o framework para freepascal;
-- Compatibilizar com as outras versões do delphi acima da 6;
-- Criar um framework de serialização de objetos infra usando a reflexão e os infratypes;
-- Criar um serializador no formato AMF para poder ler objetos remotos flex (ver especificação do formato na adobe);
+
+- Compatibilizar com as outras versões do delphi;
+  Hoje está testado com Delphi7;
+
+- Criar um framework de serialização que possibilita.
+  Uma sugestão para implementação deste framework seria fazer algo similar ao Serializer do Java (InputStream/OutPutStream).
+  Como o infra já tem um framework de reflexão bem completo, serializar infratypes será muito simples.
+
+- Criar uma camada de comunicação tcp e http 
+  Podemos usar os componentes synapse, ics, indy ou outras tecnologias como datasnap, rembojects, etc...;
+  O foco principal deve ser nos primeiros por serem opensource e já dar ter suporte para freepascal;
+  
+- Criar serializador para formato AMF 
+  Com este serializador poderemos ler e gravar objetos remotos flex;
+  Existe uma especificação clara deste formato no site da adobe;
