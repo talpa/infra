@@ -873,11 +873,10 @@ begin
   vSQL := vReader.Read(pSqlCommand.Name);
   FParse.Parse(vSQL);
   // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui antes de chamar o PrepareStatementWithParams
-  // *** 2) Acho que poderia chamar o PrepareStatementWithParams passando o FParse.Params.GetParams
   vConnection := FConnnectionProvider.GetConnection;
   vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
   SetParameters(vStatement, pSqlCommand);
-  // *** 3) Acho que pode retornar um simples Integer.
+ // *** 3) Acho que pode retornar um simples Integer.
   Result := vStatement.ExecuteUpdatePrepared;
 end;
 
