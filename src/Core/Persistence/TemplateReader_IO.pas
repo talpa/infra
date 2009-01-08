@@ -44,7 +44,6 @@ function TTemplateReader_IO.Read(const pTemplateName: string): string;
 var
   vFileName: string;
   vStream: TFileStream;
-  vFileSize: Integer;
 begin
   // *** tem de gerar uma exceção caso o arquivo nao exista, acho que tem de
   // *** procurar o arquivo com findfirst ou tratar o Result = Emptystr.

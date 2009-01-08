@@ -20,16 +20,23 @@ type
     class function GetNewConfiguration: IConfiguration;
   end;
 
+function GetZeosExecutor: TDBZeosExecutor;
+
 implementation
 
 uses
-  InfraPersistence, InfraPersistenceConsts;
+  SysUtils,
+  InfraPersistence,
+  InfraPersistenceConsts;
 
-class function TTestsUtil.GetNewConfiguration: IConfiguration;
+var
+  _dbZeosExecutor: TDBZeosExecutor;
+
+function GetZeosExecutor: TDBZeosExecutor;
 begin
-  Result := TConfiguration.Create;
-  Result.SetValue(cCONFIGKEY_CONNECTIONTIME, 10);
-  Result.SetValue(cCONFIGKEY_MAXCONNECTIONS, 2);
+  if not Assigned(_dbZeosExecutor) then
+    _dbZeosExecutor := TDBZeosExecutor.Create;
+  Result := _dbZeosExecutor;
 end;
 
 { TDBZeosExecutor }
@@ -55,5 +62,21 @@ begin
   vStatement := FConnection.CreateStatement;
   Result := vStatement.ExecuteQuery(pSql);
 end;
+
+{ TTestsUtil }
+
+class function TTestsUtil.GetNewConfiguration: IConfiguration;
+begin
+  Result := TConfiguration.Create;
+  Result.SetValue(cCONFIGKEY_DRIVER, 'firebird-2.0');
+  Result.SetValue(cCONFIGKEY_CONNECTIONTIME, 10);
+  Result.SetValue(cCONFIGKEY_MAXCONNECTIONS, 2);
+end;
+
+initialization
+
+finalization
+  if Assigned(_dbZeosExecutor) then
+    FreeAndNil(_dbZeosExecutor);
 
 end.

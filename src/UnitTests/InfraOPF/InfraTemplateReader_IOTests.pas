@@ -134,5 +134,6 @@ begin
 end;
 
 initialization
-  TestFramework.RegisterTest(TTestTemplateReader_IO.Suite);
+  TestFramework.RegisterTest('Persistence Testes Caixa-Cinza',
+    TTestTemplateReader_IO.Suite);
 end.

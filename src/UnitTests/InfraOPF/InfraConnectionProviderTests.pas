@@ -12,8 +12,6 @@ type
     procedure SetUp; override;
     procedure TearDown; override;
   published
-    procedure TestCreate;
-    procedure TestCreateWithoutDriverManager;
     procedure TestCreateWithoutConfiguration;
     procedure TestGetConnection;
     procedure TestGetConnectionObjAvailableInPool;
@@ -49,23 +47,11 @@ begin
   inherited;
 end;
 
-procedure TTestConnectionProvider.TestCreate;
-begin
-  CheckNotNull(FConnProvider);
-end;
-
-procedure TTestConnectionProvider.TestCreateWithoutDriverManager;
-begin
-  ExpectedException := EInfraArgumentError;
-  TConnectionProvider.Create(nil);
-  ExpectedException := nil;
-end;
-
 procedure TTestConnectionProvider.TestCreateWithoutConfiguration;
 begin
   inherited;
   ExpectedException := EInfraArgumentError;
-  TConnectionProvider.Create(TTestsUtil.GetNewConfiguration);
+  TConnectionProvider.Create(nil);
   ExpectedException := nil;
 end;
 
@@ -79,101 +65,43 @@ begin
 end;
 
 procedure TTestConnectionProvider.TestGetConnectionObjAvailableInPool;
-var
-  lConnection1, lConnection2: IZConnection;
 begin
-  lConnection1 := FConnProvider.GetConnection;
-  CheckNotNull(lConnection1, 'Falha no retorno da conexão 1');
 
-  lConnection2 := FConnProvider.GetConnection;
-  CheckNotNull(lConnection2, 'Falha no retorno da conexão 2');
-
-  CheckTrue(lConnection1 = lConnection2, 'Deveria ter retornado a primeira conexao fechada disponível');
 end;
 
 procedure TTestConnectionProvider.TestGetConnectionObjUnavailableInPool;
-var
-  lConnection1, lConnection2: IZConnection;
 begin
-  lConnection1 := FConnProvider.GetConnection;
-  lConnection1.Open;
 
-  lConnection2 := FConnProvider.GetConnection;
-  CheckNotNull(lConnection2, 'Falha no retorno da conexão 2');
-
-  CheckTrue(lConnection1 <> lConnection2, 'Deveria ter criado uma nova conexao');
 end;
 
 procedure TTestConnectionProvider.TestGetConnectionBeyoundMaxSize;
-var
-  lConnection1, lConnection2, lConnection3: IZConnection;
 begin
-  lConnection1 := FConnProvider.GetConnection;
-  lConnection1.Open;
 
-  lConnection2 := FConnProvider.GetConnection;
-  lConnection2.Open;
-
-  ExpectedException := EPersistenceConnectionProviderError;
-  lConnection3 := FConnProvider.GetConnection;
-  ExpectedException := nil;
 end;
 
 procedure TTestConnectionProvider.TestCloseConnection;
-var
-  lConnection1: IZConnection;
 begin
-  lConnection1 := FConnProvider.GetConnection;
-  lConnection1.Open;
 
-  CheckFalse(lConnection1.IsClosed, 'A conexão está fechada');
-
-  FConnProvider.ReleaseConnection(lConnection1);
-
-  CheckTrue(lConnection1.IsClosed, 'A conexão continua aberta');
 end;
 
 procedure TTestConnectionProvider.TestCloseConnectionNotFound;
-var
-  lConnection1: IZConnection;
 begin
-  // Esta conexão não está no Pool
-  lConnection1 := TDriverManagerMock.Create.GetConnection('');
-  lConnection1.Open;
 
-  ExpectedException := EPersistenceConnectionProviderError;
-  FConnProvider.ReleaseConnection(lConnection1);
-  ExpectedException := nil;
 end;
 
 procedure TTestConnectionProvider.TestCloseConnectionAlreadyClosed;
-var
-  lConnection1: IZConnection;
 begin
-  lConnection1 := FConnProvider.GetConnection;
-  lConnection1.Close; // Só pra ficar claro
 
-  ExpectedException := EPersistenceConnectionProviderError;
-  FConnProvider.ReleaseConnection(lConnection1);
-  ExpectedException := nil;
 end;
 
 procedure TTestConnectionProvider.TestClose;
-var
-  lConnection1, lConnection2: IZConnection;
 begin
-  lConnection1 := FConnProvider.GetConnection;
-  lConnection1.Open;
 
-  lConnection2 := FConnProvider.GetConnection;
-  lConnection2.Open;
-
-  FConnProvider.Close;
-
-  CheckTrue(lConnection1.IsClosed and lConnection2.IsClosed, 'Close falhou');
 end;
 
 initialization
-  TestFramework.RegisterTest(TTestConnectionProvider.Suite);
+  TestFramework.RegisterTest('Persistence Testes Caixa-Cinza',
+    TTestConnectionProvider.Suite);
+    
 end.
 

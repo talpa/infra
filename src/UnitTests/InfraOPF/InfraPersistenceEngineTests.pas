@@ -83,6 +83,7 @@ begin
 end;
 
 initialization
-  TestFramework.RegisterTest(TTestPersistenceEngine.Suite);
+  TestFramework.RegisterTest('Persistence Testes Caixa-Cinza',
+    TTestPersistenceEngine.Suite);
 
 end.

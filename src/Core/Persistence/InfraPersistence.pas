@@ -14,15 +14,15 @@ uses
   InfraCommonIntf,
   InfraValueTypeIntf,
   InfraPersistenceIntf;
-  
+
 type
   /// Classe para armazenar as configurações do Framework
   TConfiguration = class(TBaseElement, IConfiguration)
   private
     /// Aqui são armazenadas as configurações no formato <nome>=<valor>
     FProperties: TStrings;
-  protected
     function GetProperties: TStrings;
+  protected
     function GetAsInteger(const pName: string): Integer; overload;
     function GetAsDouble(const pName: string): Double; overload;
     function GetAsString(const pName: string): string; overload;
@@ -33,7 +33,6 @@ type
     procedure SetValue(const pName: string; const Value: Double); overload;
     procedure SetValue(const pName: string; const Value: string); overload;
     procedure Clear;
-
     property Properties: TStrings read GetProperties;
   public
     constructor Create; override;
@@ -45,23 +44,12 @@ type
   private
     /// Armazena uma referência ao objeto que contém as configurações do Framework
     FConfiguration: IConfiguration;
-    /// O pool
-    FSlots: array of IZConnection;
-    /// CriticalSection usado para evitar conflitos em aplicações multi-thread
-    FCriticalSection: TCriticalSection;
-    
     function BuildConnectionString(pConfiguration: IConfiguration): string;
-    procedure CloseConnections;
   protected
-    function GetFreeConnection: IZConnection;
-    function CreateConnection: IZConnection;
-    function FindConnection(const pConnection: IZConnection): IZConnection;
+    function GetConnection: IZConnection;
+    procedure ReleaseConnection(const pConnection: IZConnection);
   public
     constructor Create(pConfiguration: IConfiguration); reintroduce;
-    destructor Destroy; override;
-    function GetConnection: IZConnection;
-    procedure Close;
-    procedure ReleaseConnection(const pConnection: IZConnection); 
   end;
 
   /// Descrição da classe
@@ -122,13 +110,16 @@ type
       const pClassID: TGUID): ISQLCommandQuery; overload;
     function Load(const pCommandName: string;
       const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string;
-      const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
-    function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
-    function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
+    function Load(const pCommandName: string; const pObj: IInfraObject;
+      const pListID: TGUID): ISQLCommandQuery; overload;
+    function Delete(const pCommandName: string;
+      const pObj: IInfraObject): ISQLCommand;
+    function Save(const pCommandName: string;
+      const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
   public
-    constructor Create(const pPersistenceEngine: IPersistenceEngine); reintroduce;
+    constructor Create(
+      const pPersistenceEngine: IPersistenceEngine); reintroduce;
   end;
 
   /// Descrição da classe
@@ -143,11 +134,12 @@ type
     function GetRowFromResultSet(
       const pSqlCommand: ISQLCommandQuery;
       const pResultSet: IZResultSet): IInfraObject;
-  protected
     procedure DoLoad(const pST: IZPreparedStatement; const pSqlCommand:
       ISQLCommandQuery; const pList: IInfraList);
+  protected
     procedure SetConnection(const pConnection: IZConnection);
-    procedure Load(const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
+    procedure Load(const pSqlCommand: ISQLCommandQuery;
+      const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): Integer;
   public
     constructor Create(pConfiguration: IConfiguration); reintroduce;
@@ -171,12 +163,12 @@ type
   private
     FConfiguration: IConfiguration;
   protected
-    function ReadFromStream(const pStream: TStream): string;
-
+    function ReadFromStream(const pStream: TStream): string; // Para DUNIT
     function Read(const pTemplateName: string): string;
     function GetConfiguration: IConfiguration;
     procedure SetConfiguration(const Value: IConfiguration);
-    property Configuration: IConfiguration read GetConfiguration write SetConfiguration;
+    property Configuration: IConfiguration read GetConfiguration
+      write SetConfiguration;
   public
     constructor Create; reintroduce; virtual;
   end;
@@ -208,7 +200,6 @@ uses
 { TConfiguration }
 
 /// Cria uma nova instância de TConfiguration
-
 constructor TConfiguration.Create;
 begin
   inherited;
@@ -216,7 +207,6 @@ begin
 end;
 
 /// Destrói a instância de TConfiguration
-
 destructor TConfiguration.Destroy;
 begin
   FreeAndNil(FProperties);
@@ -224,7 +214,6 @@ begin
 end;
 
 ///  Limpa todas as propriedades
-
 procedure TConfiguration.Clear;
 begin
   FProperties.Clear;
@@ -232,11 +221,9 @@ end;
 
 {**
   Obtem o valor de uma propriedade como Double
-
   @param pName Nome da propriedade da qual se quer obter o valor
   @returns O valor da propriedade como Double
 }
-
 function TConfiguration.GetAsDouble(const pName: string): Double;
 begin
   Result := StrToFloat(FProperties.Values[pName]);
@@ -244,11 +231,9 @@ end;
 
 {**
   Obtem o valor de uma propriedade como Integer
-
   @param pName Nome da propriedade da qual se quer obter o valor
   @returns O valor da propriedade como Integer
 }
-
 function TConfiguration.GetAsInteger(const pName: string): Integer;
 begin
   Result := StrToInt(FProperties.Values[pName]);
@@ -256,11 +241,9 @@ end;
 
 {**
   Obtem o valor de uma propriedade como string
-
   @param pName Nome da propriedade da qual se quer obter o valor
   @returns O valor da propriedade como string
 }
-
 function TConfiguration.GetAsString(const pName: string): string;
 begin
   Result := FProperties.Values[pName];
@@ -268,10 +251,8 @@ end;
 
 {**
   Obtem uma referencia ao objeto que contém as propriedades
-
   @returns Um objeto do tipo TStrings
 }
-
 function TConfiguration.GetProperties: TStrings;
 begin
   Result := FProperties;
@@ -279,11 +260,9 @@ end;
 
 {**
   Obtem o valor de uma propriedade como Integer e, se não existir, o valor default
-
   @param pName Nome da propriedade da qual se quer obter o valor
   @returns O valor da propriedade como Integer ou o valor default
 }
-
 function TConfiguration.GetValue(const pName: string;
   const pDefaultValue: Integer): Integer;
 begin
@@ -295,11 +274,9 @@ end;
 
 {**
   Obtem o valor de uma propriedade como Double e, se não existir, o valor default
-
   @param pName Nome da propriedade da qual se quer obter o valor
   @returns O valor da propriedade como Double ou o valor default
 }
-
 function TConfiguration.GetValue(const pName: string;
   const pDefaultValue: Double): Double;
 begin
@@ -311,11 +288,9 @@ end;
 
 {**
   Obtem o valor de uma propriedade como string e, se não existir, o valor default
-
   @param pName Nome da propriedade da qual se quer obter o valor
   @returns O valor da propriedade como string ou o valor default
 }
-
 function TConfiguration.GetValue(const pName, pDefaultValue: string): string;
 begin
   if FProperties.IndexOfName(pName) <> -1 then
@@ -326,10 +301,8 @@ end;
 
 {**
   Atribui o valor de uma propriedade como Integer
-
   @param pName Nome da propriedade à qual se quer atribuir o valor
 }
-
 procedure TConfiguration.SetValue(const pName: string; const Value: Integer);
 begin
   FProperties.Values[pName] := IntToStr(Value);
@@ -337,10 +310,8 @@ end;
 
 {**
   Atribui o valor de uma propriedade como Double
-
   @param pName Nome da propriedade à qual se quer atribuir o valor
 }
-
 procedure TConfiguration.SetValue(const pName: string; const Value: Double);
 begin
   FProperties.Values[pName] := FloatToStr(Value);
@@ -348,10 +319,8 @@ end;
 
 {**
   Atribui o valor de uma propriedade como string
-
   @param pName Nome da propriedade à qual se quer atribuir o valor
 }
-
 procedure TConfiguration.SetValue(const pName, Value: string);
 begin
   FProperties.Values[pName] := Value;
@@ -361,114 +330,29 @@ end;
 
 {**
   Cria uma nova instância de TInfraConnectionProvider.
-
-  @param MaxSize Tamanho máximo do Pool de conexões
-  @param AConfiguration Um objeto do tipo IConfiguration que contém todas as
-    informações para criar uma nova conexão
+  @param pConfiguration Um objeto do tipo IConfiguration que contém todas as
+  informações necessárias sobre a conexão.
 }
 constructor TConnectionProvider.Create(pConfiguration: IConfiguration);
-var
-  iMax: Integer;
 begin
-  if not Assigned(pConfiguration) then
-    raise EInfraArgumentError.Create('Configuration in ConnectionProvider.Create');
   inherited Create;
-  FCriticalSection := TCriticalSection.Create;
+  if not Assigned(pConfiguration) then
+    raise EInfraArgumentError.Create(
+      'Configuration in ConnectionProvider.Create');
   FConfiguration := pConfiguration;
-  iMax := FConfiguration.GetValue(cCONFIGKEY_MAXCONNECTIONS, cGlobalMaxConnections);
-  SetLength(FSlots, iMax);
-end;
-
-destructor TConnectionProvider.Destroy;
-begin
-  CloseConnections;
-  SetLength(FSlots, 0);
-  FCriticalSection.Free;
-  inherited;
-end;
-
-/// Fecha todas as conexões ativas
-
-procedure TConnectionProvider.CloseConnections;
-var
-  i: Integer;
-begin
-  for i := Low(FSlots) to High(FSlots) do
-    if Assigned(FSlots[i]) then
-      FSlots[i].Close;
-end;
-
-/// Devolve todas as conexões ao pool
- 
-procedure TConnectionProvider.Close;
-var
-  i: integer;
-begin
-  for i := Low(FSlots) to High(FSlots) do
-    if Assigned(FSlots[i]) then
-      ReleaseConnection(FSlots[i]);
 end;
 
 {**
-  Localiza um objeto no Pool. Se este não for encontrado retorna nil
-
-  @param pConnection Objeto a ser localizado
-  @return Retorna o objeto encontrado ou nil caso não seja localizado
-}
-
-function TConnectionProvider.FindConnection(const pConnection: IZConnection): IZConnection;
-var
-  i: Integer;
-begin
-  Result := nil;
-  for i := Low(FSlots) to High(FSlots) do
-    if FSlots[i] = pConnection then
-    begin
-      Result := FSlots[i];
-      Break;
-    end;
-end;
-
-{**
-  Libera uma conexão de volta ao pool para ser reutilizada
-
+  Libera a conexão de volta ao pool para ser reutilizada
   @param pConnection Conexão a ser liberada
 }
 procedure TConnectionProvider.ReleaseConnection(const pConnection: IZConnection);
 begin
-  if FindConnection(pConnection) = nil then
-    raise EPersistenceConnectionProviderError.Create(cErrorConnectionNotFoundOnPool);
-  if pConnection.IsClosed then
-    raise EPersistenceConnectionProviderError.Create(cErrorAlreadyClosedConnection);
-  // Ao fechar a conexao, ela, automaticamente, fica disponível no pool
-  pConnection.Close;
-  // TODO: Criar Thread para verificar o tempo de expiração do objeto
-  // ...
-end;
-
-{**
-  Procura no Pool por uma conexão disponível (ou seja, uma conexao fechada).
-  E, caso a encontre, retorna-a.
-
-  @return Retorna um objeto do tipo IZConnection
-}
-function TConnectionProvider.GetFreeConnection: IZConnection;
-var
-  i: Integer;
-begin
-  Result := nil;
-  for i := Low(FSlots) to High(FSlots) do
-    if not Assigned(FSlots[i]) or
-      (Assigned(FSlots[i]) and FSlots[i].IsClosed) then
-    begin
-      Result := FSlots[i];
-      Break;
-    end;
+  // A ser implementado no novo Pool
 end;
 
 {*
   Constrói a URL de conexão com o banco
-
   @param pConfiguration Objeto com as configurações de conexão com o banco de dados
   @return Retorna uma string no formato
     zdbc:<driver>://<hostname>/<databasename>?username=<username>;password=<password>
@@ -483,42 +367,15 @@ begin
 end;
 
 {**
-  Cria uma nova conexao, caso haja algum slot vazio.
-  Caso contrário, levanta uma exceção EInfraConnectionProviderError
-
-  @return Retorna um objeto do tipo IZConnection
-}
-function TConnectionProvider.CreateConnection: IZConnection;
-var
-  i: Integer;
-begin
-  for i := Low(FSlots) to High(FSlots) do
-    if not Assigned(FSlots[i]) then
-    begin
-      FSlots[i] := DriverManager.GetConnection(BuildConnectionString(FConfiguration));
-      Result := FSlots[i];
-      Exit;
-    end;
-  raise EPersistenceConnectionProviderError.Create(cErrorConnectionsLimitExceeded);
-end;
-
-{**
-  Procura no Pool por uma conexão disponível e, caso a encontre, retorna-a.
-  Caso contrário, tenta criar uma nova conexão. Se isto não for possível,
-  levanta uma exceção EInfraConnectionProviderError
-
-  @return Retorna um objeto do tipo IZConnection
+  Nesta versão apenas retorna uma nova conexão a cada chamada, por isso
+  pode ser lento, no próximo release o ConnectionProvider vai ser um Pool
+  completo e Thread safe
+  @return Retorna uma nova conexão (Do tipo IZConnection)
 }
 function TConnectionProvider.GetConnection: IZConnection;
 begin
-  FCriticalSection.Acquire;
-  try
-    // *** alterado até que o pool funcione
-    // Result := CreateConnection;
-    Result := DriverManager.GetConnection(BuildConnectionString(FConfiguration));
-  finally
-    FCriticalSection.Release;
-  end;
+  Result := DriverManager.GetConnection(
+    BuildConnectionString(FConfiguration));
 end;
 
 { TPersistentState }
@@ -527,7 +384,6 @@ end;
 
   @return ResultDescription
 }
-
 function TPersistentState.GetIsPersistent: Boolean;
 begin
   Result := FIsPersistent;
@@ -537,7 +393,6 @@ end;
 
   @return ResultDescription
 }
-
 function TPersistentState.GetState: TPersistentStateKind;
 begin
   Result := FState;
@@ -548,7 +403,6 @@ end;
   @param Value   ParameterDescription
   @return ResultDescription
 }
-
 procedure TPersistentState.SetIsPersistent(Value: Boolean);
 begin
   FIsPersistent := Value;
@@ -559,7 +413,6 @@ end;
   @param Value   ParameterDescription
   @return ResultDescription
 }
-
 procedure TPersistentState.SetState(Value: TPersistentStateKind);
 begin
   FState := Value;
@@ -572,7 +425,6 @@ end;
 
   @param pPersistenceEngine   ParameterDescription
 }
-
 constructor TSQLCommand.Create(pPersistenceEngine: IPersistenceEngine);
 begin
   inherited Create;
@@ -582,9 +434,8 @@ end;
 
 {*
 
-  @return Retorna o nome ???? DE QUE MESMO ????
+  @return Retorna o nome do template
 }
-
 function TSQLCommand.GetName: string;
 begin
   Result := FName;
@@ -592,32 +443,27 @@ end;
 
 {*
 
-  @param Value   ParameterDescription
+  @param Value O nome do template
 }
-
 procedure TSQLCommand.SetName(const Value: string);
 begin
-  if not AnsiSameText(FName, Value) then
-    FName := Value;
+  FName := Value;
 end;
 
 {*
 
   @return ResultDescription
 }
-
 function TSQLCommand.GetParams: ISQLCommandParams;
 begin
   Result := FParams;
 end;
 
 { TSQLCommandQuery }
-
 {*
 
   @return ResultDescription
 }
-
 function TSQLCommandQuery.GetClassID: TGUID;
 begin
   Result := FClassID;
@@ -627,7 +473,6 @@ end;
 
   @return ResultDescription
 }
-
 function TSQLCommandQuery.GetListID: TGUID;
 begin
   Result := FListID;
@@ -637,7 +482,6 @@ end;
 
   @return ResultDescription
 }
-
 function TSQLCommandQuery.CreateList: IInfraList;
 begin
   Result := TypeService.CreateInstance(FListID) as IInfraList;
@@ -647,7 +491,6 @@ end;
 
   @return ResultDescription
 }
-
 function TSQLCommandQuery.GetResult: IInfraType;
 var
   vList: IInfraList;
@@ -662,7 +505,6 @@ end;
 
   @return ResultDescription
 }
-
 function TSQLCommandQuery.GetList: IInfraList;
 begin
   Result := CreateList;
@@ -673,7 +515,6 @@ end;
 
   @param Value   ParameterDescription
 }
-
 procedure TSQLCommandQuery.SetClassID(const Value: TGUID);
 begin
   FClassID := Value;
@@ -683,19 +524,16 @@ end;
 
   @param Value   ParameterDescription
 }
-
 procedure TSQLCommandQuery.SetListID(const Value: TGUID);
 begin
   FListID := Value;
 end;
 
 { TSession }
-
 {*
 
   @param pPersistenceEngine   ParameterDescription
 }
-
 constructor TSession.Create(const pPersistenceEngine: IPersistenceEngine);
 begin
   if not Assigned(pPersistenceEngine) then
@@ -711,7 +549,6 @@ end;
   @param pClassID   ParameterDescription
   @return ResultDescription
 }
-
 function TSession.Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
 begin
   Result := TSQLCommandQuery.Create(FPersistenceEngine);
@@ -728,7 +565,6 @@ end;
   @param pListID   ParameterDescription
   @return ResultDescription
 }
-
 function TSession.Load(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommandQuery;
 begin
   Result := Load(pCommandName, pClassID);
@@ -742,7 +578,6 @@ end;
   @param pListID   ParameterDescription
   @return ResultDescription
 }
-
 function TSession.Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery;
 begin
   if Assigned(pObj) then
@@ -759,7 +594,6 @@ end;
   @param pObj   ParameterDescription
   @return ResultDescription
 }
-
 function TSession.Load(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery;
 begin
   Result := Load(pCommandName, pObj.TypeInfo.TypeID, pListID);
@@ -772,7 +606,6 @@ end;
   @param pObj   ParameterDescription
   @return ResultDescription
 }
-
 function TSession.Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
 begin
   Result := TSQLCommand.Create(FPersistenceEngine);
@@ -788,7 +621,6 @@ end;
 
   @return ResultDescription
 }
-
 function TSession.Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
 var
   vState: IPersistentState;
@@ -805,7 +637,6 @@ end;
   @param pConfiguration   ParameterDescription
   @return ResultDescription
 }
-
 function TSession.Flush: Integer;
 var
   i: integer;
@@ -821,7 +652,6 @@ end;
   Cria uma nova instância de TPersistenceEngine
   @param pConfiguration   ParameterDescription
 }
-
 constructor TPersistenceEngine.Create(pConfiguration: IConfiguration);
 begin
   inherited Create;
@@ -837,7 +667,6 @@ end;
   @param pSqlCommand   ParameterDescription
   @return ResultDescription
 }
-
 function TPersistenceEngine.GetReader: ITemplateReader;
 var
   vReaderClassName: string;
@@ -851,19 +680,12 @@ begin
   Result.Configuration := FConfiguration;
 end;
 
-{
-  carregar a sql usando um reader com base no Name do pSqlCommand vReader.Read(pSqlCommand.Name)
-  preencher os params da sql com base nos Params do pSqlCommand
-  pegar o connection no connectionprovider
-  executa a sql  e retornar  a quantidade de registros afetados
-}
-
 {*
-
-  @param pSqlCommand   ParameterDescription
-  @return ResultDescription
+  Executa uma instrução SQL contra o banco baseado nas informações contidas no
+  parâmetro passado.
+  @param pSqlCommand  Objeto com as informações sobre o que e como executar a instrução.
+  @return Retornar a quantidade de registros afetados pela atualização.
 }
-
 function TPersistenceEngine.Execute(const pSqlCommand: ISqlCommand): Integer;
 var
   vReader: ITemplateReader;
@@ -871,6 +693,7 @@ var
   vStatement: IZPreparedStatement;
   vConnection: IZConnection;
 begin
+  // Carrega a SQL e extrai os parâmetros
   if not Assigned(pSqlCommand) then
     raise EInfraArgumentError.Create('pSqlCommand');
     
@@ -878,10 +701,11 @@ begin
   vSQL := vReader.Read(pSqlCommand.Name);
   vSQL := FParse.Parse(vSQL);
   // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui antes de chamar o PrepareStatementWithParams
+  // Solicita um connection e prepara a sql
   vConnection := FConnnectionProvider.GetConnection;
   vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
+  // Seta os parametros e exeucta
   SetParameters(vStatement, pSqlCommand);
- // *** 3) Acho que pode retornar um simples Integer.
   Result := vStatement.ExecuteUpdatePrepared;
 end;
 
@@ -892,7 +716,6 @@ end;
   @param pList   ParameterDescription
   @return ResultDescription
 }
-
 procedure TPersistenceEngine.DoLoad(const pST: IZPreparedStatement;
   const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
 var
@@ -920,14 +743,12 @@ end;
   Seta o estado persistent e clean ao objeto criado
   faz a carga dos atributos com base no registro
   Adiciona o novo objeto em pList retorna a lista }
-
 {**
 
   @param pSqlCommand   ParameterDescription
   @param pList   ParameterDescription
   @return ResultDescription
 }
-
 procedure TPersistenceEngine.Load(const pSqlCommand: ISQLCommandQuery;
   const pList: IInfraList);
 var
@@ -964,7 +785,6 @@ end;
   @param pConnection   ParameterDescription
   @return ResultDescription
 }
-
 procedure TPersistenceEngine.SetConnection(const pConnection: IZConnection);
 begin
   // preencher o connection provider com o pConnection
@@ -972,15 +792,12 @@ begin
     raise EInfraArgumentError.Create('pConnection');
 end;
 
-// *** 1) Como poderiamos carregar Objetos/Listas relacionados ao objeto atual a
-// ***    partir de colunas vindos no resultset frutos de um join?
 {**
 
   @param pSqlCommand   ParameterDescription
   @param pResultSet   ParameterDescription
   @return ResultDescription
 }
-
 function TPersistenceEngine.GetRowFromResultSet(
   const pSqlCommand: ISQLCommandQuery;
   const pResultSet: IZResultSet): IInfraObject;
@@ -1055,7 +872,6 @@ end;
   
   @return Retorna uma interface do tipo IConfiguration
 *}
-
 function TInfraPersistenceService.GetConfiguration: IConfiguration;
 begin
   if not Assigned(FConfiguration) then
@@ -1070,7 +886,6 @@ end;
   
   @return Retorna uma interface do tipo IPersistenceEngine
 }
-
 function TInfraPersistenceService.GetPersistenceEngine: IPersistenceEngine;
 begin
   if not Assigned(FPersistenceEngine) then
@@ -1084,7 +899,6 @@ end;
 
   @return Retorna uma interface do tipo ISession
 }
-
 function TInfraPersistenceService.OpenSession: ISession;
 begin
   Result := TSession.Create(GetPersistenceEngine);
@@ -1097,7 +911,6 @@ end;
   @param pConnection Qualquer objeto que implemente a interface IZConnection.
                      É a conexao com o banco de dados
 }
-
 procedure TInfraPersistenceService.SetConnection(
   const pConnection: IZConnection);
 begin
@@ -1109,7 +922,6 @@ end;
 {**
   Contructor de TTemplateReader. Por ser uma classe abstrata, não pode ser instanciada
 }
-
 constructor TTemplateReader.Create;
 begin
   raise EPersistenceTemplateError.Create(cErrorTemplateTryCreateClassBase);
@@ -1119,7 +931,6 @@ end;
 
   @return ResultDescription
 }
-
 function TTemplateReader.GetConfiguration: IConfiguration;
 begin
   Result := FConfiguration;
@@ -1129,7 +940,6 @@ end;
 
   @param Value   ParameterDescription
 }
-
 procedure TTemplateReader.SetConfiguration(
   const Value: IConfiguration);
 begin
@@ -1141,7 +951,6 @@ end;
   @param pTemplateName   ParameterDescription
   @return ResultDescription
 }
-
 function TTemplateReader.Read(const pTemplateName: string): string;
 begin
   Result := '';
@@ -1156,7 +965,6 @@ end;
 { TParseParams }
 
 ///  Cria uma nova instância de TParseParams
-
 constructor TParseParams.Create;
 begin
   inherited;
@@ -1165,7 +973,6 @@ begin
 end;
 
 ///  Destrói o objeto
-
 destructor TParseParams.Destroy;
 begin
   FParams.Free;
@@ -1182,7 +989,6 @@ end;
   
   @param pSql instrução SQL que será analisada
 }
-
 function TParseParams.Parse(const pSQL: string): string;
 const
   cExpRegCommentsML = '(\/\*(.*?)\*\/)'; // comentarios no formato /* ... */
@@ -1195,7 +1001,6 @@ var
 begin
   FParams.Clear;
   FMacroParams.Clear;
-
   vRegEx := TRegExpr.Create;
   try
     // Elimina do texto tudo que deve ser ignorado: comentários,
@@ -1234,7 +1039,6 @@ end;
 
   @return ResultDescription  
 }
-
 function TParseParams.GetMacroParams: TStrings;
 begin
   Result := FMacroParams;
@@ -1244,7 +1048,6 @@ end;
 
   @return ResultDescription  
 }
-
 function TParseParams.GetParams: TStrings;
 begin
   Result := FParams;
