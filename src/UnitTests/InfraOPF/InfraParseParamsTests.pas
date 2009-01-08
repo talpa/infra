@@ -46,7 +46,9 @@ end;
 
 procedure TTestParseParams.TestParserInsert;
 const
-  cSql = 'insert into tabela (codigo, nome) values (:codigo, :nome)';
+  cSql = 'insert into tabela'#13#10+
+    '(codigo, nome)'#13#10+
+    'values (:codigo, :nome)';
 var
   vParams: TStrings;
 begin
@@ -59,7 +61,10 @@ end;
 
 procedure TTestParseParams.TestParserSelect;
 const
-  cSql = 'select * from tabela where codigo = :codigo and nome = :nome';
+  cSql = 'select *'#13#10+
+    'from tabela'#13#10+
+    'where codigo = :codigo'#13#10+
+    ' and nome = :nome';
 var
   vParams: TStrings;
 begin
@@ -72,7 +77,10 @@ end;
 
 procedure TTestParseParams.TestParserUpdate;
 const
-  cSql = 'update tabela set codigo = :codigo, nome = :nome where id = :id';
+  cSql = 'update tabela set'#13#10+
+    'codigo = :codigo, '#13#10+
+    'nome = :nome'#13#10+
+    'where id = :id';
 var
   vParams: TStrings;
 begin
@@ -86,7 +94,10 @@ end;
 
 procedure TTestParseParams.TestParserDelete;
 const
-  cSql = 'delete from tabela where codigo = :codigo and nome = :nome and id = :id';
+  cSql = 'delete from tabela'#13#10+
+    'where codigo=:codigo'#13#10+
+    ' and nome=:nome'#13#10+
+    ' and id=:id';
 var
   vParams: TStrings;
 begin
@@ -162,7 +173,7 @@ const
     ' linha 3 do comentario #macro_ignorada2'#13#10+
     '*/'#13#10+
     'where id = :id '#13#10+
-    '  or codigo = :codigo '#13#10+
+    '  or codigo=:codigo '#13#10+
     '  or campo3 = ::campo3 '#13#10+
     '#inst2 order by #macro3 ##macro4';
 var

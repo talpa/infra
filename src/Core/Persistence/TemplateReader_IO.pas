@@ -13,6 +13,8 @@ type
   protected
     function GetFilename(const pTemplateName: string): string;
     function Read(const pTemplateName: string): string;
+  public
+    constructor Create; override;
   end;
 
 implementation
@@ -23,6 +25,11 @@ uses
   InfraCommonIntf;
 
 { TTemplateReader }
+
+constructor TTemplateReader_IO.Create;
+begin
+
+end;
 
 function TTemplateReader_IO.GetFilename(const pTemplateName: string): string;
 begin
@@ -44,10 +51,7 @@ begin
   vFileName := GetFilename(pTemplateName);
   vStream := TFileStream.Create(vFileName, fmOpenRead or fmShareDenyWrite);
   try
-    vFileSize := vStream.Seek(0, soFromEnd);
-    vStream.Seek(0, 0);
-    SetLength(Result, vFileSize);
-    vStream.Read(PChar(Result)^, vFileSize);
+    Result := ReadFromStream(vStream);
   finally
     vStream.Free;
   end;

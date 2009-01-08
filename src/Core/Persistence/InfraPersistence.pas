@@ -171,6 +171,8 @@ type
   private
     FConfiguration: IConfiguration;
   protected
+    function ReadFromStream(const pStream: TStream): string;
+
     function Read(const pTemplateName: string): string;
     function GetConfiguration: IConfiguration;
     procedure SetConfiguration(const Value: IConfiguration);
@@ -938,9 +940,9 @@ begin
   FParse.Parse(vSQL);
   // *** 2) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   // antes de chamar o PrepareStatementWithParams
+  vConnection := FConnnectionProvider.GetConnection;
+  vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
   try
-    vConnection := FConnnectionProvider.GetConnection;
-    vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
     SetParameters(vStatement, pSqlCommand);
     DoLoad(vStatement, pSqlCommand, pList);
   finally
@@ -1134,6 +1136,12 @@ begin
   Result := '';
 end;
 
+function TTemplateReader.ReadFromStream(const pStream: TStream): string;
+begin
+  SetLength(Result, pStream.Size);
+  pStream.Read(PChar(Result)^, pStream.Size);
+end;
+
 { TParseParams }
 
 ///  Cria uma nova instância de TParseParams
@@ -1193,7 +1201,7 @@ begin
 
     // Depois de remover do texto as partes a serem ignoradas,
     // procuramos por parametros e macros válidos
-    vRegEx.Expression := '[\s\(]:(\w+)[^w]|[\s\(]#(\w+)[^w]|^#(\w+)[^w]';
+    vRegEx.Expression := '[\s\(=]:(\w+)[^w]|[\s\(=]#(\w+)[^w]|^#(\w+)[^w]';
     if vRegEx.Exec (vSql) then
     repeat
       if vRegEx.MatchPos[1] > 0 then
