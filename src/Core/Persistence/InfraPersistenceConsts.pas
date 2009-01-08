@@ -4,6 +4,8 @@ unit InfraPersistenceConsts;
 interface
 
 const
+  // TODO: Documentar todas as propriedades alistando os possíveis valores
+  
   // Constantes relacionadas ao pool de conexões
   cCONFIGKEY_MAXCONNECTIONS = 'Pool.MaxConnections';
   cCONFIGKEY_CONNECTIONTIME = 'Pool.TimeExpirationConnection';
