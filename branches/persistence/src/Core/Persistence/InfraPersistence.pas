@@ -187,7 +187,7 @@ type
     FParams: TStrings;
     FMacroParams: TStrings;
   protected
-    procedure Parse(const pSQL: string);
+    function Parse(const pSQL: string): string;
     function GetParams: TStrings;
     function GetMacroParams: TStrings;
   public
@@ -876,7 +876,7 @@ begin
     
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
-  FParse.Parse(vSQL);
+  vSQL := FParse.Parse(vSQL);
   // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui antes de chamar o PrepareStatementWithParams
   vConnection := FConnnectionProvider.GetConnection;
   vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
@@ -946,7 +946,7 @@ begin
   vSQL := vReader.Read(pSqlCommand.Name);
   // *** 1) se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro
   // do vReader.Read????
-  FParse.Parse(vSQL);
+  vSQL := FParse.Parse(vSQL);
   // *** 2) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   // antes de chamar o PrepareStatementWithParams
   vConnection := FConnnectionProvider.GetConnection;
@@ -1183,7 +1183,7 @@ end;
   @param pSql instrução SQL que será analisada
 }
 
-procedure TParseParams.Parse(const pSQL: string);
+function TParseParams.Parse(const pSQL: string): string;
 const
   cExpRegCommentsML = '(\/\*(.*?)\*\/)'; // comentarios no formato /* ... */
   cExpRegCommentsInLine = '--(.*?)$'; // comentarios no formato -- ...
@@ -1222,6 +1222,9 @@ begin
       if vRegEx.MatchPos[3] > 0 then
         FMacroParams.Add (System.Copy(vSql, vRegEx.MatchPos[3], vRegEx.MatchLen[3]));
     until not vRegEx.ExecNext;
+
+    vRegEx.Expression := ':(\w+)';
+    Result := vRegEx.Replace(pSQL, '?', False);
   finally
     vRegEx.Free;
   end;

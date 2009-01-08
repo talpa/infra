@@ -141,7 +141,7 @@ type
 
   IParseParams = interface(IBaseElement)
     ['{C0D4B607-4224-44C0-A93C-F10658AE9738}']
-    procedure Parse(const pSQL: string);
+    function Parse(const pSQL: string): string;
     function GetParams: TStrings;
     function GetMacroParams: TStrings;
   end;
