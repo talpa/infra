@@ -71,11 +71,13 @@ type
   private
     FName: string;
     FParams: ISQLCommandParams;    
-  protected
     FPersistenceEngine: IPersistenceEngine;
+  protected
     function GetName: string;
     function GetParams:ISQLCommandParams;
     procedure SetName(const Value: string);
+    /// PersistenceEngine ao qual o SQLCommand está vinculado
+    property PersistenceEngine: IPersistenceEngine read FPersistenceEngine;
     property Params: ISQLCommandParams read GetParams;
   public
     constructor Create(pPersistenceEngine: IPersistenceEngine); reintroduce;
@@ -496,7 +498,7 @@ var
   vList: IInfraList;
 begin
   vList := CreateList;
-  FPersistenceEngine.Load(Self, vList);
+  PersistenceEngine.Load(Self, vList);
   // *** deveria gerar exceção caso o load acima retornar mais de um objeto na lista????
   Result := vList[0] as IInfratype;
 end;
@@ -508,7 +510,7 @@ end;
 function TSQLCommandQuery.GetList: IInfraList;
 begin
   Result := CreateList;
-  FPersistenceEngine.Load(Self, Result);
+  PersistenceEngine.Load(Self, Result);
 end;
 
 {*
