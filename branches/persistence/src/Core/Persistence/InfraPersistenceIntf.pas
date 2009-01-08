@@ -135,6 +135,7 @@ type
 
   ITemplateReader = interface(IElement)
     ['{AFD2D321-E26B-4E48-93FB-48FD24BCE62B}']
+    function ReadFromStream(const pStream: TStream): string;
     function Read(const pTemplateName: string): string;
     function GetConfiguration: IConfiguration;
     procedure SetConfiguration(const Value: IConfiguration);

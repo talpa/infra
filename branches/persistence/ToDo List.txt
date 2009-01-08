@@ -62,6 +62,7 @@
   Por padrão a carga será OnDemand (lazy) e podemos usar AOP para isso, podemos criar um aspecto que intercepte o método getter do atributo (o objeto ou a lista), isso quer dizer que quando o método for executado o aspecto será disparado e então fazemos a carga lazy do mesmo.
   Uma anotação pode ser criada para determinar se a carga será direta, então quando acontecer a carga do objeto a carga estiver tudo que estiver anotado com isso será carregado na hora;
   Quando o atributo for carregado devemos remover a interceptação (jointpoint) do método para que a carga nao acontece na proxima vez que acessarmos o mesmo atributo.
+  Geração de SQL apenas com o q foi alterado
 
 - Copiar documentação relevante.
   Já existem muitos frameworks de persistencia no mercado, muitos com uma boa documentação.
@@ -100,3 +101,70 @@
 - Criar serializador para formato AMF 
   Com este serializador poderemos ler e gravar objetos remotos flex;
   Existe uma especificação clara deste formato no site da adobe;
+	
+- Criar um método IConfiguration.LoadFromFile(pConfigFile: string); 
+  O arquivo poderia ser um .ini, .xml, .conf ou outro qualquer q houvesse suporte para tal
+	
+- Controlde de Transaçoes;
+  A conexão não pode ser aberta no Load e no Execute porque se for preciso fazer toda a leitura no contexto de uma transação, 
+	isso impossibilitaria.
+	
+	A transação deveria ser iniciada pelo Session, como no Hibernate? 
+	session := PersistenceService.OpenSession;
+	session.StartTransaction;
+	... operacoes Save, Delete 
+	session.Commit;
+	
+	Se esse controle de abertura e fechamento da transação ficar apenas no Flush, eu não vou poder customizar minha transação e 
+	tbm não tenho como controlar o q fica dentro e fora da transação. Por exemplo: se vc tentar dar um rollback das alterações 
+	feitas em uma tabela tipo MyISAM no mysql ele vai retornar um erro: "Some non-transactional changes could not be rolled back"
+
+- Como tratar o Estado dos objetos quando uma transação não pode ser efetivada
+
+- Property Changed (InfraType) no Load
+  Se esta propriedade ficasse false quando efetuo a leitura da Entidade do Banco de Dados, eu poderia utilizá-la pra controlar o 
+	processo de atualização. Que propriedades foram alteradas? Assim, eu poderia gerar um SQL apenas do q foi alterado:
+		update produtos set
+		 descricao = :descricao
+		where
+		 id = :id
+		 and descricao = :old_descricao << necessário pra evitar conflitos com outros processos
+	
+- Analisar o seguinte caso:
+
+	Produto no Banco de dados: 
+	ID = 1
+	Estoque = 6
+
+	  Aplicação 1				Aplicação 2	
+		----------------	-----------------
+		Load(Prod_1)      Load(Prod_1)     <<< - Ambos Lêem Est = 6
+	  Est := Est - 1 (5)
+	  Save(Prod_1)
+		                  Est := Est - 2 (4)
+											Save(Prod_1)
+											
+	Produto no Banco de dados: 
+	ID = 1
+	Estoque = ?? (O resultado correto deveria ser 3, mas como a Aplicação 2 alterou por ultimo de forma otimista, o resultado é 4)
+
+- No caso de eu ter apenas uma instancia de um determinado objeto no cache, como fica o controle de acesso? Qualquer um pode alterar?
+  Não tem nenhum tipo de controle como um de travamento de registro?
+	
+- As classes do Infra são ThreadSafe?
+
+- Depois do Flush() deve-se dar um Refresh no objeto para que os dados modificados através de triggers sejam lidos e o objeto
+  reflita o seu estado atual no banco
+	
+- Merge de Objetos
+
+- Como fica o uso de multiplos bancos de dados, visto que eu só tenho uma instância de PersistenceService?
+
+- Como fica o mapeamento O/R no caso de bancos de dados que fazem diferenciação entre maiúsculas e minusculas?
+
+- É possível algum tipo de Log/Monitoramento?
+
+- Como ficam IDs atribuidos por triggers/casmpos autoincrement/sequences?
+
+"As soon as you do something that requires access to the database, a JDBC connection will be obtained from the pool."
+

@@ -153,8 +153,8 @@ type
   private
     FConfiguration: IConfiguration;
   protected
-    function ReadFromStream(const pStream: TStream): string; // Para DUNIT
-    function Read(const pTemplateName: string): string;
+    function ReadFromStream(const pStream: TStream): string; 
+    function Read(const pTemplateName: string): string; virtual; abstract;
     function GetConfiguration: IConfiguration;
     procedure SetConfiguration(const Value: IConfiguration);
     property Configuration: IConfiguration read GetConfiguration
@@ -581,6 +581,9 @@ function TSession.Flush: Integer;
 var
   i: integer;
 begin
+  // TODO: Dar atenção a isto porque, pelo modelo atual, pra cada Execute ele vai
+  // abrir uma nova conexão. Isto impediria que todas as operações fossem feitas
+  // no contexto de UMA transação
   Result := 0;
   for i := 0 to FCommandList.Count - 1 do
     Result := Result + FPersistenceEngine.Execute(FCommandList[i]);
@@ -887,26 +890,21 @@ end;
 
   @param Value   ParameterDescription
 }
-procedure TTemplateReader.SetConfiguration(
-  const Value: IConfiguration);
+procedure TTemplateReader.SetConfiguration(const Value: IConfiguration);
 begin
   FConfiguration := Value;
 end;
 
 {**
-
-  @param pTemplateName   ParameterDescription
-  @return ResultDescription
+  Lê o template de um Stream
+  @param pStream Stream do qual o Reader efetuará a leitura do Template
+  @return Retorna o conteúdo do template no formato de string 
 }
-function TTemplateReader.Read(const pTemplateName: string): string;
-begin
-  Result := '';
-end;
-
 function TTemplateReader.ReadFromStream(const pStream: TStream): string;
 begin
+  pStream.Position := 0;
   SetLength(Result, pStream.Size);
-  pStream.Read(PChar(Result)^, pStream.Size);
+  pStream.ReadBuffer(PChar(Result)^, pStream.Size);
 end;
 
 { TParseParams }
@@ -927,13 +925,14 @@ begin
   inherited;
 end;
 
-{ **
-  Parse analisa a instrução SQL à procura de parâmetros no formato :<nome_param>
+{**
+  Parse analisa a instrução SQL à procura de parâmetros e macros.
+  Procura por parâmetros no formato :<nome_param>
   e macros no formato #<nome_da_macro>. Os parâmetros encontrados são colocados
   numa lista e podem ser recuperados através da função GetParams.
   As macros encontradas são colocadas numa lista e podem ser recuperados através
   da função GetMacroParams.
-  
+
   @param pSql instrução SQL que será analisada
 }
 function TParseParams.Parse(const pSQL: string): string;
@@ -983,8 +982,10 @@ begin
 end;
 
 {**
-
-  @return ResultDescription  
+  Retorna um TStrings com a lista de macros
+  
+  @return Retorna um TStrings com a lista de parametros encontrados na instrução
+    SQL durante o Parse
 }
 function TParseParams.GetMacroParams: TStrings;
 begin
@@ -992,8 +993,10 @@ begin
 end;
 
 {**
+  Retorna um TStrings com a lista de parametros
 
-  @return ResultDescription  
+  @return Retorna um TStrings com a lista de parametros encontrados na instrução
+    SQL durante o Parse
 }
 function TParseParams.GetParams: TStrings;
 begin
