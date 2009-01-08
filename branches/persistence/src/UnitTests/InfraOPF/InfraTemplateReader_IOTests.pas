@@ -91,10 +91,14 @@ var
   FileName: array [0..MAX_PATH] of Char;
 begin
   GetTempFileName('.\','tst',0,FileName);
-
-  ExpectedException := EFOpenError;
-  FReader.Read(FileName);
-  ExpectedException := nil;
+  try
+    ExpectedException := EFOpenError;
+    FReader.Read(FileName);
+    ExpectedException := nil;
+  finally
+    if FileExists(FileName) then
+      DeleteFile(FileName);
+  end;
 end;
 
 procedure TTestTemplateReader_IO.TestRead;
