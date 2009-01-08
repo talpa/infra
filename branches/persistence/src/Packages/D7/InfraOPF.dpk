@@ -45,6 +45,7 @@ contains
   TemplateReader_IO in '..\..\Core\Persistence\TemplateReader_IO.pas',
   List_SQLCommandList in '..\..\Core\Persistence\List_SQLCommandList.pas',
   InfraPersistenceRegister in '..\..\Core\Persistence\InfraPersistenceRegister.pas',
-  InfraPersistenceAnnotation in '..\..\Core\Persistence\InfraPersistenceAnnotation.pas';
+  InfraPersistenceAnnotation in '..\..\Core\Persistence\InfraPersistenceAnnotation.pas',
+  InfraPersistenceConnProvider in '..\..\Core\Persistence\InfraPersistenceConnProvider.pas';
 
 end.

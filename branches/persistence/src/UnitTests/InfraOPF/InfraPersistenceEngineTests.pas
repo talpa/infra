@@ -27,15 +27,20 @@ implementation
 
 uses
   InfraPersistence,
+  InfraPersistenceConnProvider,
   InfraCommonIntf,
   InfraTestsUtil;
 
 { TTestPersistenceEngine }
 
 procedure TTestPersistenceEngine.SetUp;
+var
+  vConfig: IConfiguration;
 begin
   inherited;
-  FPersistenceEngine := TPersistenceEngine.Create(TTestsUtil.GetNewConfiguration);
+  vConfig := TTestsUtil.GetNewConfiguration;
+  FPersistenceEngine := TPersistenceEngine.Create(vConfig,
+    TConnectionProvider.Create(vConfig));
 end;
 
 procedure TTestPersistenceEngine.TearDown;
@@ -47,7 +52,8 @@ end;
 procedure TTestPersistenceEngine.TestCreate;
 begin
   ExpectedException := EInfraArgumentError;
-  TPersistenceEngine.Create(nil);
+  TPersistenceEngine.Create(nil,
+    TConnectionProvider.Create(TTestsUtil.GetNewConfiguration));
   ExpectedException := nil;
 end;
 

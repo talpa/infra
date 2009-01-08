@@ -2,7 +2,11 @@ unit InfraConnectionProviderTests;
 
 interface
 
-uses SysUtils, Classes, TestFramework, InfraPersistenceIntf;
+uses
+  SysUtils,
+  Classes,
+  TestFramework,
+  InfraPersistenceIntf;
 
 type
   TTestConnectionProvider = class(TTestCase)
@@ -26,7 +30,7 @@ type
 implementation
 
 uses
-  InfraPersistence,
+  InfraPersistenceConnProvider,
   InfraPersistenceConsts,
   InfraMocks,
   ZDbcIntfs,

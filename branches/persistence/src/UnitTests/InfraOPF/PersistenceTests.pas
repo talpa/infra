@@ -16,6 +16,7 @@ type
     procedure PreparaBancoParaInserir;
   protected
     procedure SetUp; override;
+    procedure TearDown; override;
   published
     procedure TestLoadWithObject;
     procedure TestLoadWithParams;
@@ -181,6 +182,12 @@ begin
   // *** Deveria testar aqui o estado do objeto deveria estar Deleted e Persistent
   // *** pegar um resultset e verificar se o dado foi realmente apagado
   CheckEquals(1, vCont, 'Quantidade de registros afetados inválida');
+end;
+
+procedure TPersistenceTests.TearDown;
+begin
+  inherited;
+  ReleaseZeosExecutor;
 end;
 
 initialization
