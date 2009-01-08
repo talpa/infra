@@ -228,7 +228,8 @@ begin
 end;
 
 initialization
-  TestFramework.RegisterTest(TTestParseParams.Suite);
+  TestFramework.RegisterTest('Persistence Testes Caixa-Cinza',
+    TTestParseParams.Suite);
 
 end.
 

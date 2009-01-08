@@ -39,7 +39,6 @@ type
     ['{E4D7AF34-1750-461D-90E3-15F0DFD3167E}']
     function GetConnection: IZConnection;
     procedure ReleaseConnection(const pConnection: IZConnection);
-    procedure Close;
   end;
 
   IInfraPersistenceService = interface(IInterface)
@@ -111,19 +110,26 @@ type
 
   ISession = interface(IBaseElement)
     ['{693A7815-9A5E-46C7-97DD-04D3E9C245AF}']
-    function Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
-    function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
-    function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
+    function Load(const pCommandName: string;
+      const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
+    function Load(const pCommandName: string;
+      const pClassID: TGUID): ISQLCommandQuery; overload;
+    function Load(const pCommandName: string;
+      const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
+    function Load(const pCommandName: string; const pObj: IInfraObject;
+      const pListID: TGUID): ISQLCommandQuery; overload;
+    function Delete(const pCommandName: string;
+      const pObj: IInfraObject): ISQLCommand;
+    function Save(const pCommandName: string;
+      const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
   end;
 
   IPersistenceEngine = interface(IBaseElement)
     ['{F1C7686A-43B6-4FE7-8BF1-6A9C6BC54AE4}']
     procedure SetConnection(const pConnection: IZConnection);
-    procedure Load(const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
+    procedure Load(const pSqlCommand: ISQLCommandQuery;
+      const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): Integer;
   end;
 
@@ -132,7 +138,8 @@ type
     function Read(const pTemplateName: string): string;
     function GetConfiguration: IConfiguration;
     procedure SetConfiguration(const Value: IConfiguration);
-    property Configuration: IConfiguration read GetConfiguration write SetConfiguration;
+    property Configuration: IConfiguration read GetConfiguration
+      write SetConfiguration;
   end;
 
   ITemplateReader_IO = interface(ITemplateReader)
