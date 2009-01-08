@@ -39,19 +39,6 @@ type
     destructor Destroy; override;
   end;
 
-  /// Classe responsável por prover conexões com o SGDB
-  TConnectionProvider = class(TBaseElement, IConnectionProvider)
-  private
-    /// Armazena uma referência ao objeto que contém as configurações do Framework
-    FConfiguration: IConfiguration;
-    function BuildConnectionString(pConfiguration: IConfiguration): string;
-  protected
-    function GetConnection: IZConnection;
-    procedure ReleaseConnection(const pConnection: IZConnection);
-  public
-    constructor Create(pConfiguration: IConfiguration); reintroduce;
-  end;
-
   /// Descrição da classe
   TPersistentState = class(TBaseElement, IPersistentState)
   private
@@ -136,15 +123,16 @@ type
     function GetRowFromResultSet(
       const pSqlCommand: ISQLCommandQuery;
       const pResultSet: IZResultSet): IInfraObject;
-    procedure DoLoad(const pST: IZPreparedStatement; const pSqlCommand:
-      ISQLCommandQuery; const pList: IInfraList);
+    procedure DoLoad(const pStatement: IZPreparedStatement; const pSqlCommand:
+        ISQLCommandQuery; const pList: IInfraList);
   protected
     procedure SetConnection(const pConnection: IZConnection);
     procedure Load(const pSqlCommand: ISQLCommandQuery;
       const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): Integer;
   public
-    constructor Create(pConfiguration: IConfiguration); reintroduce;
+    constructor Create(pConfiguration: IConfiguration;
+      pConnectionProvider: IConnectionProvider); reintroduce;
   end;
 
   /// Descrição da classe
@@ -197,7 +185,9 @@ uses
   InfraConsts,
   List_SQLCommandList,
   List_SQLCommandParam,
-  InfraValueType, RegExpr;
+  InfraValueType,
+  RegExpr,
+  InfraPersistenceConnProvider;
 
 { TConfiguration }
 
@@ -326,58 +316,6 @@ end;
 procedure TConfiguration.SetValue(const pName, Value: string);
 begin
   FProperties.Values[pName] := Value;
-end;
-
-{ TInfraConnectionProvider }
-
-{**
-  Cria uma nova instância de TInfraConnectionProvider.
-  @param pConfiguration Um objeto do tipo IConfiguration que contém todas as
-  informações necessárias sobre a conexão.
-}
-constructor TConnectionProvider.Create(pConfiguration: IConfiguration);
-begin
-  inherited Create;
-  if not Assigned(pConfiguration) then
-    raise EInfraArgumentError.Create(
-      'Configuration in ConnectionProvider.Create');
-  FConfiguration := pConfiguration;
-end;
-
-{**
-  Libera a conexão de volta ao pool para ser reutilizada
-  @param pConnection Conexão a ser liberada
-}
-procedure TConnectionProvider.ReleaseConnection(const pConnection: IZConnection);
-begin
-  // A ser implementado no novo Pool
-end;
-
-{*
-  Constrói a URL de conexão com o banco
-  @param pConfiguration Objeto com as configurações de conexão com o banco de dados
-  @return Retorna uma string no formato
-    zdbc:<driver>://<hostname>/<databasename>?username=<username>;password=<password>
-*}
-function TConnectionProvider.BuildConnectionString(pConfiguration: IConfiguration): string;
-begin
-  Result := 'zdbc:' + pConfiguration.GetAsString(cCONFIGKEY_DRIVER) +
-    '://' + pConfiguration.GetAsString(cCONFIGKEY_HOSTNAME) +
-    '/' + pConfiguration.GetAsString(cCONFIGKEY_DATABASENAME) +
-    '?username=' + pConfiguration.GetAsString(cCONFIGKEY_USERNAME) +
-    ';password=' + pConfiguration.GetAsString(cCONFIGKEY_PASSWORD);
-end;
-
-{**
-  Nesta versão apenas retorna uma nova conexão a cada chamada, por isso
-  pode ser lento, no próximo release o ConnectionProvider vai ser um Pool
-  completo e Thread safe
-  @return Retorna uma nova conexão (Do tipo IZConnection)
-}
-function TConnectionProvider.GetConnection: IZConnection;
-begin
-  Result := DriverManager.GetConnection(
-    BuildConnectionString(FConfiguration));
 end;
 
 { TPersistentState }
@@ -654,19 +592,22 @@ end;
   Cria uma nova instância de TPersistenceEngine
   @param pConfiguration   ParameterDescription
 }
-constructor TPersistenceEngine.Create(pConfiguration: IConfiguration);
+constructor TPersistenceEngine.Create(pConfiguration: IConfiguration;
+  pConnectionProvider: IConnectionProvider);
 begin
   inherited Create;
+  // O argumento pConfiguration sempre é requerido, visto que é dele que
+  // o Framework obterá as suas configurações
   if not Assigned(pConfiguration) then
-    raise EInfraArgumentError.Create('Configuration in PersistenceEngine.Create');
+    raise EInfraArgumentError.Create('pConfiguration');
+
   FConfiguration := pConfiguration;
-  FConnnectionProvider := TConnectionProvider.Create(pConfiguration);
+  FConnnectionProvider := pConnectionProvider;
   FParse := TParseParams.Create;
 end;
 
 {*
 
-  @param pSqlCommand   ParameterDescription
   @return ResultDescription
 }
 function TPersistenceEngine.GetReader: ITemplateReader;
@@ -702,34 +643,36 @@ begin
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
   vSQL := FParse.Parse(vSQL);
-  // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui antes de chamar o PrepareStatementWithParams
-  // Solicita um connection e prepara a sql
+
+  // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui
+  //   antes de chamar o PrepareStatementWithParams
+
+  // Solicita um connection e prepara a SQL
   vConnection := FConnnectionProvider.GetConnection;
   vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
-  // Seta os parametros e exeucta
+  // Seta os parametros e executa
   SetParameters(vStatement, pSqlCommand);
   Result := vStatement.ExecuteUpdatePrepared;
 end;
 
 {**
 
-  @param pST   ParameterDescription
+  @param pStatement   ParameterDescription
   @param pSqlCommand   ParameterDescription
   @param pList   ParameterDescription
   @return ResultDescription
 }
-procedure TPersistenceEngine.DoLoad(const pST: IZPreparedStatement;
-  const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
+procedure TPersistenceEngine.DoLoad(const pStatement: IZPreparedStatement;
+    const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
 var
   vResultSet: IZResultSet;
   vObject: IInfraObject;
 begin
-  vResultSet := pST.ExecuteQueryPrepared;
+  vResultSet := pStatement.ExecuteQueryPrepared;
   try
     while vResultSet.Next do
     begin
-      vObject :=
-        GetRowFromResultSet(pSqlCommand, vResultSet);
+      vObject := GetRowFromResultSet(pSqlCommand, vResultSet);
       pList.Add(vObject);
     end;
   finally
@@ -789,9 +732,10 @@ end;
 }
 procedure TPersistenceEngine.SetConnection(const pConnection: IZConnection);
 begin
-  // preencher o connection provider com o pConnection
   if not Assigned(pConnection) then
     raise EInfraArgumentError.Create('pConnection');
+    
+  // TODO: preencher o connection provider com o pConnection
 end;
 
 {**
@@ -891,7 +835,8 @@ end;
 function TInfraPersistenceService.GetPersistenceEngine: IPersistenceEngine;
 begin
   if not Assigned(FPersistenceEngine) then
-    FPersistenceEngine := TPersistenceEngine.Create(FConfiguration);
+    FPersistenceEngine := TPersistenceEngine.Create(FConfiguration,
+      ConnectionProviderFactory.CreateProvider(FConfiguration));
   Result := FPersistenceEngine;
 end;
 
@@ -1067,5 +1012,4 @@ end;
 
 initialization
   InjectPersistenceService;
-
 end.

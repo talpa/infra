@@ -21,6 +21,7 @@ type
   end;
 
 function GetZeosExecutor: TDBZeosExecutor;
+procedure ReleaseZeosExecutor;
 
 implementation
 
@@ -37,6 +38,11 @@ begin
   if not Assigned(_dbZeosExecutor) then
     _dbZeosExecutor := TDBZeosExecutor.Create;
   Result := _dbZeosExecutor;
+end;
+
+procedure ReleaseZeosExecutor;
+begin
+  _dbZeosExecutor := nil;
 end;
 
 { TDBZeosExecutor }
