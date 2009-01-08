@@ -26,6 +26,8 @@ type
     procedure TestParserMacroNoName;
     procedure TestParserMacrosAndParams;
     procedure TestParserMacrosAndParamsAndComments;
+    procedure TestParserResult1;
+    procedure TestParserResult2;
   end;
 
 implementation
@@ -193,6 +195,36 @@ begin
   CheckEqualsString('macro2', vMacros[2]);
   CheckEqualsString('inst2', vMacros[3]);
   CheckEqualsString('macro3', vMacros[4]);
+end;
+
+procedure TTestParseParams.TestParserResult1;
+const
+  cSql = 'insert into tabela'#13#10+
+    '(codigo, nome)'#13#10+
+    'values (:codigo, :nome)';
+  cExpected = 'insert into tabela'#13#10+
+    '(codigo, nome)'#13#10+
+    'values (?, ?)';
+var
+  vSql: string;
+begin
+  vSql := FParser.Parse(cSql);
+  CheckEqualsString(cExpected, vSql);
+end;
+
+procedure TTestParseParams.TestParserResult2;
+const
+  cSql = 'select * '#13#10+
+    'from tabela'#13#10+
+    'where codigo=:codigo'#13#10;
+  cExpected = 'select * '#13#10+
+    'from tabela'#13#10+
+    'where codigo=?'#13#10;
+var
+  vSql: string;
+begin
+  vSql := FParser.Parse(cSql);
+  CheckEqualsString(cExpected, vSql);
 end;
 
 initialization
