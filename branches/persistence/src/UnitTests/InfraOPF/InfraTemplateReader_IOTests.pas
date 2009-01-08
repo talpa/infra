@@ -113,7 +113,7 @@ begin
 
   vExpected := 'select *'#13#10+
     'from produtos'+#13#10+
-    'where codigo = :codigo'#13#10;
+    'where codigo=:codigo'#13#10;
 
   vFullFileName := FReader.GetFilename(FileName);
 

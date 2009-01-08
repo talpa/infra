@@ -871,6 +871,9 @@ var
   vStatement: IZPreparedStatement;
   vConnection: IZConnection;
 begin
+  if not Assigned(pSqlCommand) then
+    raise EInfraArgumentError.Create('pSqlCommand');
+    
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
   FParse.Parse(vSQL);
@@ -933,6 +936,12 @@ var
   vStatement: IZPreparedStatement;
   vConnection: IZConnection;
 begin
+  if not Assigned(pSqlCommand) then
+    raise EInfraArgumentError.Create('pSqlCommand');
+
+  if not Assigned(pList) then
+    raise EInfraArgumentError.Create('pList');
+
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
   // *** 1) se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro
@@ -959,6 +968,8 @@ end;
 procedure TPersistenceEngine.SetConnection(const pConnection: IZConnection);
 begin
   // preencher o connection provider com o pConnection
+  if not Assigned(pConnection) then
+    raise EInfraArgumentError.Create('pConnection');
 end;
 
 // *** 1) Como poderiamos carregar Objetos/Listas relacionados ao objeto atual a
@@ -999,7 +1010,7 @@ begin
       if Supports(vAttribute.TypeInfo, IZTypeAnnotation, vZeosType) then
         vZeosType.NullSafeGet(pResultSet, vIndex, vAttribute)
       else
-        Raise EPersistenceEngineError.CreateFmt(
+        raise EPersistenceEngineError.CreateFmt(
           cErrorPersistenceEngineCannotMapAttribute, [vAttribute.TypeInfo.Name]);
     end;
   end;
@@ -1205,11 +1216,11 @@ begin
     if vRegEx.Exec (vSql) then
     repeat
       if vRegEx.MatchPos[1] > 0 then
-        FParams.Add (System.Copy (vSql, vRegEx.MatchPos[1], vRegEx.MatchLen[1]));
+        FParams.Add (System.Copy(vSql, vRegEx.MatchPos[1], vRegEx.MatchLen[1]));
       if vRegEx.MatchPos[2] > 0 then
-        FMacroParams.Add (System.Copy (vSql, vRegEx.MatchPos[2], vRegEx.MatchLen[2]));
+        FMacroParams.Add (System.Copy(vSql, vRegEx.MatchPos[2], vRegEx.MatchLen[2]));
       if vRegEx.MatchPos[3] > 0 then
-        FMacroParams.Add (System.Copy (vSql, vRegEx.MatchPos[3], vRegEx.MatchLen[3]));
+        FMacroParams.Add (System.Copy(vSql, vRegEx.MatchPos[3], vRegEx.MatchLen[3]));
     until not vRegEx.ExecNext;
   finally
     vRegEx.Free;
