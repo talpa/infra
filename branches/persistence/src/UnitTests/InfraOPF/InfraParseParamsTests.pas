@@ -10,9 +10,9 @@ uses
   TestFramework;
 
 type
-  TTestParseParams = class(TTestCase)
+  TTestSQLParamsParser = class(TTestCase)
   private
-    FParser: IParseParams;
+    FParser: ISQLParamsParser;
   protected
     procedure SetUp; override;
     procedure TearDown; override;
@@ -34,19 +34,19 @@ implementation
 
 { TTestParseParams }
 
-procedure TTestParseParams.SetUp;
+procedure TTestSQLParamsParser.SetUp;
 begin
   inherited;
-  FParser := TParseParams.Create;
+  FParser := TSQLParamsParser.Create;
 end;
 
-procedure TTestParseParams.TearDown;
+procedure TTestSQLParamsParser.TearDown;
 begin
   FParser := nil;
   inherited;
 end;
 
-procedure TTestParseParams.TestParserInsert;
+procedure TTestSQLParamsParser.TestParserInsert;
 const
   cSql = 'insert into tabela'#13#10+
     '(codigo, nome)'#13#10+
@@ -61,7 +61,7 @@ begin
   CheckEqualsString('nome', vParams[1]);
 end;
 
-procedure TTestParseParams.TestParserSelect;
+procedure TTestSQLParamsParser.TestParserSelect;
 const
   cSql = 'select *'#13#10+
     'from tabela'#13#10+
@@ -77,7 +77,7 @@ begin
   CheckEqualsString('nome', vParams[1]);
 end;
 
-procedure TTestParseParams.TestParserUpdate;
+procedure TTestSQLParamsParser.TestParserUpdate;
 const
   cSql = 'update tabela set'#13#10+
     'codigo = :codigo, '#13#10+
@@ -94,7 +94,7 @@ begin
   CheckEqualsString('id', vParams[2]);
 end;
 
-procedure TTestParseParams.TestParserDelete;
+procedure TTestSQLParamsParser.TestParserDelete;
 const
   cSql = 'delete from tabela'#13#10+
     'where codigo=:codigo'#13#10+
@@ -111,7 +111,7 @@ begin
   CheckEqualsString('id', vParams[2]);
 end;
 
-procedure TTestParseParams.TestParserParamsRepeated;
+procedure TTestSQLParamsParser.TestParserParamsRepeated;
 const
   cSql = 'update tabela set id = :id, codigo = :codigo, nome = :nome where id = :id';
 var
@@ -126,7 +126,7 @@ begin
   CheckEqualsString('id', vParams[3]);
 end;
 
-procedure TTestParseParams.TestParserParamNoName;
+procedure TTestSQLParamsParser.TestParserParamNoName;
 const
   cSql = 'update tabela set id = :id, codigo = :codigo, nome = :nome where id = :';
 begin
@@ -135,7 +135,7 @@ begin
   ExpectedException := nil;
 end;
 
-procedure TTestParseParams.TestParserMacrosAndParams;
+procedure TTestSQLParamsParser.TestParserMacrosAndParams;
 const
   cSql = 'select #macro1 from #macro2 where id = :id or codigo = :codigo or campo3 = ::campo3 order by #macro3 ##macro4';
 var
@@ -155,7 +155,7 @@ begin
   CheckEqualsString('macro3', vMacros[2]);
 end;
 
-procedure TTestParseParams.TestParserMacroNoName;
+procedure TTestSQLParamsParser.TestParserMacroNoName;
 const
   cSql = 'update # set codigo = :codigo, nome = :nome where id = :id';
 begin
@@ -164,7 +164,7 @@ begin
   ExpectedException := nil;
 end;
 
-procedure TTestParseParams.TestParserMacrosAndParamsAndComments;
+procedure TTestSQLParamsParser.TestParserMacrosAndParamsAndComments;
 const
   cSql = '/* comentario multi-linha '#13#10+
     ' linha 2 do comentario #macro_ignorada1'#13#10+
@@ -197,7 +197,7 @@ begin
   CheckEqualsString('macro3', vMacros[4]);
 end;
 
-procedure TTestParseParams.TestParserResult1;
+procedure TTestSQLParamsParser.TestParserResult1;
 const
   cSql = 'insert into tabela'#13#10+
     '(codigo, nome)'#13#10+
@@ -212,7 +212,7 @@ begin
   CheckEqualsString(cExpected, vSql);
 end;
 
-procedure TTestParseParams.TestParserResult2;
+procedure TTestSQLParamsParser.TestParserResult2;
 const
   cSql = 'select * '#13#10+
     'from tabela'#13#10+
@@ -229,7 +229,7 @@ end;
 
 initialization
   TestFramework.RegisterTest('Persistence Testes Caixa-Cinza',
-    TTestParseParams.Suite);
+    TTestSQLParamsParser.Suite);
 
 end.
 

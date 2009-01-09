@@ -88,7 +88,7 @@ type
     procedure SetItem(Index: String; Value: IInfraType);
     function GetCount: Integer;
     function Add(Index: String; Value: IInfraType): String;
-    procedure AddObject(const Value: IInfraObject);	
+    procedure CreateParamsFrom(const Value: IInfraObject);	
     procedure Delete(Index: String);
     procedure DeletePosition(Index: integer);
     procedure Clear;
@@ -130,11 +130,13 @@ type
   IPersistenceEngine = interface(IBaseElement)
     ['{F1C7686A-43B6-4FE7-8BF1-6A9C6BC54AE4}']
     procedure SetConnection(const pConnection: IZConnection);
+    function GetConfiguration: IConfiguration;
     function GetConnectionProvider: IConnectionProvider;
     procedure Load(const pSqlCommand: ISQLCommandQuery;
       const pList: IInfraList);
     function Execute(const pConnection: IZConnection; const pSqlCommand: ISqlCommand): Integer;
     property ConnectionProvider: IConnectionProvider read GetConnectionProvider;
+    property Configuration: IConfiguration read GetConfiguration;
   end;
 
   ITemplateReader = interface(IElement)
@@ -151,7 +153,7 @@ type
     ['{01861C33-9789-4A30-8FCC-A018EA45FF13}']
   end;
 
-  IParseParams = interface(IBaseElement)
+  ISQLParamsParser = interface(IBaseElement)
     ['{C0D4B607-4224-44C0-A93C-F10658AE9738}']
     function Parse(const pSQL: string): string;
     function GetParams: TStrings;

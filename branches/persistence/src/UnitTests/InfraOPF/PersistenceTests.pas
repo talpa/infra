@@ -160,7 +160,7 @@ begin
   // *** Deveria testar aqui o estado do objeto deveria estar Clear e Persistent
   CheckEquals(1, vCont, 'Quantidade de registros afetados inválida');
 
-  vSQLCommand := vSession.Load('LoadAccountbyId', vObj);
+  vSQLCommand := vSession.CreateQuery('LoadAccountbyId', vObj);
   vObj := vSQLCommand.GetResult as IAccount;
 
   CheckEquals('2812-3', vObj.AccountNumber.AsString, 'Número da conta incompatível');
