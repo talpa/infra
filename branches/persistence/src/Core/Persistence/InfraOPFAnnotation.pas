@@ -1,10 +1,10 @@
-unit InfraPersistenceAnnotation;
+unit InfraOPFAnnotation;
 
 interface
 
 Uses
   InfraCommon,
-  InfraPersistenceIntf;
+  InfraOPFIntf;
 
 Type
   TZTypeAnnotation = Class(TElement, IZTypeAnnotation)
@@ -218,3 +218,4 @@ begin
 end;
 
 end.
+

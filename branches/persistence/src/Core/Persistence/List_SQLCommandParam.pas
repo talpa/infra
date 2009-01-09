@@ -10,7 +10,7 @@ uses
   Contnrs,
   InfraCommonIntf,
   InfraCommon,
-  InfraPersistenceIntf,
+  InfraOPFIntf,
   InfraValueTypeIntf;
 
 type
@@ -85,3 +85,4 @@ begin
 end;
 
 end.
+

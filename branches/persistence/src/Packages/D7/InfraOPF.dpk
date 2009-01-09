@@ -38,14 +38,18 @@ requires
   dbrtl;
 
 contains
-  InfraPersistenceIntf in '..\..\Core\Persistence\InfraPersistenceIntf.pas',
+  InfraOPFIntf in '..\..\Core\Persistence\InfraOPFIntf.pas',
   InfraPersistence in '..\..\Core\Persistence\InfraPersistence.pas',
-  InfraPersistenceConsts in '..\..\Core\Persistence\InfraPersistenceConsts.pas',
+  InfraOPFConsts in '..\..\Core\Persistence\InfraOPFConsts.pas',
   List_SQLCommandParam in '..\..\Core\Persistence\List_SQLCommandParam.pas',
-  TemplateReader_IO in '..\..\Core\Persistence\TemplateReader_IO.pas',
   List_SQLCommandList in '..\..\Core\Persistence\List_SQLCommandList.pas',
-  InfraPersistenceRegister in '..\..\Core\Persistence\InfraPersistenceRegister.pas',
-  InfraPersistenceAnnotation in '..\..\Core\Persistence\InfraPersistenceAnnotation.pas',
-  InfraPersistenceConnProvider in '..\..\Core\Persistence\InfraPersistenceConnProvider.pas';
+  InfraOPFAnnotation in '..\..\Core\Persistence\InfraOPFAnnotation.pas',
+  InfraOPFConnectionProvider in '..\..\Core\Persistence\InfraOPFConnectionProvider.pas',
+  InfraOPFConfiguration in '..\..\Core\Persistence\InfraOPFConfiguration.pas',
+  InfraOPFTemplates in '..\..\Core\Persistence\InfraOPFTemplates.pas',
+  InfraOPFParsers in '..\..\Core\Persistence\InfraOPFParsers.pas',
+  InfraOPFSqlCommands in '..\..\Core\Persistence\InfraOPFSqlCommands.pas',
+  InfraOPFSession in '..\..\Core\Persistence\InfraOPFSession.pas',
+  InfraOPFEngine in '..\..\Core\Persistence\InfraOPFEngine.pas';
 
 end.

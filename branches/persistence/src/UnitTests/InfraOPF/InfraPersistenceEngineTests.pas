@@ -5,7 +5,7 @@ interface
 uses
   SysUtils,
   InfraValueTypeIntf,
-  InfraPersistenceIntf,
+  InfraOPFIntf,
   TestFramework;
 
 type
@@ -26,10 +26,11 @@ type
 implementation
 
 uses
-  InfraPersistence,
-  InfraPersistenceConnProvider,
+  InfraOPFEngine,
+  InfraOPFConnectionProvider,
   InfraCommonIntf,
-  InfraTestsUtil;
+  InfraTestsUtil,
+  InfraOPFSqlCommands;
 
 { TTestPersistenceEngine }
 
@@ -93,3 +94,4 @@ initialization
     TTestPersistenceEngine.Suite);
 
 end.
+
