@@ -1,2 +1,0 @@
-#summary Framework de reflexão
-#labels InfraReflect,Documento
