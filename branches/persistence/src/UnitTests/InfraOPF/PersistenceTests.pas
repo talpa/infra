@@ -5,6 +5,7 @@ interface
 uses
   InfraPersistenceIntf,
   ZDbcInterbase6,
+  ZDbcIntfs,
   TestFramework,
   PersistenceModelIntf;
 
@@ -86,7 +87,7 @@ begin
   GetZeosExecutor.Execute('DELETE FROM ACCOUNT');
   GetZeosExecutor.Execute(
     'INSERT INTO ACCOUNT (ID, ACCOUNTNUMBER, ACCOUNTNAME, '+
-    'INITIALBALANCE, CURRENTBALANCE) VALUES (2, ''1111-3'', ''CEF 1111'', '+
+    'INITIALBALANCE, CURRENTBALANCE) VALUES (3, ''1111-3'', ''CEF 1111'', '+
     'NULL, NULL)');
 end;
 
@@ -144,24 +145,27 @@ var
   vSession: ISession;
   vObj: IAccount;
   vCont: integer;
+  vSQLCommand :ISQLCommandQuery;
 begin
   PreparaBancoParaInserir;
-  // Abre a sessao e cria objeto a ser gravado
   vSession := PersistenceService.OpenSession;
   vObj := TAccount.Create;
   vObj.Id.AsInteger := 2;
-  vObj.AccountNumber.AsString := '1361-2';
-  vObj.InitialBalance.AsDouble := 125.3;
-  vObj.CurrentBalance.AsDouble := 1524.25;
+  vObj.AccountNumber.AsString := '2812-3';
+  vObj.InitialBalance.AsDouble := 789.3;
+  vObj.CurrentBalance.AsDouble := 222.25;
   // *** Deveria testar aqui o estado do objeto deveria estar Clear e not Persistent
   vSession.Save('InsertAccount', vObj);
   vCont := vSession.Flush;
-
   // *** Deveria testar aqui o estado do objeto deveria estar Clear e Persistent
-  //     Acho até que após um save o framework deveria fazer o load.
-  // *** pegar um resultset e verificar se os dados foram realmente gravados
-  //     como pensamos
   CheckEquals(1, vCont, 'Quantidade de registros afetados inválida');
+
+  vSQLCommand := vSession.Load('LoadAccountbyId', vObj);
+  vObj := vSQLCommand.GetResult as IAccount;
+
+  CheckEquals('2812-3', vObj.AccountNumber.AsString, 'Número da conta incompatível');
+  CheckTrue(SameValue(789.3, vObj.InitialBalance.AsDouble), 'Saldo inicial incompatível');
+  CheckTrue(SameValue(222.25, vObj.CurrentBalance.AsDouble), 'Saldo atual incompatível');
 end;
 
 procedure TPersistenceTests.TestDeleteWithObject;
@@ -175,7 +179,7 @@ begin
   // Abre a sessao, cria um objeto e define o id a ser deletado
   vSession := PersistenceService.OpenSession;
   vObj := TAccount.Create;
-  vObj.Id.AsInteger := 2;
+  vObj.Id.AsInteger := 3;
   vSession.Delete('DeleteAccountByID', vObj);
   vCont := vSession.Flush;
 
