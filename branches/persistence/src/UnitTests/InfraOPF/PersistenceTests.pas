@@ -105,7 +105,7 @@ begin
   vObj.Id.AsInteger := 1;
   // *** verificar estado do objeto
   // Prepara a carga, definindo o objeto como parâmetro
-  vSQLCommand := vSession.Load('LoadAccountbyId', vObj);
+  vSQLCommand := vSession.CreateQuery('LoadAccountbyId', vObj);
   // Executa a carga do objeto
   vObj := vSQLCommand.GetResult as IAccount;
 
@@ -126,7 +126,7 @@ begin
   PreparaBancoParaCarga;
   // Abre a sessao e define o parametro e o tipo de classe a ser carregada.
   vSession := PersistenceService.OpenSession;
-  vSQLCommand := vSession.Load('LoadAccountbyId');
+  vSQLCommand := vSession.CreateQuery('LoadAccountbyId');
   vSQLCommand.ClassID := IAccount;
   vSQLCommand.Params['Id'] := TInfraInteger.NewFrom(1);
   // Executa a carga do objeto

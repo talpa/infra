@@ -57,7 +57,7 @@ type
   TSQLCommand = class(TBaseElement, ISQLCommand)
   private
     FName: string;
-    FParams: ISQLCommandParams;    
+    FParams: ISQLCommandParams;
     FPersistenceEngine: IPersistenceEngine;
   protected
     function GetName: string;
@@ -91,15 +91,15 @@ type
   TSession = class(TBaseElement, ISession)
   private
     FPersistenceEngine: IPersistenceEngine;
-    FCommandList: ISQLCommandList;
+    FPendingCommands: ISQLCommandList;
   protected
-    function Load(const pCommandName: string; 
+    function CreateQuery(const pCommandName: string;
       const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string; 
+    function CreateQuery(const pCommandName: string;
       const pClassID: TGUID): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string;
+    function CreateQuery(const pCommandName: string;
       const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string; const pObj: IInfraObject;
+    function CreateQuery(const pCommandName: string; const pObj: IInfraObject;
       const pListID: TGUID): ISQLCommandQuery; overload;
     function Delete(const pCommandName: string;
       const pObj: IInfraObject): ISQLCommand;
@@ -125,14 +125,17 @@ type
       const pResultSet: IZResultSet): IInfraObject;
     procedure DoLoad(const pStatement: IZPreparedStatement; const pSqlCommand:
         ISQLCommandQuery; const pList: IInfraList);
+    function GetConnectionProvider: IConnectionProvider;
   protected
     procedure SetConnection(const pConnection: IZConnection);
     procedure Load(const pSqlCommand: ISQLCommandQuery;
       const pList: IInfraList);
-    function Execute(const pSqlCommand: ISqlCommand): Integer;
+    function Execute(const pConnection: IZConnection;
+      const pSqlCommand: ISqlCommand): Integer;
   public
     constructor Create(pConfiguration: IConfiguration;
       pConnectionProvider: IConnectionProvider); reintroduce;
+    property ConnectionProvider: IConnectionProvider read GetConnectionProvider;
   end;
 
   /// Descrição da classe
@@ -476,7 +479,7 @@ begin
     raise EInfraArgumentError.Create('PersistenceEngine in Session.Create');
   inherited Create;
   FPersistenceEngine := pPersistenceEngine;
-  FCommandList := TSQLCommandList.Create;
+  FPendingCommands := TSQLCommandList.Create;
 end;
 
 {*
@@ -485,7 +488,7 @@ end;
   @param pClassID   ParameterDescription
   @return ResultDescription
 }
-function TSession.Load(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
+function TSession.CreateQuery(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
 begin
   Result := TSQLCommandQuery.Create(FPersistenceEngine);
   Result.Name := pCommandName;
@@ -501,9 +504,9 @@ end;
   @param pListID   ParameterDescription
   @return ResultDescription
 }
-function TSession.Load(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommandQuery;
+function TSession.CreateQuery(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommandQuery;
 begin
-  Result := Load(pCommandName, pClassID);
+  Result := CreateQuery(pCommandName, pClassID);
   Result.ListID := pListID;
 end;
 
@@ -514,12 +517,12 @@ end;
   @param pListID   ParameterDescription
   @return ResultDescription
 }
-function TSession.Load(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery;
+function TSession.CreateQuery(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery;
 begin
   if Assigned(pObj) then
-    Result := Load(pCommandName, pObj.TypeInfo.TypeID)
+    Result := CreateQuery(pCommandName, pObj.TypeInfo.TypeID)
   else
-    Result := Load(pCommandName, NullGUID);
+    Result := CreateQuery(pCommandName, NullGUID);
   if Assigned(pObj) then
     Result.Params.AddObject(pObj);
 end;
@@ -530,9 +533,9 @@ end;
   @param pObj   ParameterDescription
   @return ResultDescription
 }
-function TSession.Load(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery;
+function TSession.CreateQuery(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery;
 begin
-  Result := Load(pCommandName, pObj.TypeInfo.TypeID, pListID);
+  Result := CreateQuery(pCommandName, pObj.TypeInfo.TypeID, pListID);
   Result.Params.AddObject(pObj);
 end;
 
@@ -550,7 +553,7 @@ begin
     Name := pCommandName;
     Params.AddObject(pObj);
   end;
-  FCommandList.Add(Result);
+  FPendingCommands.Add(Result);
 end;
 
 {*
@@ -576,13 +579,18 @@ end;
 function TSession.Flush: Integer;
 var
   i: integer;
+  vConnection: IZConnection;
 begin
   // TODO: Dar atenção a isto porque, pelo modelo atual, pra cada Execute ele vai
   // abrir uma nova conexão. Isto impediria que todas as operações fossem feitas
   // no contexto de UMA transação
   Result := 0;
-  for i := 0 to FCommandList.Count - 1 do
-    Result := Result + FPersistenceEngine.Execute(FCommandList[i]);
+  vConnection := FPersistenceEngine.ConnectionProvider.GetConnection;
+  for i := 0 to FPendingCommands.Count - 1 do
+    Result := Result + FPersistenceEngine.Execute(vConnection, FPendingCommands[i]);
+
+  // Se deu tudo ok, limpa a lista de pendencias
+  FPendingCommands.Clear;
 end;
 
 { TPersistenceEngine }
@@ -628,17 +636,17 @@ end;
   @param pSqlCommand  Objeto com as informações sobre o que e como executar a instrução.
   @return Retornar a quantidade de registros afetados pela atualização.
 }
-function TPersistenceEngine.Execute(const pSqlCommand: ISqlCommand): Integer;
+function TPersistenceEngine.Execute(const pConnection: IZConnection;
+  const pSqlCommand: ISqlCommand): Integer;
 var
   vReader: ITemplateReader;
   vSQL: string;
   vStatement: IZPreparedStatement;
-  vConnection: IZConnection;
 begin
   // Carrega a SQL e extrai os parâmetros
   if not Assigned(pSqlCommand) then
     raise EInfraArgumentError.Create('pSqlCommand');
-    
+
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
   vSQL := FParse.Parse(vSQL);
@@ -647,8 +655,7 @@ begin
   //   antes de chamar o PrepareStatementWithParams
 
   // Solicita um connection e prepara a SQL
-  vConnection := FConnnectionProvider.GetConnection;
-  vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
+  vStatement := pConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
   // Seta os parametros e executa
   SetParameters(vStatement, pSqlCommand);
   Result := vStatement.ExecuteUpdatePrepared;
@@ -722,6 +729,15 @@ begin
   finally
     vStatement.Close;
   end;
+end;
+
+{**
+
+  @return Retorna uma referencia ao ConnectionProvider
+}
+function TPersistenceEngine.GetConnectionProvider: IConnectionProvider;
+begin
+  Result := FConnnectionProvider;
 end;
 
 {**

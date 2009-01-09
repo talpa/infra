@@ -164,7 +164,13 @@
 
 - É possível algum tipo de Log/Monitoramento?
 
-- Como ficam IDs atribuidos por triggers/casmpos autoincrement/sequences?
+- Como ficam IDs atribuidos por triggers/campos autoincrement/sequences?
+
+- O Zeos dá suporte a varios parametros de conexao, mas o infra nao.
+
+- O flush não está apagando a lista de comandos (fazer testes unitários pra isso)
+
+- testar o limite de comandos que podem ser adicionados num processo em lote
 
 "As soon as you do something that requires access to the database, a JDBC connection will be obtained from the pool."
 
