@@ -91,6 +91,7 @@ type
   TSession = class(TBaseElement, ISession)
   private
     FPersistenceEngine: IPersistenceEngine;
+    /// Lista de comandos pendentes. Durante o Flush os comandos são executados e a lista é limpa
     FPendingCommands: ISQLCommandList;
   protected
     function CreateQuery(const pCommandName: string;
@@ -115,7 +116,8 @@ type
   private
     FConfiguration: IConfiguration;
     FConnnectionProvider: IConnectionProvider;
-    FParse: IParseParams;
+    /// Parser que procura por parametros e macros na instrução SQL
+    FParser: ISQLParamsParser;
     function GetReader: ITemplateReader;
     procedure SetParameters(const pStatement: IZPreparedStatement;
       const pParams: ISqlCommandParams);
@@ -125,6 +127,8 @@ type
     procedure DoLoad(const pStatement: IZPreparedStatement; const pSqlCommand:
         ISQLCommandQuery; const pList: IInfraList);
     function GetConnectionProvider: IConnectionProvider;
+    function GetConfiguration: IConfiguration;
+    function ReadTemplate(const pSqlCommandName: string): string;
   protected
     procedure SetConnection(const pConnection: IZConnection);
     procedure Load(const pSqlCommand: ISQLCommandQuery;
@@ -135,6 +139,7 @@ type
     constructor Create(pConfiguration: IConfiguration;
       pConnectionProvider: IConnectionProvider); reintroduce;
     property ConnectionProvider: IConnectionProvider read GetConnectionProvider;
+    property Configuration: IConfiguration read GetConfiguration;
   end;
 
   /// Descrição da classe
@@ -166,7 +171,7 @@ type
   end;
 
   /// Classe utilitária para obter parâmetros e macros de uma instrução SQL
-  TParseParams = class(TBaseElement, IParseParams)
+  TSQLParamsParser = class(TBaseElement, ISQLParamsParser)
   private
     FParams: TStrings;
     FMacroParams: TStrings;
@@ -523,7 +528,7 @@ begin
   else
     Result := CreateQuery(pCommandName, NullGUID);
   if Assigned(pObj) then
-    Result.Params.AddObject(pObj);
+    Result.Params.CreateParamsFrom(pObj);
 end;
 
 {*
@@ -535,7 +540,7 @@ end;
 function TSession.CreateQuery(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery;
 begin
   Result := CreateQuery(pCommandName, pObj.TypeInfo.TypeID, pListID);
-  Result.Params.AddObject(pObj);
+  Result.Params.CreateParamsFrom(pObj);
 end;
 
 {*
@@ -550,7 +555,7 @@ begin
   with Result do
   begin
     Name := pCommandName;
-    Params.AddObject(pObj);
+    Params.CreateParamsFrom(pObj);
   end;
   FPendingCommands.Add(Result);
 end;
@@ -560,8 +565,8 @@ end;
   @return ResultDescription
 }
 function TSession.Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
-var
-  vState: IPersistentState;
+//var
+//  vState: IPersistentState;
 begin
 //  if Supports(pObj, IPersistentState, vState) then
 //  begin
@@ -609,7 +614,7 @@ begin
 
   FConfiguration := pConfiguration;
   FConnnectionProvider := pConnectionProvider;
-  FParse := TParseParams.Create;
+  FParser := TSQLParamsParser.Create;
 end;
 
 {*
@@ -638,7 +643,6 @@ end;
 function TPersistenceEngine.Execute(const pConnection: IZConnection;
   const pSqlCommand: ISqlCommand): Integer;
 var
-  vReader: ITemplateReader;
   vSQL: string;
   vStatement: IZPreparedStatement;
 begin
@@ -646,15 +650,14 @@ begin
   if not Assigned(pSqlCommand) then
     raise EInfraArgumentError.Create('pSqlCommand');
 
-  vReader := GetReader;
-  vSQL := vReader.Read(pSqlCommand.Name);
-  vSQL := FParse.Parse(vSQL);
+  vSQL := ReadTemplate(pSqlCommand.Name);
+  vSQL := FParser.Parse(vSQL);
 
   // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   //   antes de chamar o PrepareStatementWithParams
 
   // Solicita um connection e prepara a SQL
-  vStatement := pConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
+  vStatement := pConnection.PrepareStatementWithParams(vSQL, FParser.GetParams);
   // Seta os parametros e executa
   SetParameters(vStatement, pSqlCommand.Params);
   Result := vStatement.ExecuteUpdatePrepared;
@@ -703,7 +706,6 @@ end;
 procedure TPersistenceEngine.Load(const pSqlCommand: ISQLCommandQuery;
   const pList: IInfraList);
 var
-  vReader: ITemplateReader;
   vSQL: string;
   vStatement: IZPreparedStatement;
   vConnection: IZConnection;
@@ -715,15 +717,15 @@ begin
     raise EInfraArgumentError.Create('pList');
 
   // Acho q o Sql deveria já estar no SqlCommand neste momento
-  vReader := GetReader;
-  vSQL := vReader.Read(pSqlCommand.Name);
+  vSQL := ReadTemplate(pSqlCommand.Name);
   // *** 1) se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro
   // do vReader.Read????
-  vSQL := FParse.Parse(vSQL);
+  vSQL := FParser.Parse(vSQL);
+
   // *** 2) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   // antes de chamar o PrepareStatementWithParams
   vConnection := FConnnectionProvider.GetConnection;
-  vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
+  vStatement := vConnection.PrepareStatementWithParams(vSQL, FParser.GetParams);
   try
     SetParameters(vStatement, pSqlCommand.Params);
     DoLoad(vStatement, pSqlCommand, pList);
@@ -750,8 +752,17 @@ procedure TPersistenceEngine.SetConnection(const pConnection: IZConnection);
 begin
   if not Assigned(pConnection) then
     raise EInfraArgumentError.Create('pConnection');
-    
+
   // TODO: preencher o connection provider com o pConnection
+end;
+
+{**
+  Chame GetConfiguration para obter uma referencia ao objeto de configuração do Framework
+  @return Retorna uma referencia ao objeto de configuração do Framework
+}
+function TPersistenceEngine.GetConfiguration: IConfiguration;
+begin
+  Result := FConfiguration;
 end;
 
 {**
@@ -791,6 +802,14 @@ begin
           cErrorPersistenceEngineCannotMapAttribute, [vAttribute.TypeInfo.Name]);
     end;
   end;
+end;
+
+function TPersistenceEngine.ReadTemplate(const pSqlCommandName: string): string;
+var
+  vReader: ITemplateReader;
+begin
+  vReader := GetReader;
+  Result := vReader.Read(pSqlCommandName);
 end;
 
 {**
@@ -921,7 +940,7 @@ end;
 { TParseParams }
 
 ///  Cria uma nova instância de TParseParams
-constructor TParseParams.Create;
+constructor TSQLParamsParser.Create;
 begin
   inherited;
   FParams := TStringList.Create;
@@ -929,7 +948,7 @@ begin
 end;
 
 ///  Destrói o objeto
-destructor TParseParams.Destroy;
+destructor TSQLParamsParser.Destroy;
 begin
   FParams.Free;
   FMacroParams.Free;
@@ -946,7 +965,7 @@ end;
 
   @param pSql instrução SQL que será analisada
 }
-function TParseParams.Parse(const pSQL: string): string;
+function TSQLParamsParser.Parse(const pSQL: string): string;
 const
   cExpRegCommentsML = '(\/\*(.*?)\*\/)'; // comentarios no formato /* ... */
   cExpRegCommentsInLine = '--(.*?)$'; // comentarios no formato -- ...
@@ -998,7 +1017,7 @@ end;
   @return Retorna um TStrings com a lista de parametros encontrados na instrução
     SQL durante o Parse
 }
-function TParseParams.GetMacroParams: TStrings;
+function TSQLParamsParser.GetMacroParams: TStrings;
 begin
   Result := FMacroParams;
 end;
@@ -1009,7 +1028,7 @@ end;
   @return Retorna um TStrings com a lista de parametros encontrados na instrução
     SQL durante o Parse
 }
-function TParseParams.GetParams: TStrings;
+function TSQLParamsParser.GetParams: TStrings;
 begin
   Result := FParams;
 end;

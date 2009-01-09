@@ -60,7 +60,7 @@ end;
 procedure TTestPersistenceEngine.TestExecuteWithInvalidArgs;
 begin
   ExpectedException := EInfraArgumentError;
-  FPersistenceEngine.Execute(nil);
+  FPersistenceEngine.Execute(nil, nil);
   ExpectedException := nil;
 end;
 

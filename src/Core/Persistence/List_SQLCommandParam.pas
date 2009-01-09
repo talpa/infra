@@ -26,7 +26,7 @@ type
   {$I ..\Templates\InfraTempl_ListDynIndex.inc}
     function InvalidIndex: _INDEX_;
     function IsIndexEqual(const Index1, Index2: _INDEX_): boolean;
-    procedure AddObject(const Value: IInfraObject);
+    procedure CreateParamsFrom(const Value: IInfraObject);
   end;
 
   TSQLCommandParams = class(_ITERABLELIST_);
@@ -57,11 +57,16 @@ begin
   Result := AnsiSameText(Index1, Index2);
 end;
 
-procedure _ITERABLELIST_.AddObject(const Value: IInfraObject);
+// TODO: Verificar o que acontece se chamar CreateParamsFrom esse metodo duas vezes seguidas
+// Eu acho q ele tem um BUG, afinal, não vi comando pra limpar a lista
+procedure _ITERABLELIST_.CreateParamsFrom(const Value: IInfraObject);
 var
   vIterator: IPropertyInfoIterator;
-  vParamValue, vPropertyValue: IInfraType;  
+  vParamValue, vPropertyValue: IInfraType;
 begin
+  // se Value = nil deveria levantar uma exceção
+  //
+  
   if Assigned(Value) then
   begin
     vIterator := TypeService.GetType(Value.TypeInfo.TypeID).GetProperties;
