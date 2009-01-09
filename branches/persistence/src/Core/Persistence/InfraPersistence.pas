@@ -107,8 +107,7 @@ type
       const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
   public
-    constructor Create(
-      const pPersistenceEngine: IPersistenceEngine); reintroduce;
+    constructor Create(const pPersistenceEngine: IPersistenceEngine); reintroduce;
   end;
 
   /// Descrição da classe
@@ -119,7 +118,7 @@ type
     FParse: IParseParams;
     function GetReader: ITemplateReader;
     procedure SetParameters(const pStatement: IZPreparedStatement;
-      const pSqlCommand: ISqlCommand);
+      const pParams: ISqlCommandParams);
     function GetRowFromResultSet(
       const pSqlCommand: ISQLCommandQuery;
       const pResultSet: IZResultSet): IInfraObject;
@@ -657,7 +656,7 @@ begin
   // Solicita um connection e prepara a SQL
   vStatement := pConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
   // Seta os parametros e executa
-  SetParameters(vStatement, pSqlCommand);
+  SetParameters(vStatement, pSqlCommand.Params);
   Result := vStatement.ExecuteUpdatePrepared;
 end;
 
@@ -693,12 +692,13 @@ end;
   cria um objeto com base no ClassType do pSqlCommand,
   Seta o estado persistent e clean ao objeto criado
   faz a carga dos atributos com base no registro
-  Adiciona o novo objeto em pList retorna a lista }
+  Adiciona o novo objeto em pList retorna a lista
+}
 {**
+  Carrega uma lista de objetos do banco de dados usando um SQLCommandQuery
 
-  @param pSqlCommand   ParameterDescription
-  @param pList   ParameterDescription
-  @return ResultDescription
+  @param pSqlCommand SqlCommandQuery que será usado para efetuar a consulta no banco de dados
+  @param pList Lista que será preenchida com os objetos lidos
 }
 procedure TPersistenceEngine.Load(const pSqlCommand: ISQLCommandQuery;
   const pList: IInfraList);
@@ -714,6 +714,7 @@ begin
   if not Assigned(pList) then
     raise EInfraArgumentError.Create('pList');
 
+  // Acho q o Sql deveria já estar no SqlCommand neste momento
   vReader := GetReader;
   vSQL := vReader.Read(pSqlCommand.Name);
   // *** 1) se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro
@@ -724,7 +725,7 @@ begin
   vConnection := FConnnectionProvider.GetConnection;
   vStatement := vConnection.PrepareStatementWithParams(vSQL, FParse.GetParams);
   try
-    SetParameters(vStatement, pSqlCommand);
+    SetParameters(vStatement, pSqlCommand.Params);
     DoLoad(vStatement, pSqlCommand, pList);
   finally
     vStatement.Close;
@@ -759,8 +760,7 @@ end;
   @param pResultSet   ParameterDescription
   @return ResultDescription
 }
-function TPersistenceEngine.GetRowFromResultSet(
-  const pSqlCommand: ISQLCommandQuery;
+function TPersistenceEngine.GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery;
   const pResultSet: IZResultSet): IInfraObject;
 var
   vIndex: integer;
@@ -793,25 +793,25 @@ begin
   end;
 end;
 
-// *** o que acontece caso tenhamos um template com nomes de parametros repetidos?
 {**
-
-  @param pStatement   ParameterDescription
-  @param pSqlCommand   ParameterDescription
-  @return ResultDescription
+  Efetua a substituição dos parametros por seus respectivos valores
+  @param pStatement Este parametro representa o comando SQL no qual se efetuará
+                    a substuição de parâmetros
+  @param pParams Lista de parametros do tipo ISqlCommandParams
 }
-procedure TPersistenceEngine.SetParameters(
-  const pStatement: IZPreparedStatement; const pSqlCommand: ISqlCommand);
+procedure TPersistenceEngine.SetParameters(const pStatement: IZPreparedStatement;
+  const pParams: ISqlCommandParams);
 var
   vIndex: integer;
   vParamValue: IInfraType;
   vParams: TStrings;
   vZeosType: IZTypeAnnotation;
 begin
+  // *** o que acontece caso tenhamos um template com nomes de parametros repetidos?
   vParams := pStatement.GetParameters;
   for vIndex := 0 to vParams.Count-1 do
   begin
-    vParamValue := pSqlCommand.Params[vParams[vIndex]];
+    vParamValue := pParams[vParams[vIndex]];
     if Assigned(vParamValue)
       and Supports(vParamValue.TypeInfo, IZTypeAnnotation, vZeosType) then
       // Aumenta o vIndex por que no Zeos as colunas começam de 1
