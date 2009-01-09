@@ -1,5 +1,5 @@
 // xxx
-unit InfraPersistenceConsts;
+unit InfraOPFConsts;
 
 interface
 

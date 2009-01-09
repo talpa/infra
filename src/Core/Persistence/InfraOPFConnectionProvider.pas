@@ -1,11 +1,11 @@
-unit InfraPersistenceConnProvider;
+unit InfraOPFConnectionProvider;
 
 interface
 
 uses
   InfraCommon,
   InfraCommonIntf,
-  InfraPersistenceIntf,
+  InfraOPFIntf,
   ZDbcIntfs;
 
 type
@@ -38,7 +38,7 @@ var
 implementation
 
 uses
-  InfraPersistenceConsts;
+  InfraOPFConsts;
 
 { TInfraConnectionProvider }
 
@@ -105,3 +105,4 @@ initialization
 finalization
   ConnectionProviderFactory := nil;
 end.
+

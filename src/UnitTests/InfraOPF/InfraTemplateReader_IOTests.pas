@@ -6,8 +6,8 @@ uses
   SysUtils,
   TestFramework,
   InfraCommonIntf,
-  InfraPersistenceIntf,
-  TemplateReader_IO;
+  InfraOPFIntf,
+  InfraOPFTemplates;
 
 type
   TTemplateReaderHacked = class(TTemplateReader_IO)
@@ -30,7 +30,7 @@ type
 implementation
 
 uses
-  InfraTestsUtil, InfraPersistenceConsts, Windows, Classes;
+  InfraTestsUtil, InfraOPFConsts, Windows, Classes;
 
 { TTestTemplateReader_IO }
 
@@ -137,3 +137,4 @@ initialization
   TestFramework.RegisterTest('Persistence Testes Caixa-Cinza',
     TTestTemplateReader_IO.Suite);
 end.
+

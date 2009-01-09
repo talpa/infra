@@ -3,7 +3,7 @@ unit InfraTestsUtil;
 interface
 
 uses
-  InfraPersistenceIntf, ZDbcIntfs;
+  InfraOPFIntf, ZDbcIntfs;
 
 type
   TDBZeosExecutor = class
@@ -28,7 +28,8 @@ implementation
 uses
   SysUtils,
   InfraPersistence,
-  InfraPersistenceConsts;
+  InfraOPFConfiguration,
+  InfraOPFConsts;
 
 var
   _dbZeosExecutor: TDBZeosExecutor;
@@ -86,3 +87,4 @@ finalization
     FreeAndNil(_dbZeosExecutor);
 
 end.
+

@@ -4,7 +4,7 @@ interface
 
 uses
   InfraPersistence,
-  InfraPersistenceIntf,
+  InfraOPFIntf,
   InfraCommonIntf,
   TestFrameWork;
 
@@ -26,7 +26,7 @@ type
 implementation
 
 uses
-  InfraConsts, InfraPersistenceConsts, InfraMocks, ZDbcIntfs;
+  InfraConsts, InfraOPFConsts, InfraMocks, ZDbcIntfs;
 
 procedure TInfraPersistenceServiceTests.SetUp;
 begin

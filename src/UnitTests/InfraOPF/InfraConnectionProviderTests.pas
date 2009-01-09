@@ -6,7 +6,7 @@ uses
   SysUtils,
   Classes,
   TestFramework,
-  InfraPersistenceIntf;
+  InfraOPFIntf;
 
 type
   TTestConnectionProvider = class(TTestCase)
@@ -30,8 +30,8 @@ type
 implementation
 
 uses
-  InfraPersistenceConnProvider,
-  InfraPersistenceConsts,
+  InfraOPFConnectionProvider,
+  InfraOPFConsts,
   InfraMocks,
   ZDbcIntfs,
   InfraCommonIntf,
@@ -108,4 +108,5 @@ initialization
     TTestConnectionProvider.Suite);
     
 end.
+
 

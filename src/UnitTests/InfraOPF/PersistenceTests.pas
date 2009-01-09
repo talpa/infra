@@ -3,7 +3,7 @@ unit PersistenceTests;
 interface
 
 uses
-  InfraPersistenceIntf,
+  InfraOPFIntf,
   ZDbcInterbase6,
   ZDbcIntfs,
   TestFramework,
@@ -37,7 +37,7 @@ uses
   InfraValueTypeIntf,
   PersistenceModel,
   InfraPersistence,
-  InfraPersistenceConsts,
+  InfraOPFConsts,
   InfraTestsUtil;
 
 { TPersistenceTests }

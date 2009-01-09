@@ -1,5 +1,5 @@
 // xxx
-unit InfraPersistenceIntf;
+unit InfraOPFIntf;
 
 interface
 
@@ -180,8 +180,8 @@ function PersistenceService: IInfraPersistenceService;
 implementation
 
 uses
-  InfraPersistenceRegister,
-  InfraPersistenceAnnotation;
+  InfraOPFTemplates,
+  InfraOPFAnnotation;
 
 function PersistenceService: IInfraPersistenceService;
 begin
@@ -189,8 +189,8 @@ begin
 end;
 
 initialization
-  InfraPersistenceRegister.RegisterOnReflection;
-  InfraPersistenceAnnotation.RegisterZeosTypeMapping;
+  InfraOPFTemplates.RegisterOnReflection;
+  InfraOPFAnnotation.RegisterZeosTypeMapping;
 
 end.
 

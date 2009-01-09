@@ -6,7 +6,7 @@ interface
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
-  InfraPersistenceIntf,
+  InfraOPFIntf,
   InfraCommonIntf,
   InfraCommon,
   InfraBasicList;
@@ -37,3 +37,4 @@ begin
 end;
 
 end.
+

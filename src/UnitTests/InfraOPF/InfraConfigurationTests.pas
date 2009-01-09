@@ -2,7 +2,7 @@ unit InfraConfigurationTests;
 
 interface
 
-uses SysUtils, Classes, TestFramework, InfraPersistenceIntf;
+uses SysUtils, Classes, TestFramework, InfraOPFIntf;
 
 type
   TTestConfiguration = class(TTestCase)
@@ -29,7 +29,7 @@ type
 implementation
 
 uses
-  InfraPersistence;
+  InfraOPFConfiguration;
 
 { TTestConnectionProvider }
 
@@ -179,4 +179,5 @@ initialization
   TestFramework.RegisterTest('Persistence Testes Caixa-Cinza',
     TTestConfiguration.Suite);
 end.
+
 

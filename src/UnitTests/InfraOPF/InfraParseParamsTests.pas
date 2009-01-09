@@ -6,7 +6,7 @@ uses
   SysUtils,
   Classes,
   InfraPersistence,
-  InfraPersistenceIntf,
+  InfraOPFIntf,
   TestFramework;
 
 type
@@ -31,6 +31,9 @@ type
   end;
 
 implementation
+
+uses
+  InfraOPFParsers;
 
 { TTestParseParams }
 
@@ -232,4 +235,5 @@ initialization
     TTestSQLParamsParser.Suite);
 
 end.
+
 
