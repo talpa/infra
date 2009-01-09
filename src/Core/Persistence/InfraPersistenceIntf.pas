@@ -104,19 +104,21 @@ type
     function Add(const Item: ISQLCommand): Integer;
     function GetCount: Integer;
     function GetItem(Index: Integer): ISQLCommand;
+    procedure Clear;
+
     property Items[Index: Integer]: ISQLCommand read GetItem; default;
     property Count: Integer read GetCount;
   end;
 
   ISession = interface(IBaseElement)
     ['{693A7815-9A5E-46C7-97DD-04D3E9C245AF}']
-    function Load(const pCommandName: string;
+    function CreateQuery(const pCommandName: string;
       const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string;
+    function CreateQuery(const pCommandName: string;
       const pClassID: TGUID): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string;
+    function CreateQuery(const pCommandName: string;
       const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function Load(const pCommandName: string; const pObj: IInfraObject;
+    function CreateQuery(const pCommandName: string; const pObj: IInfraObject;
       const pListID: TGUID): ISQLCommandQuery; overload;
     function Delete(const pCommandName: string;
       const pObj: IInfraObject): ISQLCommand;
@@ -128,9 +130,11 @@ type
   IPersistenceEngine = interface(IBaseElement)
     ['{F1C7686A-43B6-4FE7-8BF1-6A9C6BC54AE4}']
     procedure SetConnection(const pConnection: IZConnection);
+    function GetConnectionProvider: IConnectionProvider;
     procedure Load(const pSqlCommand: ISQLCommandQuery;
       const pList: IInfraList);
-    function Execute(const pSqlCommand: ISqlCommand): Integer;
+    function Execute(const pConnection: IZConnection; const pSqlCommand: ISqlCommand): Integer;
+    property ConnectionProvider: IConnectionProvider read GetConnectionProvider;
   end;
 
   ITemplateReader = interface(IElement)

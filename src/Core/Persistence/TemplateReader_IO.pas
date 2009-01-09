@@ -12,7 +12,7 @@ type
   TTemplateReader_IO = class(TTemplateReader, ITemplateReader)
   protected
     function GetFilename(const pTemplateName: string): string;
-    function Read(const pTemplateName: string): string;
+    function Read(const pTemplateName: string): string; override;
   public
     constructor Create; override;
   end;
