@@ -321,7 +321,6 @@ end;
 { TPersistentState }
 
 {*
-
   @return ResultDescription
 }
 function TPersistentState.GetIsPersistent: Boolean;
@@ -330,7 +329,6 @@ begin
 end;
 
 {*
-
   @return ResultDescription
 }
 function TPersistentState.GetState: TPersistentStateKind;
@@ -339,7 +337,6 @@ begin
 end;
 
 {*
-
   @param Value   ParameterDescription
   @return ResultDescription
 }
@@ -362,8 +359,7 @@ end;
 
 {*
   Cria uma nova instância de TSQLCommand.
-
-  @param pPersistenceEngine   ParameterDescription
+  @param pPersistenceEngine
 }
 constructor TSQLCommand.Create(pPersistenceEngine: IPersistenceEngine);
 begin
@@ -565,11 +561,11 @@ function TSession.Delete(const pCommandName: string; const pObj: IInfraObject): 
 var
   vState: IPersistentState;
 begin
-  if Supports(pObj, IPersistentState, vState) then
-  begin
-    vState.State := osDeleted;
+//  if Supports(pObj, IPersistentState, vState) then
+//  begin
+//    vState.State := osDeleted;
     Save(pCommandName, pObj);
-  end;
+//  end;
 end;
 
 {*
@@ -767,8 +763,7 @@ begin
     for vIndex := 1 to pResultSet.GetMetadata.GetColumnCount do
     begin
       vAliasName := pResultSet.GetMetadata.GetColumnLabel(vIndex);
-      vAttribute :=
-        Result.TypeInfo.GetProperty(Result, vAliasName) as IInfraType;
+      vAttribute := Result.TypeInfo.GetProperty(Result, vAliasName) as IInfraType;
       if not Assigned(vAttribute) then
         Raise EPersistenceEngineError.CreateFmt(
           cErrorPersistenceEngineAttributeNotFound,
