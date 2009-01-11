@@ -306,7 +306,7 @@ type
   end;
 
   IMethodInfoIterator = interface(IInterface)
-    ['{5C012700-E499-49AB-98E1-D95E6C85C173}']
+    ['{96F7C367-FB67-416E-90A6-E72EC7D87B05}']
     function CurrentItem: IMethodInfo;
     function IsDone: Boolean;
     procedure First;
