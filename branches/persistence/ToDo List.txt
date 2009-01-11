@@ -172,5 +172,18 @@
 
 - testar o limite de comandos que podem ser adicionados num processo em lote
 
+- Em q ordem os comandos serão executados no Flush?
+  
+  No Hibernate é assim:
+  The SQL statements are issued in the following order
+	all entity insertions, in the same order the corresponding objects were saved using EntityManager.persist()
+	all entity updates
+	all collection deletions
+	all collection element deletions, updates and insertions
+	all collection insertions
+	all entity deletions, in the same order the corresponding objects were deleted using EntityManager.remove()
+
+- Paginação: Primeiro registro, Qtd de Registros
+
 "As soon as you do something that requires access to the database, a JDBC connection will be obtained from the pool."
 
