@@ -1,0 +1,15 @@
+Observações Importantes:
+
+<InfraRoot> 	= Diretorio onde estão os fontes do Infra
+
+Passos para compilação:
+
+* Baixe o Dunit caso vc ainda nao tenha feito (Usamos a versão 9.3.0): 
+  http://downloads.sourceforge.net/dunit/dunit-9.3.0.zip?modtime=1171319239&big_mirror=0
+
+* Descompacte em <InfraRoot>\Thrid\DUnit
+
+* Abra o arquivo <InfraRoot>\Thrid\DUnit\src\dunit.dpr e dê um build
+
+* Mova todas as dcus, o dunit.exe e todos os dfms para dentro de <InfraRoot>\Packages\D7\Build
+  Ou tenha a certeza de que o diretorio <InfraRoot>\Thrid\DUnit\src esteja no Enviroment Options - Library Path do Delphi
