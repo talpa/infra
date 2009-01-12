@@ -1,0 +1,58 @@
+package InfraCore;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'InfraCore - Nucleo do Infra'}
+{$LIBSUFFIX '60'}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl;
+
+contains
+  List_Subscription in '..\..\Core\Common\List_Subscription.pas',
+  ApplicationContext in '..\..\Core\Common\ApplicationContext.PAS',
+  InfraBase in '..\..\Core\Common\InfraBase.pas',
+  InfraBasicList in '..\..\Core\Common\InfraBasicList.pas',
+  InfraCommon in '..\..\Core\Common\InfraCommon.pas',
+  InfraCommonIntf in '..\..\Core\Common\InfraCommonIntf.pas',
+  InfraCommonRegister in '..\..\Core\Common\InfraCommonRegister.pas',
+  InfraConsts in '..\..\Core\Common\InfraConsts.pas',
+  InfraInjected in '..\..\Core\Common\InfraInjected.pas',
+  InfraNotify in '..\..\Core\Common\InfraNotify.pas',
+  InfraReference in '..\..\Core\Common\InfraReference.pas',
+  InfraSingleton in '..\..\Core\Common\InfraSingleton.pas',
+  InfraUtilIntf in '..\..\Core\Common\InfraUtilIntf.pas',
+  InfraVMTUtil in '..\..\Core\Common\InfraVMTUtil.pas',
+  List_EventServiceItem in '..\..\Core\Common\List_EventServiceItem.pas',
+  List_InjectedItem in '..\..\Core\Common\List_InjectedItem.pas',
+  List_Publisher in '..\..\Core\Common\List_Publisher.pas',
+  List_Reference in '..\..\Core\Common\List_Reference.pas',
+  InfraReflect in '..\..\Core\Reflect\InfraReflect.pas',
+  List_ClassInfo in '..\..\Core\Reflect\List_ClassInfo.pas',
+  List_MemberInfo in '..\..\Core\Reflect\List_MemberInfo.pas',
+  List_ParameterInfo in '..\..\Core\Reflect\List_ParameterInfo.pas',
+  List_RelationInfo in '..\..\Core\Reflect\List_RelationInfo.pas';
+
+end.
