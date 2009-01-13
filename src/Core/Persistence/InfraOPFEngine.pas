@@ -121,7 +121,6 @@ end;
   @param pStatement   ParameterDescription
   @param pSqlCommand   ParameterDescription
   @param pList   ParameterDescription
-  @return ResultDescription
 }
 procedure TPersistenceEngine.DoLoad(const pStatement: IZPreparedStatement;
     const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);

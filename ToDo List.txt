@@ -185,5 +185,8 @@
 
 - Paginação: Primeiro registro, Qtd de Registros
 
+- Acho que seria bom modificarmos o CreateQuery para CreateNamedQuery e deixar o CreateQuery para o IQL (Infra Query Language):
+  qry := session.CreateQuery('Select * from TAccount');
+
 "As soon as you do something that requires access to the database, a JDBC connection will be obtained from the pool."
 

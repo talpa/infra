@@ -6,16 +6,20 @@ uses
   SysUtils,
   Classes,
   InfraCommon,
-  InfraOPFIntf;
+  InfraOPFIntf,
+  InfraCommonIntf,
+  XmlIntf;
 
 type
   /// Classe para armazenar as configurações do Framework
-  TConfiguration = class(TBaseElement, IConfiguration)
+  TConfiguration = class(TBaseElement, IConfiguration, IXmlSerializable)
   private
     /// Aqui são armazenadas as configurações no formato <nome>=<valor>
     FProperties: TStrings;
     function GetProperties: TStrings;
   protected
+    property Properties: TStrings read GetProperties;
+    {IConfiguration members}
     function GetAsInteger(const pName: string): Integer; overload;
     function GetAsDouble(const pName: string): Double; overload;
     function GetAsString(const pName: string): string; overload;
@@ -26,7 +30,9 @@ type
     procedure SetValue(const pName: string; const Value: Double); overload;
     procedure SetValue(const pName: string; const Value: string); overload;
     procedure Clear;
-    property Properties: TStrings read GetProperties;
+    {IXmlSerializable members}
+    procedure WriteXml(pXmlDoc: IXmlDocument);
+    procedure ReadXml(pXmlDoc: IXmlDocument);
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -161,6 +167,16 @@ end;
 procedure TConfiguration.SetValue(const pName, Value: string);
 begin
   FProperties.Values[pName] := Value;
+end;
+
+procedure TConfiguration.ReadXml(pXmlDoc: IXmlDocument);
+begin
+  // TODO: Implementar ReadXml
+end;
+
+procedure TConfiguration.WriteXml(pXmlDoc: IXmlDocument);
+begin
+  // TODO: Implementar WriteXml
 end;
 
 end.
