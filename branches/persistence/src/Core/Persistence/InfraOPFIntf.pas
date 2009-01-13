@@ -8,7 +8,7 @@ uses
   {Zeos}
   ZDbcIntfs,
   {Infra}
-  InfraCommonIntf, 
+  InfraCommonIntf,
   InfraValueTypeIntf;
 
 type
@@ -112,13 +112,13 @@ type
 
   ISession = interface(IBaseElement)
     ['{693A7815-9A5E-46C7-97DD-04D3E9C245AF}']
-    function CreateQuery(const pCommandName: string;
+    function CreateNamedQuery(const pCommandName: string;
       const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
-    function CreateQuery(const pCommandName: string;
+    function CreateNamedQuery(const pCommandName: string;
       const pClassID: TGUID): ISQLCommandQuery; overload;
-    function CreateQuery(const pCommandName: string;
+    function CreateNamedQuery(const pCommandName: string;
       const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function CreateQuery(const pCommandName: string; const pObj: IInfraObject;
+    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject;
       const pListID: TGUID): ISQLCommandQuery; overload;
     function Delete(const pCommandName: string;
       const pObj: IInfraObject): ISQLCommand;

@@ -12,9 +12,9 @@ uses
 type
   TPersistenceTests = class(TTestCase)
   private
-    procedure PreparaBancoParaCarga;
-    procedure PreparaBancoParaDeletar;
-    procedure PreparaBancoParaInserir;
+    procedure PrepararBancoParaCarga;
+    procedure PrepararBancoParaDeletar;
+    procedure PrepararBancoParaInserir;
   protected
     procedure SetUp; override;
     procedure TearDown; override;
@@ -38,7 +38,28 @@ uses
   PersistenceModel,
   InfraPersistence,
   InfraOPFConsts,
-  InfraTestsUtil;
+  InfraTestsUtil, TestExtensions;
+
+// START resource string wizard section
+resourcestring
+  cObjetoNaoFoiCarregado = 'Objeto não foi carregado';
+  cNomeContaIncompativel = 'Nome conta incompatível';
+  cNumeroDaContaIncompativel = 'Número da conta incompatível';
+  cSaldoInicialIncompativel = 'Saldo inicial incompatível';
+  cSaldoAtualIncompativel = 'Saldo atual incompatível';
+  cQuantidadeDeRegistrosAfetadosInv = 'Quantidade de registros afetados inválida';
+
+// END resource string wizard section
+
+
+const
+  cSQLDeleteFromAccount = 'DELETE FROM ACCOUNT';
+  cLoadAccountByIDTemplateName = 'LoadAccountById';
+  cDeleteAccountByIDTemplateName = 'DeleteAccountByID';
+
+const
+  cEpsilon = 0.00001; /// Maior diferença entre dois números e ainda serem considerados iguais
+  cNumVezesRepetirTeste = 10; /// Número de vezes que os testes serão repetidos
 
 { TPersistenceTests }
 
@@ -68,23 +89,23 @@ begin
     '?username=SYSDBA;password=masterkey');
 end;
 
-procedure TPersistenceTests.PreparaBancoParaCarga;
+procedure TPersistenceTests.PrepararBancoParaCarga;
 begin
-  GetZeosExecutor.Execute('DELETE FROM ACCOUNT');
+  GetZeosExecutor.Execute(cSQLDeleteFromAccount);
   GetZeosExecutor.Execute(
     'INSERT INTO ACCOUNT (ID, ACCOUNTNUMBER, ACCOUNTNAME, '+
     'INITIALBALANCE, CURRENTBALANCE) VALUES (1, ''1361-2'', ''BB 1361'', '+
     '125.3, 1524.25)');
 end;
 
-procedure TPersistenceTests.PreparaBancoParaInserir;
+procedure TPersistenceTests.PrepararBancoParaInserir;
 begin
-  GetZeosExecutor.Execute('DELETE FROM ACCOUNT');
+  GetZeosExecutor.Execute(cSQLDeleteFromAccount);
 end;
 
-procedure TPersistenceTests.PreparaBancoParaDeletar;
+procedure TPersistenceTests.PrepararBancoParaDeletar;
 begin
-  GetZeosExecutor.Execute('DELETE FROM ACCOUNT');
+  GetZeosExecutor.Execute(cSQLDeleteFromAccount);
   GetZeosExecutor.Execute(
     'INSERT INTO ACCOUNT (ID, ACCOUNTNUMBER, ACCOUNTNAME, '+
     'INITIALBALANCE, CURRENTBALANCE) VALUES (3, ''1111-3'', ''CEF 1111'', '+
@@ -97,7 +118,7 @@ var
   vObj: IAccount;
   vSQLCommand: ISQLCommandQuery;
 begin
-  PreparaBancoParaCarga;
+  PrepararBancoParaCarga;
   // abre uma nova sessão e cria um objeto preenchendo apenas as propriedades
   // que irão servir de parâmetro para a busca
   vSession := PersistenceService.OpenSession;
@@ -105,15 +126,15 @@ begin
   vObj.Id.AsInteger := 1;
   // *** verificar estado do objeto
   // Prepara a carga, definindo o objeto como parâmetro
-  vSQLCommand := vSession.CreateQuery('LoadAccountbyId', vObj);
+  vSQLCommand := vSession.CreateNamedQuery(cLoadAccountByIDTemplateName, vObj);
   // Executa a carga do objeto
   vObj := vSQLCommand.GetResult as IAccount;
 
-  CheckNotNull(vObj, 'Objecto não foi carregado');
-  CheckEquals('BB 1361', vObj.Name.AsString, 'Nome conta incompatível');
-  CheckEquals('1361-2', vObj.AccountNumber.AsString, 'Número da conta incompatível');
-  CheckTrue(SameValue(125.3, vObj.InitialBalance.AsDouble), 'Saldo inicial incompatível');
-  CheckTrue(SameValue(1524.25, vObj.CurrentBalance.AsDouble), 'Saldo atual incompatível');
+  CheckNotNull(vObj, cObjetoNaoFoiCarregado);
+  CheckEqualsString('BB 1361', vObj.Name.AsString, cNomeContaIncompativel);
+  CheckEqualsString('1361-2', vObj.AccountNumber.AsString, cNumeroDaContaIncompativel);
+  CheckEquals(125.3, vObj.InitialBalance.AsDouble, cEpsilon, cSaldoInicialIncompativel);
+  CheckEquals(1524.25, vObj.CurrentBalance.AsDouble, cEpsilon, cSaldoAtualIncompativel);
   // *** verificar estado do objeto
 end;
 
@@ -123,20 +144,21 @@ var
   vObj: IAccount;
   vSQLCommand: ISQLCommandQuery;
 begin
-  PreparaBancoParaCarga;
+  PrepararBancoParaCarga;
+
   // Abre a sessao e define o parametro e o tipo de classe a ser carregada.
   vSession := PersistenceService.OpenSession;
-  vSQLCommand := vSession.CreateQuery('LoadAccountbyId');
+  vSQLCommand := vSession.CreateNamedQuery(cLoadAccountByIDTemplateName);
   vSQLCommand.ClassID := IAccount;
   vSQLCommand.Params['Id'] := TInfraInteger.NewFrom(1);
   // Executa a carga do objeto
   vObj := vSQLCommand.GetResult as IAccount;
 
-  CheckNotNull(vObj, 'Objecto não foi carregado');
-  CheckEquals('BB 1361', vObj.Name.AsString, 'Nome conta incompatível');
-  CheckEquals('1361-2', vObj.AccountNumber.AsString, 'Número da conta incompatível');
-  CheckTrue(SameValue(125.3, vObj.InitialBalance.AsDouble), 'Saldo inicial incompatível');
-  CheckTrue(SameValue(1524.25, vObj.CurrentBalance.AsDouble), 'Saldo atual incompatível');
+  CheckNotNull(vObj, cObjetoNaoFoiCarregado);
+  CheckEqualsString('BB 1361', vObj.Name.AsString, cNomeContaIncompativel);
+  CheckEqualsString('1361-2', vObj.AccountNumber.AsString, cNumeroDaContaIncompativel);
+  CheckEquals(125.3, vObj.InitialBalance.AsDouble, cEpsilon, cSaldoInicialIncompativel);
+  CheckEquals(1524.25, vObj.CurrentBalance.AsDouble, cEpsilon, cSaldoAtualIncompativel);
   // *** verificar estado do objeto
 end;
 
@@ -147,7 +169,7 @@ var
   vCont: integer;
   vSQLCommand :ISQLCommandQuery;
 begin
-  PreparaBancoParaInserir;
+  PrepararBancoParaInserir;
   vSession := PersistenceService.OpenSession;
   vObj := TAccount.Create;
   vObj.Id.AsInteger := 2;
@@ -158,14 +180,14 @@ begin
   vSession.Save('InsertAccount', vObj);
   vCont := vSession.Flush;
   // *** Deveria testar aqui o estado do objeto deveria estar Clear e Persistent
-  CheckEquals(1, vCont, 'Quantidade de registros afetados inválida');
+  CheckEquals(1, vCont, cQuantidadeDeRegistrosAfetadosInv);
 
-  vSQLCommand := vSession.CreateQuery('LoadAccountbyId', vObj);
+  vSQLCommand := vSession.CreateNamedQuery(cLoadAccountByIDTemplateName, vObj);
   vObj := vSQLCommand.GetResult as IAccount;
 
-  CheckEquals('2812-3', vObj.AccountNumber.AsString, 'Número da conta incompatível');
-  CheckTrue(SameValue(789.3, vObj.InitialBalance.AsDouble), 'Saldo inicial incompatível');
-  CheckTrue(SameValue(222.25, vObj.CurrentBalance.AsDouble), 'Saldo atual incompatível');
+  CheckEqualsString('2812-3', vObj.AccountNumber.AsString, cNumeroDaContaIncompativel);
+  CheckEquals(789.3, vObj.InitialBalance.AsDouble, cEpsilon, cSaldoInicialIncompativel);
+  CheckEquals(222.25, vObj.CurrentBalance.AsDouble, cEpsilon, cSaldoAtualIncompativel);
 end;
 
 procedure TPersistenceTests.TestDeleteWithObject;
@@ -174,18 +196,18 @@ var
   vObj: IAccount;
   vCont :integer;
 begin
-  PreparaBancoParaDeletar;
+  PrepararBancoParaDeletar;
 
   // Abre a sessao, cria um objeto e define o id a ser deletado
   vSession := PersistenceService.OpenSession;
   vObj := TAccount.Create;
   vObj.Id.AsInteger := 3;
-  vSession.Delete('DeleteAccountByID', vObj);
+  vSession.Delete(cDeleteAccountByIDTemplateName, vObj);
   vCont := vSession.Flush;
 
   // *** Deveria testar aqui o estado do objeto deveria estar Deleted e Persistent
   // *** pegar um resultset e verificar se o dado foi realmente apagado
-  CheckEquals(1, vCont, 'Quantidade de registros afetados inválida');
+  CheckEquals(1, vCont, cQuantidadeDeRegistrosAfetadosInv);
 end;
 
 procedure TPersistenceTests.TearDown;
@@ -194,8 +216,13 @@ begin
   ReleaseZeosExecutor;
 end;
 
+function UnitTests: ITest;
+begin
+  Result := TRepeatedTest.Create(TPersistenceTests.Suite, cNumVezesRepetirTeste);
+end;
+
 initialization
-  TestFramework.RegisterTest('Persistence Testes Caixa-Preta',
-    TPersistenceTests.Suite);
+  TestFramework.RegisterTest('Persistence Testes Caixa-Preta', UnitTests);
 
 end.
+

@@ -17,13 +17,13 @@ type
     /// Lista de comandos pendentes. Durante o Flush os comandos são executados e a lista é limpa
     FPendingCommands: ISQLCommandList;
   protected
-    function CreateQuery(const pCommandName: string;
+    function CreateNamedQuery(const pCommandName: string;
       const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
-    function CreateQuery(const pCommandName: string;
+    function CreateNamedQuery(const pCommandName: string;
       const pClassID: TGUID): ISQLCommandQuery; overload;
-    function CreateQuery(const pCommandName: string;
+    function CreateNamedQuery(const pCommandName: string;
       const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function CreateQuery(const pCommandName: string; const pObj: IInfraObject;
+    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject;
       const pListID: TGUID): ISQLCommandQuery; overload;
     function Delete(const pCommandName: string;
       const pObj: IInfraObject): ISQLCommand;
@@ -62,7 +62,7 @@ end;
   @param pClassID   ParameterDescription
   @return ResultDescription
 }
-function TSession.CreateQuery(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
+function TSession.CreateNamedQuery(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
 begin
   Result := TSQLCommandQuery.Create(FPersistenceEngine);
   Result.Name := pCommandName;
@@ -78,9 +78,9 @@ end;
   @param pListID   ParameterDescription
   @return ResultDescription
 }
-function TSession.CreateQuery(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommandQuery;
+function TSession.CreateNamedQuery(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommandQuery;
 begin
-  Result := CreateQuery(pCommandName, pClassID);
+  Result := CreateNamedQuery(pCommandName, pClassID);
   Result.ListID := pListID;
 end;
 
@@ -91,12 +91,12 @@ end;
   @param pListID   ParameterDescription
   @return ResultDescription
 }
-function TSession.CreateQuery(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery;
+function TSession.CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery;
 begin
   if Assigned(pObj) then
-    Result := CreateQuery(pCommandName, pObj.TypeInfo.TypeID)
+    Result := CreateNamedQuery(pCommandName, pObj.TypeInfo.TypeID)
   else
-    Result := CreateQuery(pCommandName, NullGUID);
+    Result := CreateNamedQuery(pCommandName, NullGUID);
   if Assigned(pObj) then
     Result.Params.CreateParamsFrom(pObj);
 end;
@@ -107,9 +107,9 @@ end;
   @param pObj   ParameterDescription
   @return ResultDescription
 }
-function TSession.CreateQuery(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery;
+function TSession.CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery;
 begin
-  Result := CreateQuery(pCommandName, pObj.TypeInfo.TypeID, pListID);
+  Result := CreateNamedQuery(pCommandName, pObj.TypeInfo.TypeID, pListID);
   Result.Params.CreateParamsFrom(pObj);
 end;
 

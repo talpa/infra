@@ -70,37 +70,37 @@ end;
 
 procedure TTestConnectionProvider.TestGetConnectionObjAvailableInPool;
 begin
-
+  // TODO: Implementar teste
 end;
 
 procedure TTestConnectionProvider.TestGetConnectionObjUnavailableInPool;
 begin
-
+  // TODO: Implementar teste
 end;
 
 procedure TTestConnectionProvider.TestGetConnectionBeyoundMaxSize;
 begin
-
+  // TODO: Implementar teste
 end;
 
 procedure TTestConnectionProvider.TestCloseConnection;
 begin
-
+  // TODO: Implementar teste
 end;
 
 procedure TTestConnectionProvider.TestCloseConnectionNotFound;
 begin
-
+  // TODO: Implementar teste
 end;
 
 procedure TTestConnectionProvider.TestCloseConnectionAlreadyClosed;
 begin
-
+  // TODO: Implementar teste
 end;
 
 procedure TTestConnectionProvider.TestClose;
 begin
-
+  // TODO: Implementar teste
 end;
 
 initialization

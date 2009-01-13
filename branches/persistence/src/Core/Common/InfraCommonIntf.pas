@@ -8,7 +8,8 @@ uses
   SysUtils,
   Classes,
   InfraBase,
-  InfraConsts;
+  InfraConsts,
+  XmlIntf;
 
 type
   EInfraError = class(Exception)
@@ -318,7 +319,7 @@ type
   end;
 
   IMethodInfoIterator = interface(IInterface)
-    ['{5C012700-E499-49AB-98E1-D95E6C85C173}']
+    ['{C335B1B2-A839-4D26-9914-A790263F0BD5}']
     function CurrentItem: IMethodInfo;
     function IsDone: Boolean;
     procedure First;
@@ -640,6 +641,12 @@ type
   IInfraCustomList = interface(IInterfaceList)
     ['{C3677798-1424-465F-BC99-EA58AD9A6E72}']
     function NewIterator: IInfraIterator;
+  end;
+
+  IXmlSerializable = interface
+    ['{10590A29-B7A7-47E6-A1A9-3363EBE8AA99}']
+    procedure WriteXml(pXmlDoc: IXmlDocument);
+    procedure ReadXml(pXmlDoc: IXmlDocument);
   end;
 
 procedure RegisterApplicationContext(const Context: IApplicationContext);

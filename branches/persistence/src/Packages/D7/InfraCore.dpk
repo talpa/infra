@@ -28,7 +28,8 @@ package InfraCore;
 {$IMPLICITBUILD OFF}
 
 requires
-  rtl;
+  rtl,
+  xmlrtl;
 
 contains
   List_Subscription in '..\..\Core\Common\List_Subscription.pas',
