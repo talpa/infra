@@ -33,6 +33,8 @@ type
     procedure SetValue(const pName: string; const Value: Double); overload;
     procedure SetValue(const pName: string; const Value: string); overload;
     procedure Clear;
+    procedure LoadFromFile(const FileName: string);
+    procedure SaveToFile(const FileName: string);
   end;
 
   IConnectionProvider = interface(IBaseElement)

@@ -30,6 +30,8 @@ type
     procedure SetValue(const pName: string; const Value: Double); overload;
     procedure SetValue(const pName: string; const Value: string); overload;
     procedure Clear;
+    procedure LoadFromFile(const FileName: string);
+    procedure SaveToFile(const FileName: string);
     {IXmlSerializable members}
     procedure WriteXml(pXmlDoc: IXmlDocument);
     procedure ReadXml(pXmlDoc: IXmlDocument);
@@ -39,6 +41,9 @@ type
   end;
 
 implementation
+
+uses
+  Variants;
 
 { TConfiguration }
 
@@ -170,13 +175,36 @@ begin
 end;
 
 procedure TConfiguration.ReadXml(pXmlDoc: IXmlDocument);
+var
+  i: Integer;
 begin
-  // TODO: Implementar ReadXml
+  FProperties.Clear;
+  for i := 0 to pXmlDoc.DocumentElement.ChildNodes.Count - 1 do
+    FProperties.Add(pXmlDoc.DocumentElement.ChildNodes[i].NodeName + '=' + VarToStr(pXmlDoc.DocumentElement.ChildNodes[i].NodeValue));
 end;
 
 procedure TConfiguration.WriteXml(pXmlDoc: IXmlDocument);
+var
+  i: Integer;
 begin
-  // TODO: Implementar WriteXml
+  pXmlDoc.Xml.Text := '';
+  pXmlDoc.Active := True;
+  pXmlDoc.Version := '1.0';
+  pXmlDoc.Encoding := 'utf-8';
+  pXmlDoc.AddChild(ClassName);
+  for i := 0 to FProperties.Count - 1 do
+    pXmlDoc.DocumentElement.AddChild(FProperties.Names[i]).NodeValue := FProperties.ValueFromIndex[i];
+  pXmlDoc.Xml.Text := StringReplace(pXmlDoc.Xml.Text, #13#10, '', [rfReplaceAll]);
+end;
+
+procedure TConfiguration.LoadFromFile(const FileName: string);
+begin
+  FProperties.LoadFromFile(FileName);
+end;
+
+procedure TConfiguration.SaveToFile(const FileName: string);
+begin
+  FProperties.SaveToFile(FileName);
 end;
 
 end.
