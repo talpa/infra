@@ -37,11 +37,12 @@ uses
 procedure TTestPersistenceEngine.SetUp;
 var
   vConfig: IConfiguration;
+  vProvider: IConnectionProvider;
 begin
   inherited;
   vConfig := TTestsUtil.GetNewConfiguration;
-  FPersistenceEngine := TPersistenceEngine.Create(vConfig,
-    TConnectionProvider.Create(vConfig));
+  vProvider := TConnectionProvider.Create(TTestsUtil.GetConnectionString);
+  FPersistenceEngine := TPersistenceEngine.Create(vConfig, vProvider.GetConnection);
 end;
 
 procedure TTestPersistenceEngine.TearDown;
@@ -51,17 +52,19 @@ begin
 end;
 
 procedure TTestPersistenceEngine.TestCreate;
+var
+  vProvider: IConnectionProvider;
 begin
   ExpectedException := EInfraArgumentError;
-  TPersistenceEngine.Create(nil,
-    TConnectionProvider.Create(TTestsUtil.GetNewConfiguration));
+  vProvider := TConnectionProvider.Create(TTestsUtil.GetConnectionString);
+  TPersistenceEngine.Create(nil, vProvider.GetConnection);
   ExpectedException := nil;
 end;
 
 procedure TTestPersistenceEngine.TestExecuteWithInvalidArgs;
 begin
   ExpectedException := EInfraArgumentError;
-  FPersistenceEngine.Execute(nil, nil);
+  FPersistenceEngine.Execute(nil);
   ExpectedException := nil;
 end;
 

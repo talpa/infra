@@ -4,6 +4,7 @@ interface
 
 uses
   SysUtils,
+  ZDbcIntfs,
   InfraCommon,
   InfraCommonIntf,
   InfraOPFIntf,
@@ -31,28 +32,32 @@ type
       const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
   public
-    constructor Create(const pPersistenceEngine: IPersistenceEngine); reintroduce;
+    constructor Create(const pConnection: IZConnection;
+      const pConfiguration: IConfiguration); reintroduce;
   end;
 
 implementation
 
 uses
-  ZDbcIntfs,
   InfraConsts,
   List_SQLCommandList,
-  InfraOPFSqlCommands;
+  InfraOPFSqlCommands,
+  InfraOPFEngine;
 
 { TSession }
 {*
 
   @param pPersistenceEngine   ParameterDescription
 }
-constructor TSession.Create(const pPersistenceEngine: IPersistenceEngine);
+constructor TSession.Create(const pConnection: IZConnection;
+  const pConfiguration: IConfiguration);
 begin
-  if not Assigned(pPersistenceEngine) then
-    raise EInfraArgumentError.Create('PersistenceEngine in Session.Create');
+  if not Assigned(pConnection) then
+    raise EInfraArgumentError.Create('pConnection');
+  if not Assigned(pConfiguration) then
+    raise EInfraArgumentError.Create('pConfiguration');
   inherited Create;
-  FPersistenceEngine := pPersistenceEngine;
+  FPersistenceEngine := TPersistenceEngine.Create(pConfiguration, pConnection);
   FPendingCommands := TSQLCommandList.Create;
 end;
 
@@ -153,15 +158,13 @@ end;
 function TSession.Flush: Integer;
 var
   i: integer;
-  vConnection: IZConnection;
 begin
   // TODO: Dar atenção a isto porque, pelo modelo atual, pra cada Execute ele vai
   // abrir uma nova conexão. Isto impediria que todas as operações fossem feitas
   // no contexto de UMA transação
   Result := 0;
-  vConnection := FPersistenceEngine.ConnectionProvider.GetConnection;
   for i := 0 to FPendingCommands.Count - 1 do
-    Result := Result + FPersistenceEngine.Execute(vConnection, FPendingCommands[i]);
+    Result := Result + FPersistenceEngine.Execute(FPendingCommands[i]);
 
   // Se deu tudo ok, limpa a lista de pendencias
   FPendingCommands.Clear;

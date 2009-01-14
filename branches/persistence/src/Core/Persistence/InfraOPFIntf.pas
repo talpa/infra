@@ -19,7 +19,8 @@ type
   EInfraParserError = class(EInfraError);
 
   ISession = interface;  
-  ISQLCommandParams = interface;                  
+  ISQLCommandParams = interface;
+  ISessionFactory = interface; 
 
   IConfiguration = interface(IBaseElement)
     ['{16AF1EFF-FB48-4BAD-BDC7-E0518E83E09E}']
@@ -35,6 +36,10 @@ type
     procedure Clear;
     procedure LoadFromFile(const FileName: string);
     procedure SaveToFile(const FileName: string);
+    procedure LoadFromStream(const Stream: TStream);
+    procedure SaveToStream(const Stream: TStream);
+    function Clone: IConfiguration;
+    function BuildSessionFactory: ISessionFactory;
   end;
 
   IConnectionProvider = interface(IBaseElement)
@@ -46,9 +51,6 @@ type
   IInfraPersistenceService = interface(IInterface)
     ['{0DC6F960-B66E-437E-88BD-BD0BAF6CFFE3}']
     function GetConfiguration: IConfiguration;
-    function OpenSession: ISession; overload;
-    procedure SetConnection(const pConnection: IZConnection);
-    property Configuration: IConfiguration read GetConfiguration;
   end;
 
   TPersistentStateKind = (osClean, osDirty, osDeleted);
@@ -129,15 +131,27 @@ type
     function Flush: Integer;
   end;
 
+  ISessionFactory = interface(IBaseElement)
+    ['{F132108F-D3AB-4D8E-A319-59F8E353FD65}']
+    /// Getter da propriedade IsClosed
+    function GetIsClosed: Boolean;
+    /// Cria uma nova Session
+    function OpenSession: ISession; overload;
+    /// Cria uma nova Session usando a conexao indicada
+    function OpenSession(Connection: IZConnection): ISession; overload;
+    /// Fecha essa SessionFactory liberando todos os recursos associados
+    procedure Close;
+    /// Esta propriedade indica se a SessionFactory está fechada
+    property isClosed: Boolean read GetIsClosed;
+  end;
+
   IPersistenceEngine = interface(IBaseElement)
     ['{F1C7686A-43B6-4FE7-8BF1-6A9C6BC54AE4}']
     procedure SetConnection(const pConnection: IZConnection);
     function GetConfiguration: IConfiguration;
-    function GetConnectionProvider: IConnectionProvider;
     procedure Load(const pSqlCommand: ISQLCommandQuery;
       const pList: IInfraList);
-    function Execute(const pConnection: IZConnection; const pSqlCommand: ISqlCommand): Integer;
-    property ConnectionProvider: IConnectionProvider read GetConnectionProvider;
+    function Execute(const pSqlCommand: ISqlCommand): Integer;
     property Configuration: IConfiguration read GetConfiguration;
   end;
 

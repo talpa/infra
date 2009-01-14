@@ -18,6 +18,7 @@ type
   TTestsUtil = class
   public
     class function GetNewConfiguration: IConfiguration;
+    class function GetConnectionString: string;
   end;
 
 function GetZeosExecutor: TDBZeosExecutor;
@@ -71,6 +72,11 @@ begin
 end;
 
 { TTestsUtil }
+
+class function TTestsUtil.GetConnectionString: string;
+begin
+  Result := 'zdbc:firebird-2.0://localhost/c:\teste.gdb?username=sysdba;password=masterkey';
+end;
 
 class function TTestsUtil.GetNewConfiguration: IConfiguration;
 begin

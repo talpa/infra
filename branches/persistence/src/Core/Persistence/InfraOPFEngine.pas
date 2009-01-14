@@ -16,7 +16,7 @@ type
   TPersistenceEngine = class(TBaseElement, IPersistenceEngine)
   private
     FConfiguration: IConfiguration;
-    FConnnectionProvider: IConnectionProvider;
+    FConnection: IZConnection;
     /// Parser que procura por parametros e macros na instrução SQL
     FParser: ISQLParamsParser;
     function GetReader: ITemplateReader;
@@ -27,19 +27,15 @@ type
       const pResultSet: IZResultSet): IInfraObject;
     procedure DoLoad(const pStatement: IZPreparedStatement; const pSqlCommand:
         ISQLCommandQuery; const pList: IInfraList);
-    function GetConnectionProvider: IConnectionProvider;
     function GetConfiguration: IConfiguration;
     function ReadTemplate(const pSqlCommandName: string): string;
   protected
     procedure SetConnection(const pConnection: IZConnection);
     procedure Load(const pSqlCommand: ISQLCommandQuery;
       const pList: IInfraList);
-    function Execute(const pConnection: IZConnection;
-      const pSqlCommand: ISqlCommand): Integer;
+    function Execute(const pSqlCommand: ISqlCommand): Integer;
   public
-    constructor Create(pConfiguration: IConfiguration;
-      pConnectionProvider: IConnectionProvider); reintroduce;
-    property ConnectionProvider: IConnectionProvider read GetConnectionProvider;
+    constructor Create(pConfiguration: IConfiguration; pConnection: IZConnection); reintroduce;
     property Configuration: IConfiguration read GetConfiguration;
   end;
 
@@ -57,7 +53,7 @@ uses
   @param pConfiguration   ParameterDescription
 }
 constructor TPersistenceEngine.Create(pConfiguration: IConfiguration;
-  pConnectionProvider: IConnectionProvider);
+  pConnection: IZConnection);
 begin
   inherited Create;
   // O argumento pConfiguration sempre é requerido, visto que é dele que
@@ -66,7 +62,7 @@ begin
     raise EInfraArgumentError.Create('pConfiguration');
 
   FConfiguration := pConfiguration;
-  FConnnectionProvider := pConnectionProvider;
+  FConnection := pConnection;
   FParser := TSQLParamsParser.Create;
 end;
 
@@ -93,8 +89,7 @@ end;
   @param pSqlCommand  Objeto com as informações sobre o que e como executar a instrução.
   @return Retornar a quantidade de registros afetados pela atualização.
 }
-function TPersistenceEngine.Execute(const pConnection: IZConnection;
-  const pSqlCommand: ISqlCommand): Integer;
+function TPersistenceEngine.Execute(const pSqlCommand: ISqlCommand): Integer;
 var
   vSQL: string;
   vStatement: IZPreparedStatement;
@@ -110,7 +105,7 @@ begin
   //   antes de chamar o PrepareStatementWithParams
 
   // Solicita um connection e prepara a SQL
-  vStatement := pConnection.PrepareStatementWithParams(vSQL, FParser.GetParams);
+  vStatement := FConnection.PrepareStatementWithParams(vSQL, FParser.GetParams);
   // Seta os parametros e executa
   SetParameters(vStatement, pSqlCommand.Params);
   Result := vStatement.ExecuteUpdatePrepared;
@@ -160,7 +155,6 @@ procedure TPersistenceEngine.Load(const pSqlCommand: ISQLCommandQuery;
 var
   vSQL: string;
   vStatement: IZPreparedStatement;
-  vConnection: IZConnection;
 begin
   if not Assigned(pSqlCommand) then
     raise EInfraArgumentError.Create('pSqlCommand');
@@ -176,23 +170,13 @@ begin
 
   // *** 2) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   // antes de chamar o PrepareStatementWithParams
-  vConnection := FConnnectionProvider.GetConnection;
-  vStatement := vConnection.PrepareStatementWithParams(vSQL, FParser.GetParams);
+  vStatement := FConnection.PrepareStatementWithParams(vSQL, FParser.GetParams);
   try
     SetParameters(vStatement, pSqlCommand.Params);
     DoLoad(vStatement, pSqlCommand, pList);
   finally
     vStatement.Close;
   end;
-end;
-
-{**
-
-  @return Retorna uma referencia ao ConnectionProvider
-}
-function TPersistenceEngine.GetConnectionProvider: IConnectionProvider;
-begin
-  Result := FConnnectionProvider;
 end;
 
 {**
@@ -232,9 +216,9 @@ var
   vAliasName: string;
 begin
   // *** Será que isso deveria estar aqui?????
-  if IsEqualGUID(pSqlCommand.GetClassID, InfraConsts.NullGUID) then
-    Raise EPersistenceEngineError.Create(
-      cErrorPersistenceEngineObjectIDUndefined);
+//  if IsEqualGUID(pSqlCommand.GetClassID, InfraConsts.NullGUID) then
+//    Raise EPersistenceEngineError.Create(
+//      cErrorPersistenceEngineObjectIDUndefined);
   Result := TypeService.CreateInstance(pSqlCommand.GetClassID) as IInfraObject;
   if Assigned(Result) then
   begin

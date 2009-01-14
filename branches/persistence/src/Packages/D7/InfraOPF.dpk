@@ -50,6 +50,7 @@ contains
   InfraOPFParsers in '..\..\Core\Persistence\InfraOPFParsers.pas',
   InfraOPFSqlCommands in '..\..\Core\Persistence\InfraOPFSqlCommands.pas',
   InfraOPFSession in '..\..\Core\Persistence\InfraOPFSession.pas',
-  InfraOPFEngine in '..\..\Core\Persistence\InfraOPFEngine.pas';
+  InfraOPFEngine in '..\..\Core\Persistence\InfraOPFEngine.pas',
+  InfraOPFSessionFactory in '..\..\Core\Persistence\InfraOPFSessionFactory.pas';
 
 end.
