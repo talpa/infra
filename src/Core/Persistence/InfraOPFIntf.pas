@@ -183,7 +183,17 @@ implementation
 
 uses
   InfraOPFTemplates,
-  InfraOPFAnnotation;
+  InfraOPFAnnotation,
+  // Essas units foram adicionadas para que os drivers
+  // possam se registrar no DriverManager 
+  ZDbcInterbase6,
+  ZDbcPostgreSql,
+  ZDbcMySql,
+  ZDbcSqLite,
+  ZDbcAdo,
+  ZDbcASA,
+  ZDbcDbLib,
+  ZDbcOracle;
 
 function PersistenceService: IInfraPersistenceService;
 begin

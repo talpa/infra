@@ -39,7 +39,7 @@ type
     function GetPersistenceEngine: IPersistenceEngine;
   protected
     function GetConfiguration: IConfiguration;
-    function OpenSession: ISession; overload;
+    function OpenSession: ISession;
     procedure SetConnection(const pConnection: IZConnection);
     property Configuration: IConfiguration read GetConfiguration;
   end;
