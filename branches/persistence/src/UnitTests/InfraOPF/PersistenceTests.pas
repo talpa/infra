@@ -4,7 +4,6 @@ interface
 
 uses
   InfraOPFIntf,
-  ZDbcInterbase6,
   ZDbcIntfs,
   TestFramework,
   PersistenceModelIntf;
