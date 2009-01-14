@@ -11,6 +11,7 @@ uses
 type
   TPersistenceTests = class(TTestCase)
   private
+    FSessionFactory: ISessionFactory;
     procedure PrepararBancoParaCarga;
     procedure PrepararBancoParaDeletar;
     procedure PrepararBancoParaInserir;
@@ -63,6 +64,8 @@ const
 { TPersistenceTests }
 
 procedure TPersistenceTests.SetUp;
+var
+  cfg: IConfiguration;
 begin
   inherited;
   // Aqui é definido no Configuration algumas propriedades, para que o
@@ -70,7 +73,8 @@ begin
   // connection e outras coisas internas. Caso haja propriedades especificas
   // que precisam ser definidas, podem ser naturalmente colocados ai tambem
   // que o tipo de Connection específico poderar ler sem problema.
-  with PersistenceService.Configuration do
+  cfg := PersistenceService.GetConfiguration;
+  with cfg do
   begin
     SetValue(cCONFIGKEY_DRIVER, 'firebird-2.0');
     SetValue(cCONFIGKEY_USERNAME, 'SYSDBA');
@@ -82,6 +86,9 @@ begin
     SetValue(cCONFIGKEY_TEMPLATEPATH,
       ExtractFilePath(Application.ExeName) + 'Data');
   end;
+
+  FSessionFactory := cfg.BuildSessionFactory;
+
   // Prepara o DBUnit para deixar o banco no estado adequado antes de testar.
   GetZeosExecutor.OpenConnection('zdbc:firebird-2.0://localhost/' +
     ExtractFilePath(Application.ExeName) + 'data\dbdemos.fdb' +
@@ -120,7 +127,7 @@ begin
   PrepararBancoParaCarga;
   // abre uma nova sessão e cria um objeto preenchendo apenas as propriedades
   // que irão servir de parâmetro para a busca
-  vSession := PersistenceService.OpenSession;
+  vSession := FSessionFactory.OpenSession;
   vObj := TAccount.Create;
   vObj.Id.AsInteger := 1;
   // *** verificar estado do objeto
@@ -146,7 +153,7 @@ begin
   PrepararBancoParaCarga;
 
   // Abre a sessao e define o parametro e o tipo de classe a ser carregada.
-  vSession := PersistenceService.OpenSession;
+  vSession := FSessionFactory.OpenSession;
   vSQLCommand := vSession.CreateNamedQuery(cLoadAccountByIDTemplateName);
   vSQLCommand.ClassID := IAccount;
   vSQLCommand.Params['Id'] := TInfraInteger.NewFrom(1);
@@ -169,7 +176,7 @@ var
   vSQLCommand :ISQLCommandQuery;
 begin
   PrepararBancoParaInserir;
-  vSession := PersistenceService.OpenSession;
+  vSession := FSessionFactory.OpenSession;
   vObj := TAccount.Create;
   vObj.Id.AsInteger := 2;
   vObj.AccountNumber.AsString := '2812-3';
@@ -198,7 +205,7 @@ begin
   PrepararBancoParaDeletar;
 
   // Abre a sessao, cria um objeto e define o id a ser deletado
-  vSession := PersistenceService.OpenSession;
+  vSession := FSessionFactory.OpenSession;
   vObj := TAccount.Create;
   vObj.Id.AsInteger := 3;
   vSession.Delete(cDeleteAccountByIDTemplateName, vObj);
@@ -212,6 +219,7 @@ end;
 procedure TPersistenceTests.TearDown;
 begin
   inherited;
+  FSessionFactory := nil;
   ReleaseZeosExecutor;
 end;
 

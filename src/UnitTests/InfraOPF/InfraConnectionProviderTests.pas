@@ -16,7 +16,7 @@ type
     procedure SetUp; override;
     procedure TearDown; override;
   published
-    procedure TestCreateWithoutConfiguration;
+    procedure TestCreateWithoutConnectionString;
     procedure TestGetConnection;
     procedure TestGetConnectionObjAvailableInPool;
     procedure TestGetConnectionObjUnavailableInPool;
@@ -42,7 +42,7 @@ uses
 procedure TTestConnectionProvider.SetUp;
 begin
   inherited;
-  FConnProvider := TConnectionProvider.Create(TTestsUtil.GetNewConfiguration);
+  FConnProvider := TConnectionProvider.Create(TTestsUtil.GetConnectionString);
 end;
 
 procedure TTestConnectionProvider.TearDown;
@@ -51,11 +51,11 @@ begin
   inherited;
 end;
 
-procedure TTestConnectionProvider.TestCreateWithoutConfiguration;
+procedure TTestConnectionProvider.TestCreateWithoutConnectionString;
 begin
   inherited;
   ExpectedException := EInfraArgumentError;
-  TConnectionProvider.Create(nil);
+  TConnectionProvider.Create('');
   ExpectedException := nil;
 end;
 

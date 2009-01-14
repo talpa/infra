@@ -3,6 +3,7 @@ unit InfraOPFConnectionProvider;
 interface
 
 uses
+  SysUtils,
   InfraCommon,
   InfraCommonIntf,
   InfraOPFIntf,
@@ -11,25 +12,23 @@ uses
 type
   IConnectionProviderFactory = interface
     ['{78BFE625-5F7D-4642-BDB6-332B070018C0}']
-    function CreateProvider(pConfiguration: IConfiguration): IConnectionProvider;
+    function CreateProvider(const pConnectionString: string): IConnectionProvider;
   end;
 
   /// Classe responsável por prover conexões com o SGDB
   TConnectionProvider = class(TBaseElement, IConnectionProvider)
   private
-    /// Armazena uma referência ao objeto que contém as configurações do Framework
-    FConfiguration: IConfiguration;
-    function BuildConnectionString(pConfiguration: IConfiguration): string;
+    FConnectionString: string;
   protected
     function GetConnection: IZConnection;
     procedure ReleaseConnection(const pConnection: IZConnection);
   public
-    constructor Create(pConfiguration: IConfiguration); reintroduce;
+    constructor Create(const pConnectionString: string); reintroduce;
   end;
 
   TConnectionProviderFactory = class(TInterfacedObject, IConnectionProviderFactory)
   public
-    function CreateProvider(pConfiguration: IConfiguration): IConnectionProvider;
+    function CreateProvider(const pConnectionString: string): IConnectionProvider;
   end;
 
 var
@@ -44,16 +43,14 @@ uses
 
 {**
   Cria uma nova instância de TInfraConnectionProvider.
-  @param pConfiguration Um objeto do tipo IConfiguration que contém todas as
-  informações necessárias sobre a conexão.
+  @param pConnectionString URL de conexao com o banco de dados 
 }
-constructor TConnectionProvider.Create(pConfiguration: IConfiguration);
+constructor TConnectionProvider.Create(const pConnectionString: string);
 begin
   inherited Create;
-  if not Assigned(pConfiguration) then
-    raise EInfraArgumentError.Create(
-      'Configuration in ConnectionProvider.Create');
-  FConfiguration := pConfiguration;
+  if Trim(pConnectionString) = EmptyStr then
+    raise EInfraArgumentError.Create('pConnectionString');
+  FConnectionString := pConnectionString;
 end;
 
 {**
@@ -65,21 +62,6 @@ begin
   // A ser implementado no novo Pool
 end;
 
-{*
-  Constrói a URL de conexão com o banco
-  @param pConfiguration Objeto com as configurações de conexão com o banco de dados
-  @return Retorna uma string no formato
-    zdbc:<driver>://<hostname>/<databasename>?username=<username>;password=<password>
-*}
-function TConnectionProvider.BuildConnectionString(pConfiguration: IConfiguration): string;
-begin
-  Result := 'zdbc:' + pConfiguration.GetAsString(cCONFIGKEY_DRIVER) +
-    '://' + pConfiguration.GetAsString(cCONFIGKEY_HOSTNAME) +
-    '/' + pConfiguration.GetAsString(cCONFIGKEY_DATABASENAME) +
-    '?username=' + pConfiguration.GetAsString(cCONFIGKEY_USERNAME) +
-    ';password=' + pConfiguration.GetAsString(cCONFIGKEY_PASSWORD);
-end;
-
 {**
   Nesta versão apenas retorna uma nova conexão a cada chamada, por isso
   pode ser lento, no próximo release o ConnectionProvider vai ser um Pool
@@ -88,16 +70,14 @@ end;
 }
 function TConnectionProvider.GetConnection: IZConnection;
 begin
-  Result := DriverManager.GetConnection(
-    BuildConnectionString(FConfiguration));
+  Result := DriverManager.GetConnection(FConnectionString);
 end;
 
 { TConnectionProviderFactory }
 
-function TConnectionProviderFactory.CreateProvider(
-  pConfiguration: IConfiguration): IConnectionProvider;
+function TConnectionProviderFactory.CreateProvider(const pConnectionString: string): IConnectionProvider;
 begin
-  Result := TConnectionProvider.Create(pConfiguration);
+  Result := TConnectionProvider.Create(pConnectionString);
 end;
 
 initialization

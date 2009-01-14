@@ -32,6 +32,10 @@ type
     procedure Clear;
     procedure LoadFromFile(const FileName: string);
     procedure SaveToFile(const FileName: string);
+    procedure LoadFromStream(const Stream: TStream);
+    procedure SaveToStream(const Stream: TStream);
+    function BuildSessionFactory: ISessionFactory;
+    function Clone: IConfiguration;
     {IXmlSerializable members}
     procedure WriteXml(pXmlDoc: IXmlDocument);
     procedure ReadXml(pXmlDoc: IXmlDocument);
@@ -43,7 +47,8 @@ type
 implementation
 
 uses
-  Variants;
+  Variants,
+  InfraOPFSessionFactory;
 
 { TConfiguration }
 
@@ -174,6 +179,11 @@ begin
   FProperties.Values[pName] := Value;
 end;
 
+{**
+  Desserializa o objeto, lendo as configurações de um arquivo Xml
+
+  @param pXmlDoc Objeto que implemente IXmlDocument que contenha as informações a serem lidas
+}
 procedure TConfiguration.ReadXml(pXmlDoc: IXmlDocument);
 var
   i: Integer;
@@ -183,6 +193,11 @@ begin
     FProperties.Add(pXmlDoc.DocumentElement.ChildNodes[i].NodeName + '=' + VarToStr(pXmlDoc.DocumentElement.ChildNodes[i].NodeValue));
 end;
 
+{**
+  Serializa o objeto para um Xml
+
+  @param pXmlDoc Objeto para o qual o objeto será serializado
+}
 procedure TConfiguration.WriteXml(pXmlDoc: IXmlDocument);
 var
   i: Integer;
@@ -197,14 +212,61 @@ begin
   pXmlDoc.Xml.Text := StringReplace(pXmlDoc.Xml.Text, #13#10, '', [rfReplaceAll]);
 end;
 
+{**
+  Lê as configurações de um arquivo texto (.conf, .ini, etc)
+
+  @param FileName Nome do arquivo que contém as configurações a serem lidas
+}
 procedure TConfiguration.LoadFromFile(const FileName: string);
 begin
   FProperties.LoadFromFile(FileName);
 end;
 
+{**
+  Grava as configurações para um arquivo texto (.conf, .ini, etc)
+
+  @param FileName Nome do arquivo que será criado
+}
 procedure TConfiguration.SaveToFile(const FileName: string);
 begin
   FProperties.SaveToFile(FileName);
+end;
+
+{**
+  Constrói uma nova SessionFactory
+
+  @return Retorna um SessionFactory
+}
+function TConfiguration.BuildSessionFactory: ISessionFactory;
+begin
+  Result := TSessionFactory.Create(Self);
+end;
+
+procedure TConfiguration.LoadFromStream(const Stream: TStream);
+begin
+  FProperties.LoadFromStream(Stream);
+end;
+
+procedure TConfiguration.SaveToStream(const Stream: TStream);
+begin
+  FProperties.SaveToStream(Stream);
+end;
+
+function TConfiguration.Clone: IConfiguration;
+var
+  vStm: TMemoryStream;
+begin
+  vStm := TMemoryStream.Create;
+  try
+    Self.SaveToStream(vStm);
+
+    vStm.Seek(0, 0);
+    
+    Result := TConfiguration.Create;
+    Result.LoadFromStream(vStm);
+  finally
+    vStm.Free;
+  end;
 end;
 
 end.
