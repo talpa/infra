@@ -8,6 +8,7 @@ type
   TTestConfiguration = class(TTestCase)
   private
     FConfiguration: IConfiguration;
+    procedure FillConfig;
   protected
     procedure Setup; override;
     procedure TearDown; override;
@@ -24,12 +25,31 @@ type
     procedure TestGetValueAsString;
     procedure TestGetValueAsStringAgain;
     procedure TestGetValueAsStringNoKey;
+    procedure TestLoadFromFile;
+    procedure TestSaveToFile;
+    procedure TestWriteXml;
+    procedure TestReadXml;
   end;
 
 implementation
 
 uses
-  InfraOPFConfiguration;
+  InfraOPFConfiguration,
+  InfraOPFConsts, Forms, XMLIntf, XMLDoc, InfraCommonIntf;
+
+procedure TTestConfiguration.FillConfig;
+begin
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_MAXCONNECTIONS, 10);
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_CONNECTIONTIME, 5000);
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_DRIVER, 'firebird-2.0');
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_HOSTNAME, 'localhost');
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_PASSWORD, 'masterkey');
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_USERNAME, 'sysdba');
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_DATABASENAME, 'dbdemos.gdb');
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_TEMPLATETYPE, 'TemplateReader_IO');
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_TEMPLATEPATH, ExtractFilePath(Application.ExeName) + 'data');
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_TEMPLATEEXT, 'tsql');
+end;
 
 { TTestConnectionProvider }
 
@@ -173,6 +193,144 @@ var
 begin
   vActual := FConfiguration.GetValue('teste', vExpected);
   CheckEqualsString(vActual, vExpected);
+end;
+
+procedure TTestConfiguration.TestLoadFromFile;
+const
+  cExpected = 'Pool.MaxConnections=10'#13#10+
+    'Pool.TimeExpirationConnection=5000'#13#10+
+    'Connection.Driver=firebird-2.0'#13#10+
+    'Connection.HostName=localhost'#13#10+
+    'Connection.Password=masterkey'#13#10+
+    'Connection.UserName=sysdba'#13#10+
+    'Connection.DatabaseName=dbdemos.gdb'#13#10+
+    'Template.ClassType=TemplateReader_IO'#13#10+
+    'Template.Path=D:\_working\infra\src\UnitTests\bin\data'#13#10+
+    'Template.Ext=tsql'#13#10;
+
+  cFileName = 'infra.conf';
+var
+  vStm: TFileStream;
+begin
+  vStm := TFileStream.Create(cFileName, fmCreate or fmShareDenyWrite);
+  try
+    vStm.WriteBuffer(PChar(cExpected)^, Length(cExpected));
+  finally
+    vStm.Free;
+  end;
+
+  FConfiguration.LoadFromFile(cFileName);
+
+  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_MAXCONNECTIONS), 10);
+  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_CONNECTIONTIME), 5000);
+  CheckEqualsString('firebird-2.0', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_DRIVER));
+  CheckEqualsString('localhost', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_HOSTNAME));
+  CheckEqualsString('masterkey', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_PASSWORD));
+  CheckEqualsString('sysdba', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_USERNAME));
+  CheckEqualsString('dbdemos.gdb', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_DATABASENAME));
+  CheckEqualsString('TemplateReader_IO', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATETYPE));
+  CheckEqualsString(ExtractFilePath(Application.ExeName) + 'data', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEPATH));
+  CheckEqualsString('tsql', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEEXT));
+
+  if FileExists(cFileName) then
+    DeleteFile(cFileName);
+end;
+
+procedure TTestConfiguration.TestSaveToFile;
+const
+  cExpected = 'Pool.MaxConnections=10'#13#10+
+    'Pool.TimeExpirationConnection=5000'#13#10+
+    'Connection.Driver=firebird-2.0'#13#10+
+    'Connection.HostName=localhost'#13#10+
+    'Connection.Password=masterkey'#13#10+
+    'Connection.UserName=sysdba'#13#10+
+    'Connection.DatabaseName=dbdemos.gdb'#13#10+
+    'Template.ClassType=TemplateReader_IO'#13#10+
+    'Template.Path=D:\_working\infra\src\UnitTests\bin\data'#13#10+
+    'Template.Ext=tsql'#13#10;
+
+  cFileName = 'infra.conf';
+var
+  vStm: TFileStream;
+  vActual: string;
+begin
+  FillConfig;
+  FConfiguration.SaveToFile(cFileName);
+
+  vStm := TFileStream.Create(cFileName, fmOpenRead);
+  try
+    SetLength(vActual, vStm.Size);
+    vStm.ReadBuffer(PChar(vActual)^, vStm.Size);
+  finally
+    vStm.Free;
+  end;
+
+  CheckEqualsString(cExpected, vActual, 'A informação não foi gravada corretamente');
+
+  if FileExists(cFileName) then
+    DeleteFile(cFileName);
+end;
+
+procedure TTestConfiguration.TestWriteXml;
+const
+  cExpected = '<?xml version="1.0" encoding="utf-8"?>'+
+    '<TConfiguration>'+
+      '<Pool.MaxConnections>10</Pool.MaxConnections>'+
+      '<Pool.TimeExpirationConnection>5000</Pool.TimeExpirationConnection>'+
+      '<Connection.Driver>firebird-2.0</Connection.Driver>'+
+      '<Connection.HostName>localhost</Connection.HostName>'+
+      '<Connection.Password>masterkey</Connection.Password>'+
+      '<Connection.UserName>sysdba</Connection.UserName>'+
+      '<Connection.DatabaseName>dbdemos.gdb</Connection.DatabaseName>'+
+      '<Template.ClassType>TemplateReader_IO</Template.ClassType>'+
+      '<Template.Path>D:\_working\infra\src\UnitTests\bin\data</Template.Path>'+
+      '<Template.Ext>tsql</Template.Ext>'+
+    '</TConfiguration>'#13#10;
+
+var
+  xmlDoc: IXmlDocument;
+begin
+  FillConfig;
+
+  xmlDoc := TXMLDocument.Create(nil);
+  (FConfiguration as IXmlSerializable).WriteXml(xmlDoc);
+  CheckEqualsString(cExpected, xmlDoc.XML.Text);
+end;
+
+procedure TTestConfiguration.TestReadXml;
+const
+  cExpected = '<?xml version="1.0" encoding="utf-8"?>'+
+    '<TConfiguration>'+
+      '<Pool.MaxConnections>10</Pool.MaxConnections>'+
+      '<Pool.TimeExpirationConnection>5000</Pool.TimeExpirationConnection>'+
+      '<Connection.Driver>firebird-2.0</Connection.Driver>'+
+      '<Connection.HostName>localhost</Connection.HostName>'+
+      '<Connection.Password>masterkey</Connection.Password>'+
+      '<Connection.UserName>sysdba</Connection.UserName>'+
+      '<Connection.DatabaseName>dbdemos.gdb</Connection.DatabaseName>'+
+      '<Template.ClassType>TemplateReader_IO</Template.ClassType>'+
+      '<Template.Path>D:\_working\infra\src\UnitTests\bin\data</Template.Path>'+
+      '<Template.Ext>tsql</Template.Ext>'+
+    '</TConfiguration>'#13#10;
+
+var
+  xmlDoc: IXmlDocument;
+begin
+  xmlDoc := TXMLDocument.Create(nil);
+  xmlDoc.XML.Text := cExpected;
+  xmlDoc.Active := True;
+  (FConfiguration as IXmlSerializable).ReadXml(xmlDoc);
+
+  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_MAXCONNECTIONS), 10);
+  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_CONNECTIONTIME), 5000);
+  CheckEqualsString('firebird-2.0', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_DRIVER));
+  CheckEqualsString('localhost', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_HOSTNAME));
+  CheckEqualsString('masterkey', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_PASSWORD));
+  CheckEqualsString('sysdba', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_USERNAME));
+  CheckEqualsString('dbdemos.gdb', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_DATABASENAME));
+  CheckEqualsString('TemplateReader_IO', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATETYPE));
+  CheckEqualsString(ExtractFilePath(Application.ExeName) + 'data', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEPATH));
+  CheckEqualsString('tsql', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEEXT));
 end;
 
 initialization
