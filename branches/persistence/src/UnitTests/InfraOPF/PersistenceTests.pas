@@ -154,8 +154,7 @@ begin
 
   // Abre a sessao e define o parametro e o tipo de classe a ser carregada.
   vSession := FSessionFactory.OpenSession;
-  vSQLCommand := vSession.CreateNamedQuery(cLoadAccountByIDTemplateName);
-  vSQLCommand.ClassID := IAccount;
+  vSQLCommand := vSession.CreateNamedQuery(cLoadAccountByIDTemplateName,IAccount);
   vSQLCommand.Params['Id'] := TInfraInteger.NewFrom(1);
   // Executa a carga do objeto
   vObj := vSQLCommand.GetResult as IAccount;
