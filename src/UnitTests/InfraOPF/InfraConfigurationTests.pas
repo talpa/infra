@@ -232,7 +232,7 @@ begin
   CheckEqualsString('sysdba', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_USERNAME));
   CheckEqualsString('dbdemos.gdb', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_DATABASENAME));
   CheckEqualsString('TemplateReader_IO', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATETYPE));
-  CheckEqualsString(ExtractFilePath(Application.ExeName) + 'data', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEPATH));
+  CheckEqualsString('D:\_working\infra\src\UnitTests\bin\data', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEPATH));
   CheckEqualsString('tsql', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEEXT));
 
   if FileExists(cFileName) then
@@ -258,6 +258,7 @@ var
   vActual: string;
 begin
   FillConfig;
+  FConfiguration.SetValue(cCONFIGKEY_TEMPLATEPATH,'D:\_working\infra\src\UnitTests\bin\data');
   FConfiguration.SaveToFile(cFileName);
 
   vStm := TFileStream.Create(cFileName, fmOpenRead);
@@ -294,6 +295,7 @@ var
   xmlDoc: IXmlDocument;
 begin
   FillConfig;
+  FConfiguration.SetValue(cCONFIGKEY_TEMPLATEPATH,'D:\_working\infra\src\UnitTests\bin\data');
 
   xmlDoc := TXMLDocument.Create(nil);
   (FConfiguration as IXmlSerializable).WriteXml(xmlDoc);
@@ -332,7 +334,7 @@ begin
   CheckEqualsString('sysdba', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_USERNAME));
   CheckEqualsString('dbdemos.gdb', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_DATABASENAME));
   CheckEqualsString('TemplateReader_IO', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATETYPE));
-  CheckEqualsString(ExtractFilePath(Application.ExeName) + 'data', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEPATH));
+  CheckEqualsString('D:\_working\infra\src\UnitTests\bin\data', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEPATH));
   CheckEqualsString('tsql', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEEXT));
 end;
 
@@ -365,7 +367,7 @@ begin
     CheckEqualsString('sysdba', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_USERNAME));
     CheckEqualsString('dbdemos.gdb', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_DATABASENAME));
     CheckEqualsString('TemplateReader_IO', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATETYPE));
-    CheckEqualsString(ExtractFilePath(Application.ExeName) + 'data', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEPATH));
+    CheckEqualsString('D:\_working\infra\src\UnitTests\bin\data', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEPATH));
     CheckEqualsString('tsql', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_TEMPLATEEXT));
   finally
     vStm.Free;
@@ -392,6 +394,7 @@ var
   vActual: string;
 begin
   FillConfig;
+  FConfiguration.SetValue(cCONFIGKEY_TEMPLATEPATH, 'D:\_working\infra\src\UnitTests\bin\data');
 
   vStm := TMemoryStream.Create;
   try
