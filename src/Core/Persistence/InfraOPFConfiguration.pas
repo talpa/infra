@@ -241,7 +241,9 @@ end;
 }
 function TConfiguration.BuildSessionFactory: ISessionFactory;
 begin
-  Result := TSessionFactory.Create(Self);
+  // Clona a conexao para não guardar referencia a ela, assim,
+  // modificar o Configuration após ser a SessionFactory, não terá efeito 
+  Result := TSessionFactory.Create(Self.Clone);
 end;
 
 {**
