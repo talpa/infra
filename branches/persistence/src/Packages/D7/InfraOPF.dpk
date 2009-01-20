@@ -39,7 +39,7 @@ requires
 
 contains
   InfraOPFIntf in '..\..\Core\Persistence\InfraOPFIntf.pas',
-  InfraPersistence in '..\..\Core\Persistence\InfraPersistence.pas',
+  InfraOPFService in '..\..\Core\Persistence\InfraOPFService.pas',
   InfraOPFConsts in '..\..\Core\Persistence\InfraOPFConsts.pas',
   List_SQLCommandParam in '..\..\Core\Persistence\List_SQLCommandParam.pas',
   List_SQLCommandList in '..\..\Core\Persistence\List_SQLCommandList.pas',

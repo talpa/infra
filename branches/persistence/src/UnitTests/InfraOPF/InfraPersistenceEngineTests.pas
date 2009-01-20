@@ -18,9 +18,9 @@ type
   published
     procedure TestCreate;
     procedure TestExecuteWithInvalidArgs;
+    procedure TestExecuteAllWithInvalidArgs;
     procedure TestLoadWithInvalidArgs1;
     procedure TestLoadWithInvalidArgs2;
-    procedure TestSetConnectionWithInvalidArgs;
   end;
 
 implementation
@@ -37,12 +37,10 @@ uses
 procedure TTestPersistenceEngine.SetUp;
 var
   vConfig: IConfiguration;
-  vProvider: IConnectionProvider;
 begin
   inherited;
   vConfig := TTestsUtil.GetNewConfiguration;
-  vProvider := TConnectionProvider.Create(TTestsUtil.GetConnectionString);
-  FPersistenceEngine := TPersistenceEngine.Create(vConfig, vProvider.GetConnection);
+  FPersistenceEngine := TPersistenceEngine.Create(vConfig);
 end;
 
 procedure TTestPersistenceEngine.TearDown;
@@ -52,12 +50,9 @@ begin
 end;
 
 procedure TTestPersistenceEngine.TestCreate;
-var
-  vProvider: IConnectionProvider;
 begin
   ExpectedException := EInfraArgumentError;
-  vProvider := TConnectionProvider.Create(TTestsUtil.GetConnectionString);
-  TPersistenceEngine.Create(nil, vProvider.GetConnection);
+  TPersistenceEngine.Create(nil);
   ExpectedException := nil;
 end;
 
@@ -65,6 +60,13 @@ procedure TTestPersistenceEngine.TestExecuteWithInvalidArgs;
 begin
   ExpectedException := EInfraArgumentError;
   FPersistenceEngine.Execute(nil);
+  ExpectedException := nil;
+end;
+
+procedure TTestPersistenceEngine.TestExecuteAllWithInvalidArgs;
+begin
+  ExpectedException := EInfraArgumentError;
+  FPersistenceEngine.ExecuteAll(nil);
   ExpectedException := nil;
 end;
 
@@ -82,13 +84,6 @@ procedure TTestPersistenceEngine.TestLoadWithInvalidArgs2;
 begin
   ExpectedException := EInfraArgumentError;
   FPersistenceEngine.Load(TSQLCommandQuery.Create(FPersistenceEngine), nil);
-  ExpectedException := nil;
-end;
-
-procedure TTestPersistenceEngine.TestSetConnectionWithInvalidArgs;
-begin
-  ExpectedException := EInfraArgumentError;
-  FPersistenceEngine.SetConnection(nil);
   ExpectedException := nil;
 end;
 

@@ -18,22 +18,15 @@ type
     /// Lista de comandos pendentes. Durante o Flush os comandos são executados e a lista é limpa
     FPendingCommands: ISQLCommandList;
   protected
-    function CreateNamedQuery(const pCommandName: string;
-      const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string;
-      const pClassID: TGUID): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string;
-      const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject;
-      const pListID: TGUID): ISQLCommandQuery; overload;
-    function Delete(const pCommandName: string;
-      const pObj: IInfraObject): ISQLCommand;
-    function Save(const pCommandName: string;
-      const pObj: IInfraObject): ISQLCommand;
+    function CreateNamedQuery(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
+    function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
+    function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
   public
-    constructor Create(const pConnection: IZConnection;
-      const pConfiguration: IConfiguration); reintroduce;
+    constructor Create(const pConfiguration: IConfiguration); reintroduce;
   end;
 
 implementation
@@ -42,22 +35,21 @@ uses
   InfraConsts,
   List_SQLCommandList,
   InfraOPFSqlCommands,
-  InfraOPFEngine;
+  InfraOPFEngine,
+  InfraOPFConsts;
 
 { TSession }
 {*
 
   @param pPersistenceEngine   ParameterDescription
 }
-constructor TSession.Create(const pConnection: IZConnection;
-  const pConfiguration: IConfiguration);
+constructor TSession.Create(const pConfiguration: IConfiguration);
 begin
-  if not Assigned(pConnection) then
-    raise EInfraArgumentError.Create('pConnection');
   if not Assigned(pConfiguration) then
-    raise EInfraArgumentError.Create('pConfiguration');
+    raise EInfraArgumentError.CreateFmt(cErrorPersistenceWithoutConfig,
+      ['TSession.Create']);
   inherited Create;
-  FPersistenceEngine := TPersistenceEngine.Create(pConfiguration, pConnection);
+  FPersistenceEngine := TPersistenceEngine.Create(pConfiguration);
   FPendingCommands := TSQLCommandList.Create;
 end;
 
@@ -67,7 +59,8 @@ end;
   @param pClassID   ParameterDescription
   @return ResultDescription
 }
-function TSession.CreateNamedQuery(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery;
+function TSession.CreateNamedQuery(const pCommandName: string;
+  const pClassID: TGUID): ISQLCommandQuery;
 begin
   Result := TSQLCommandQuery.Create(FPersistenceEngine);
   Result.Name := pCommandName;
@@ -79,11 +72,28 @@ end;
 {*
 
   @param pCommandName   ParameterDescription
+  @param pObj   ParameterDescription
+  @param pListID   ParameterDescription
+  @return ResultDescription
+}
+function TSession.CreateNamedQuery(const pCommandName: string;
+  const pObj: IInfraObject): ISQLCommandQuery;
+begin
+  if not Assigned(pObj) then
+    raise EInfraArgumentError.Create('Object in TSession.CreateNamedQuery');
+  Result := CreateNamedQuery(pCommandName, pObj.TypeInfo.TypeID);
+  Result.Params.CreateParamsFrom(pObj);
+end;
+
+{*
+
+  @param pCommandName   ParameterDescription
   @param pClassID   ParameterDescription
   @param pListID   ParameterDescription
   @return ResultDescription
 }
-function TSession.CreateNamedQuery(const pCommandName: string; const pClassID, pListID: TGUID): ISQLCommandQuery;
+function TSession.CreateNamedQuery(const pCommandName: string;
+  const pClassID, pListID: TGUID): ISQLCommandQuery;
 begin
   Result := CreateNamedQuery(pCommandName, pClassID);
   Result.ListID := pListID;
@@ -93,17 +103,13 @@ end;
 
   @param pCommandName   ParameterDescription
   @param pObj   ParameterDescription
-  @param pListID   ParameterDescription
   @return ResultDescription
 }
-function TSession.CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject = nil): ISQLCommandQuery;
+function TSession.CreateNamedQuery(const pCommandName: string;
+  const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery;
 begin
-  if Assigned(pObj) then
-    Result := CreateNamedQuery(pCommandName, pObj.TypeInfo.TypeID)
-  else
-    Result := CreateNamedQuery(pCommandName, NullGUID);
-  if Assigned(pObj) then
-    Result.Params.CreateParamsFrom(pObj);
+  Result := CreateNamedQuery(pCommandName, pObj);
+  Result.ListID := pListID;
 end;
 
 {*
@@ -112,20 +118,11 @@ end;
   @param pObj   ParameterDescription
   @return ResultDescription
 }
-function TSession.CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery;
+function TSession.Save(const pCommandName: string;
+  const pObj: IInfraObject): ISQLCommand;
 begin
-  Result := CreateNamedQuery(pCommandName, pObj.TypeInfo.TypeID, pListID);
-  Result.Params.CreateParamsFrom(pObj);
-end;
-
-{*
-
-  @param pCommandName   ParameterDescription
-  @param pObj   ParameterDescription
-  @return ResultDescription
-}
-function TSession.Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
-begin
+  if not Assigned(pObj) then
+    raise EInfraArgumentError.Create('Object in TSession.Save');
   Result := TSQLCommand.Create(FPersistenceEngine);
   with Result do
   begin
@@ -139,7 +136,8 @@ end;
 
   @return ResultDescription
 }
-function TSession.Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
+function TSession.Delete(const pCommandName: string;
+  const pObj: IInfraObject): ISQLCommand;
 //var
 //  vState: IPersistentState;
 begin
@@ -152,22 +150,16 @@ end;
 
 {*
 
-  @param pConfiguration   ParameterDescription
-  @return ResultDescription
+  @return A quantidade de registros afetados pela gravação
 }
 function TSession.Flush: Integer;
-var
-  i: integer;
 begin
-  // TODO: Dar atenção a isto porque, pelo modelo atual, pra cada Execute ele vai
-  // abrir uma nova conexão. Isto impediria que todas as operações fossem feitas
-  // no contexto de UMA transação
   Result := 0;
-  for i := 0 to FPendingCommands.Count - 1 do
-    Result := Result + FPersistenceEngine.Execute(FPendingCommands[i]);
-
-  // Se deu tudo ok, limpa a lista de pendencias
-  FPendingCommands.Clear;
+  if FPendingCommands.Count <> 0 then
+  begin
+    Result := FPersistenceEngine.ExecuteAll(FPendingCommands);
+    FPendingCommands.Clear;
+  end;
 end;
 
 end.

@@ -5,7 +5,6 @@ interface
 uses
   SysUtils,
   Classes,
-  InfraPersistence,
   InfraOPFIntf,
   TestFramework;
 

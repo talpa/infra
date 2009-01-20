@@ -7,6 +7,19 @@ Uses
   InfraOPFIntf;
 
 Type
+  TPersistentState = class(TBaseElement, IPersistentState)
+  private
+    FState: TPersistentStateKind;
+    FIsPersistent: Boolean;
+  protected
+    function GetIsPersistent: Boolean;
+    function GetState: TPersistentStateKind;
+    procedure SetIsPersistent(Value: Boolean);
+    procedure SetState(Value: TPersistentStateKind);
+    property IsPersistent: Boolean read GetIsPersistent write SetIsPersistent;
+    property State: TPersistentStateKind read GetState write SetState;
+  end;
+
   TZTypeAnnotation = Class(TElement, IZTypeAnnotation)
   private
     FNullSafeGetter: TZTypeGetter;
@@ -29,6 +42,45 @@ uses
   InfraValueTypeIntf,
   {Zeos}
   ZDbcIntfs;
+
+{ TPersistentState }
+
+{*
+  @return ResultDescription
+}
+function TPersistentState.GetIsPersistent: Boolean;
+begin
+  Result := FIsPersistent;
+end;
+
+{*
+  Obtem o objeto é persistente, ou seja se veio do banco de dados
+  @return ResultDescription
+}
+function TPersistentState.GetState: TPersistentStateKind;
+begin
+  Result := FState;
+end;
+
+{*
+  Define se o objeto é persistente, ou seja se veio do banco de dados
+  @param Value   ParameterDescription
+  @return ResultDescription
+}
+procedure TPersistentState.SetIsPersistent(Value: Boolean);
+begin
+  FIsPersistent := Value;
+end;
+
+{*
+  Define o estado de um objeto persistente
+  @param Value ParameterDescription
+  @return ResultDescription
+}
+procedure TPersistentState.SetState(Value: TPersistentStateKind);
+begin
+  FState := Value;
+end;
 
 { TZTypeAnnotation }
 

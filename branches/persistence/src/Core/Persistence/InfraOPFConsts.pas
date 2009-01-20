@@ -1,10 +1,9 @@
-// xxx
 unit InfraOPFConsts;
 
 interface
 
 const
-  // TODO: Documentar todas as propriedades alistando os possíveis valores
+  // TODO: Documentar todas as propriedades listando os possíveis valores
   
   // Constantes relacionadas ao pool de conexões
   cCONFIGKEY_MAXCONNECTIONS = 'Pool.MaxConnections';
@@ -25,19 +24,23 @@ const
 
 resourcestring
   // Erros da persistência
-  cErrorConfigurationNotDefined = 'Configuration nao foi alimentado';
+  cErrorPersistenceWithoutConfig = 'Configuration não definido no %s';
   cErrorConnectionNotFoundOnPool = 'Conexão não encontrada no Pool deste Provider';
   cErrorConnectionsLimitExceeded = 'Número máximo de conexões excedido';
   cErrorAlreadyClosedConnection = 'Conexão já fechada';
   cErrorTemplateTryCreateClassBase = 'Classe base TemplateReader não deve ser instanciada';
   cErrorTemplateFileNotFound = 'Template %s não vazio ou não encontrado';
   cErrorTemplateTypeInvalid = 'Classe de leitura de templates inválida ou não definida';
-  cErrorPersistenceEngineObjectIDUndefined = 'Tipo de objeto não definido no SQLCommand';
-  cErrorPersistenceEngineParamNotFound = 'Parâmetro %s não encontrado';
-  cErrorPersistenceEngineAttributeNotFound = 'Atributo não encontrado para o alias %s (coluna: %s)';
-  cErrorPersistenceEngineCannotMapAttribute = 'Não foi possivel mapear valor para o atributo %s';
-  // cErrorTemplatePathNotDefined = 'Caminho dos templates não definido';
+  cErrorPersistEngineObjectIDUndefined = 'Tipo de objeto não definido no SQLCommand';
+  cErrorPersistEngineWithoutSQLCommand = 'SQLCommand não definido no %s';
+  cErrorPersistEngineWithoutSQLCommands = 'SQLCommands não definido no TPersistenceEngine.ExecuteAll';
+  cErrorPersistEngineWithoutList = 'List não definido no TPersistenceEngine.Load';
+  cErrorPersistEngineParamNotFound = 'Parâmetro %s não encontrado';
+  cErrorPersistEngineAttributeNotFound = 'Atributo não encontrado para o alias %s (coluna: %s)';
+  cErrorPersistEngineCannotMapAttribute = 'Não foi possivel mapear valor para o atributo %s';
+  cErrorParamParserInvalidParam = 'Parâmetro inválido';
 
 implementation
 
 end.
+
