@@ -40,7 +40,7 @@ end;
 constructor TSessionFactory.Create(pConfiguration: IConfiguration);
 begin
   inherited Create;
-  FConfiguration := pConfiguration.Clone;
+  FConfiguration := pConfiguration;
   FPersistenceEngine := TPersistenceEngine.Create(FConfiguration);
 end;
 
