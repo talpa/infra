@@ -3,7 +3,6 @@ unit InfraPersistenceServiceTests;
 interface
 
 uses
-  InfraPersistence,
   InfraOPFIntf,
   InfraCommonIntf,
   TestFrameWork;
@@ -24,7 +23,11 @@ type
 implementation
 
 uses
-  InfraConsts, InfraOPFConsts, InfraMocks, ZDbcIntfs;
+  InfraConsts,
+  InfraOPFConsts,
+  InfraOPFService,
+  InfraMocks,
+  ZDbcIntfs;
 
 procedure TInfraPersistenceServiceTests.SetUp;
 begin

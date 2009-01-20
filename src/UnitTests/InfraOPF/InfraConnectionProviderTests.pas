@@ -42,7 +42,7 @@ uses
 procedure TTestConnectionProvider.SetUp;
 begin
   inherited;
-  FConnProvider := TConnectionProvider.Create(TTestsUtil.GetConnectionString);
+  FConnProvider := TConnectionProvider.Create(TTestsUtil.GetNewConfiguration);
 end;
 
 procedure TTestConnectionProvider.TearDown;
@@ -55,7 +55,7 @@ procedure TTestConnectionProvider.TestCreateWithoutConnectionString;
 begin
   inherited;
   ExpectedException := EInfraArgumentError;
-  TConnectionProvider.Create('');
+  TConnectionProvider.Create(nil);
   ExpectedException := nil;
 end;
 

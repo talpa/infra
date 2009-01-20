@@ -36,7 +36,6 @@ uses
   InfraValueType,
   InfraValueTypeIntf,
   PersistenceModel,
-  InfraPersistence,
   InfraOPFConsts,
   InfraTestsUtil, TestExtensions;
 

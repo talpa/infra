@@ -1,4 +1,4 @@
-unit InfraPersistence;
+unit InfraOPFService;
 
 interface
 
@@ -11,63 +11,12 @@ uses
 
 type
   /// Descrição da classe
-  TPersistentState = class(TBaseElement, IPersistentState)
-  private
-    FState: TPersistentStateKind;
-    FIsPersistent: Boolean;
-  protected
-    function GetIsPersistent: Boolean;
-    function GetState: TPersistentStateKind;
-    procedure SetIsPersistent(Value: Boolean);
-    procedure SetState(Value: TPersistentStateKind);
-    property IsPersistent: Boolean read GetIsPersistent write SetIsPersistent;
-    property State: TPersistentStateKind read GetState write SetState;
-  end;
-
-  /// Descrição da classe
   TInfraPersistenceService = class(TBaseElement, IInfraPersistenceService)
   protected
     function GetConfiguration: IConfiguration;
   end;
 
 implementation
-
-{ TPersistentState }
-
-{*
-  @return ResultDescription
-}
-function TPersistentState.GetIsPersistent: Boolean;
-begin
-  Result := FIsPersistent;
-end;
-
-{*
-  @return ResultDescription
-}
-function TPersistentState.GetState: TPersistentStateKind;
-begin
-  Result := FState;
-end;
-
-{*
-  @param Value   ParameterDescription
-  @return ResultDescription
-}
-procedure TPersistentState.SetIsPersistent(Value: Boolean);
-begin
-  FIsPersistent := Value;
-end;
-
-{*
-
-  @param Value   ParameterDescription
-  @return ResultDescription
-}
-procedure TPersistentState.SetState(Value: TPersistentStateKind);
-begin
-  FState := Value;
-end;
 
 { TInfraPersistenceService }
 
@@ -95,5 +44,6 @@ end;
 
 initialization
   InjectPersistenceService;
+  
 end.
 

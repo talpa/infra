@@ -3,48 +3,50 @@ unit InfraOPFEngine;
 interface
 
 uses
-  SysUtils,
-  Classes,
+  {Infra}
   InfraCommon,
-  InfraCommonIntf,
   InfraOPFIntf,
   InfraValueTypeIntf,
+  {Zeos}
   ZDbcIntfs;
 
 type
   /// Descrição da classe
   TPersistenceEngine = class(TBaseElement, IPersistenceEngine)
   private
+    FCurrentConnection: IZConnection;
+    FConnectionProvider: IConnectionProvider;
+    /// Configuração definida no session factory (imutável)
     FConfiguration: IConfiguration;
-    FConnection: IZConnection;
     /// Parser que procura por parametros e macros na instrução SQL
     FParser: ISQLParamsParser;
     function GetReader: ITemplateReader;
     procedure SetParameters(const pStatement: IZPreparedStatement;
       const pParams: ISqlCommandParams);
-    function GetRowFromResultSet(
-      const pSqlCommand: ISQLCommandQuery;
+    function GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery;
       const pResultSet: IZResultSet): IInfraObject;
-    procedure DoLoad(const pStatement: IZPreparedStatement; const pSqlCommand:
-        ISQLCommandQuery; const pList: IInfraList);
-    function GetConfiguration: IConfiguration;
+    procedure DoLoad(const pStatement: IZPreparedStatement;
+      const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
     function ReadTemplate(const pSqlCommandName: string): string;
+    function GetCurrentConnection: IZConnection;
   protected
-    procedure SetConnection(const pConnection: IZConnection);
     procedure Load(const pSqlCommand: ISQLCommandQuery;
       const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): Integer;
+    function ExecuteAll(const pSqlCommands: ISQLCommandList): Integer;
   public
-    constructor Create(pConfiguration: IConfiguration; pConnection: IZConnection); reintroduce;
-    property Configuration: IConfiguration read GetConfiguration;
+    constructor Create(pConfiguration: IConfiguration); reintroduce;
   end;
 
 implementation
 
 uses
+  SysUtils,
+  Classes,
+  InfraCommonIntf,
   InfraOPFParsers,
   InfraOPFConsts,
-  InfraConsts;
+  InfraOPFConnectionProvider;
 
 { TPersistenceEngine }
 
@@ -52,23 +54,22 @@ uses
   Cria uma nova instância de TPersistenceEngine
   @param pConfiguration   ParameterDescription
 }
-constructor TPersistenceEngine.Create(pConfiguration: IConfiguration;
-  pConnection: IZConnection);
+constructor TPersistenceEngine.Create(pConfiguration: IConfiguration);
 begin
   inherited Create;
   // O argumento pConfiguration sempre é requerido, visto que é dele que
   // o Framework obterá as suas configurações
   if not Assigned(pConfiguration) then
-    raise EInfraArgumentError.Create('pConfiguration');
-
+    raise EInfraArgumentError.CreateFmt(cErrorPersistenceWithoutConfig,
+      ['PersistenceEngine.Create']);
   FConfiguration := pConfiguration;
-  FConnection := pConnection;
+  FConnectionProvider := TConnectionProvider.Create(FConfiguration);
   FParser := TSQLParamsParser.Create;
 end;
 
 {*
-
-  @return ResultDescription
+  Obtem o leitor de template definido no configuration 
+  @return Retorna um leitor de templates
 }
 function TPersistenceEngine.GetReader: ITemplateReader;
 var
@@ -84,9 +85,19 @@ begin
 end;
 
 {*
-  Executa uma instrução SQL contra o banco baseado nas informações contidas no
-  parâmetro passado.
-  @param pSqlCommand  Objeto com as informações sobre o que e como executar a instrução.
+  Define a conexão a ser usada para processar o SQLCommand
+  @return Retorna a conexão atual quando trabalhando em bloco ou uma nova conexão do pool;
+}
+function TPersistenceEngine.GetCurrentConnection: IZConnection;
+begin
+  Result := FCurrentConnection;
+  if not Assigned(Result) then
+    Result := FConnectionProvider.GetConnection;
+end;
+
+{*
+  Executa uma instrução SQL (Insert/Update/Delete) contra o banco baseado nas informações contidas no parâmetro SqlCommand.
+  @param pSqlCommand Objeto com as informações sobre o que e como executar a instrução.
   @return Retornar a quantidade de registros afetados pela atualização.
 }
 function TPersistenceEngine.Execute(const pSqlCommand: ISqlCommand): Integer;
@@ -94,21 +105,42 @@ var
   vSQL: string;
   vStatement: IZPreparedStatement;
 begin
-  // Carrega a SQL e extrai os parâmetros
   if not Assigned(pSqlCommand) then
-    raise EInfraArgumentError.Create('pSqlCommand');
-
+    raise EInfraArgumentError.CreateFmt(cErrorPersistEngineWithoutSQLCommand,
+      ['TPersistenceEngine.Execute']);
+  // Carrega a SQL e extrai os parâmetros
   vSQL := ReadTemplate(pSqlCommand.Name);
   vSQL := FParser.Parse(vSQL);
-
   // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   //   antes de chamar o PrepareStatementWithParams
-
   // Solicita um connection e prepara a SQL
-  vStatement := FConnection.PrepareStatementWithParams(vSQL, FParser.GetParams);
+  vStatement := GetCurrentConnection.PrepareStatementWithParams(
+    vSQL, FParser.GetParams);
   // Seta os parametros e executa
   SetParameters(vStatement, pSqlCommand.Params);
   Result := vStatement.ExecuteUpdatePrepared;
+end;
+
+{*
+  Executa todas as instruções SQL (Insert/Update/Delete) contra o banco baseado nas informações contidas na lista de SqlCommands.
+  @param pSqlCommands Lista com as informações sobre as instruçòes e como executá-las
+  @return Retorna a quantidade de registros afetados pela atualização.
+}
+function TPersistenceEngine.ExecuteAll(
+  const pSqlCommands: ISQLCommandList): Integer;
+var
+  i: integer;
+begin
+  if not Assigned(pSqlCommands) then
+    raise EInfraArgumentError.Create(cErrorPersistEngineWithoutSQLCommands);
+  Result := 0;
+  FCurrentConnection := FConnectionProvider.GetConnection;
+  try
+    for i := 0 to pSqlCommands.Count - 1 do
+      Result := Result + Execute(pSqlCommands[i]);
+  finally
+    FCurrentConnection := nil;
+  end;
 end;
 
 {**
@@ -157,48 +189,25 @@ var
   vStatement: IZPreparedStatement;
 begin
   if not Assigned(pSqlCommand) then
-    raise EInfraArgumentError.Create('pSqlCommand');
-
+    raise EInfraArgumentError.CreateFmt(cErrorPersistEngineWithoutSQLCommand,
+      ['TPersistenceEngine.Load']);
   if not Assigned(pList) then
-    raise EInfraArgumentError.Create('pList');
-
+    raise EInfraArgumentError.Create(cErrorPersistEngineWithoutList);
   // Acho q o Sql deveria já estar no SqlCommand neste momento
   vSQL := ReadTemplate(pSqlCommand.Name);
   // *** 1) se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro
   // do vReader.Read????
   vSQL := FParser.Parse(vSQL);
-
   // *** 2) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   // antes de chamar o PrepareStatementWithParams
-  vStatement := FConnection.PrepareStatementWithParams(vSQL, FParser.GetParams);
+  vStatement := GetCurrentConnection.PrepareStatementWithParams(vSQL,
+    FParser.GetParams);
   try
     SetParameters(vStatement, pSqlCommand.Params);
     DoLoad(vStatement, pSqlCommand, pList);
   finally
     vStatement.Close;
   end;
-end;
-
-{**
-
-  @param pConnection   ParameterDescription
-  @return ResultDescription
-}
-procedure TPersistenceEngine.SetConnection(const pConnection: IZConnection);
-begin
-  if not Assigned(pConnection) then
-    raise EInfraArgumentError.Create('pConnection');
-
-  // TODO: preencher o connection provider com o pConnection
-end;
-
-{**
-  Chame GetConfiguration para obter uma referencia ao objeto de configuração do Framework
-  @return Retorna uma referencia ao objeto de configuração do Framework
-}
-function TPersistenceEngine.GetConfiguration: IConfiguration;
-begin
-  Result := FConfiguration;
 end;
 
 {**
@@ -216,9 +225,9 @@ var
   vAliasName: string;
 begin
   // *** Será que isso deveria estar aqui?????
-//  if IsEqualGUID(pSqlCommand.GetClassID, InfraConsts.NullGUID) then
-//    Raise EPersistenceEngineError.Create(
-//      cErrorPersistenceEngineObjectIDUndefined);
+  //  if IsEqualGUID(pSqlCommand.GetClassID, InfraConsts.NullGUID) then
+  //    Raise EPersistenceEngineError.Create(
+  //      cErrorPersistEngineObjectIDUndefined);
   Result := TypeService.CreateInstance(pSqlCommand.GetClassID) as IInfraObject;
   if Assigned(Result) then
   begin
@@ -229,13 +238,13 @@ begin
       vAttribute := Result.TypeInfo.GetProperty(Result, vAliasName) as IInfraType;
       if not Assigned(vAttribute) then
         Raise EPersistenceEngineError.CreateFmt(
-          cErrorPersistenceEngineAttributeNotFound,
+          cErrorPersistEngineAttributeNotFound,
           [vAliasName, pResultSet.GetMetadata.GetColumnName(vIndex)]);
       if Supports(vAttribute.TypeInfo, IZTypeAnnotation, vZeosType) then
         vZeosType.NullSafeGet(pResultSet, vIndex, vAttribute)
       else
         raise EPersistenceEngineError.CreateFmt(
-          cErrorPersistenceEngineCannotMapAttribute, [vAttribute.TypeInfo.Name]);
+          cErrorPersistEngineCannotMapAttribute, [vAttribute.TypeInfo.Name]);
     end;
   end;
 end;
@@ -254,15 +263,14 @@ end;
                     a substuição de parâmetros
   @param pParams Lista de parametros do tipo ISqlCommandParams
 }
-procedure TPersistenceEngine.SetParameters(const pStatement: IZPreparedStatement;
-  const pParams: ISqlCommandParams);
+procedure TPersistenceEngine.SetParameters(
+  const pStatement: IZPreparedStatement; const pParams: ISqlCommandParams);
 var
   vIndex: integer;
   vParamValue: IInfraType;
   vParams: TStrings;
   vZeosType: IZTypeAnnotation;
 begin
-  // *** o que acontece caso tenhamos um template com nomes de parametros repetidos?
   vParams := pStatement.GetParameters;
   for vIndex := 0 to vParams.Count-1 do
   begin
@@ -273,8 +281,9 @@ begin
       vZeosType.NullSafeSet(pStatement, vIndex+1, vParamValue)
     else
       raise EPersistenceEngineError.CreateFmt(
-        cErrorPersistenceEngineParamNotFound, [vParams[vIndex]]);
+        cErrorPersistEngineParamNotFound, [vParams[vIndex]]);
   end;
 end;
 
 end.
+

@@ -57,16 +57,14 @@ begin
   Result := AnsiSameText(Index1, Index2);
 end;
 
-// TODO: Verificar o que acontece se chamar CreateParamsFrom esse metodo duas vezes seguidas
-// Eu acho q ele tem um BUG, afinal, não vi comando pra limpar a lista
+// *** TODO: Verificar o que acontece se chamar CreateParamsFrom esse metodo
+// duas vezes seguidas. Eu acho q ele tem um BUG, afinal, não vi comando pra
+// limpar a lista
 procedure _ITERABLELIST_.CreateParamsFrom(const Value: IInfraObject);
 var
   vIterator: IPropertyInfoIterator;
   vParamValue, vPropertyValue: IInfraType;
 begin
-  // se Value = nil deveria levantar uma exceção
-  //
-  
   if Assigned(Value) then
   begin
     vIterator := TypeService.GetType(Value.TypeInfo.TypeID).GetProperties;
@@ -75,7 +73,8 @@ begin
       vPropertyValue := vIterator.CurrentItem.GetValue(Value) as IInfraType;
       if not vPropertyValue.IsNull then
       begin
-        vParamValue := TypeService.CreateInstance(vIterator.CurrentItem.GetTypeInfo.TypeID) as IInfraType;
+        vParamValue := TypeService.CreateInstance(
+          vIterator.CurrentItem.GetTypeInfo.TypeID) as IInfraType;
         vParamValue.Assign(vPropertyValue);
         Add(vIterator.CurrentItem.Name, vParamValue);
       end;

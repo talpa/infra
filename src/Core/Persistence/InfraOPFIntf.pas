@@ -5,11 +5,11 @@ interface
 
 uses
   Classes,
-  {Zeos}
-  ZDbcIntfs,
   {Infra}
   InfraCommonIntf,
-  InfraValueTypeIntf;
+  InfraValueTypeIntf,
+  {Zeos}
+  ZDbcIntfs;
 
 type
   EInfraPersistenceError = class(EInfraError);
@@ -21,6 +21,8 @@ type
   ISession = interface;  
   ISQLCommandParams = interface;
   ISessionFactory = interface; 
+
+  TTransactIsolationLevel = (tiNone, tiReadUncommitted, tiReadCommitted,tiRepeatableRead, tiSerializable);
 
   IConfiguration = interface(IBaseElement)
     ['{16AF1EFF-FB48-4BAD-BDC7-E0518E83E09E}']
@@ -67,8 +69,8 @@ type
 
   ISQLCommand = interface(IBaseElement)
     ['{8F2E7318-09C1-4EA2-BA6E-6724275E9043}']
-    function GetName: String;
-    procedure SetName(const Value: String);
+    function GetName: string;
+    procedure SetName(const Value: string);
     function GetParams :ISQLCommandParams;
     property Name: string read GetName write SetName;
     property Params: ISQLCommandParams read GetParams;   
@@ -88,19 +90,19 @@ type
 
   ISQLCommandParams = interface
     ['{3882EC5D-59EC-4839-93F8-B4DCDE3B6B37}']
-    function GetItem(Index: String): IInfraType;
-    procedure SetItem(Index: String; Value: IInfraType);
+    function GetItem(Index: string): IInfraType;
+    procedure SetItem(Index: string; Value: IInfraType);
     function GetCount: Integer;
-    function Add(Index: String; Value: IInfraType): String;
+    function Add(Index: string; Value: IInfraType): string;
     procedure CreateParamsFrom(const Value: IInfraObject);	
-    procedure Delete(Index: String);
+    procedure Delete(Index: string);
     procedure DeletePosition(Index: integer);
     procedure Clear;
-    function PositionOf(Index: String; Value: IInfraType): integer;
+    function PositionOf(Index: string; Value: IInfraType): integer;
     function ValueOfPosition(Index: Integer): IInfraType;
-    function IndexOfPosition(Index: Integer): String;
+    function IndexOfPosition(Index: Integer): string;
     property Count: Integer read GetCount;
-    property Params[Index: String]: IInfraType read GetItem write SetItem; default;
+    property Params[Index: string]: IInfraType read GetItem write SetItem; default;
   end;
 
   ISQLCommandList = interface
@@ -116,18 +118,12 @@ type
 
   ISession = interface(IBaseElement)
     ['{693A7815-9A5E-46C7-97DD-04D3E9C245AF}']
-    function CreateNamedQuery(const pCommandName: string;
-      const pObj: IInfraObject = nil): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string;
-      const pClassID: TGUID): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string;
-      const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject;
-      const pListID: TGUID): ISQLCommandQuery; overload;
-    function Delete(const pCommandName: string;
-      const pObj: IInfraObject): ISQLCommand;
-    function Save(const pCommandName: string;
-      const pObj: IInfraObject): ISQLCommand;
+    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
+    function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
+    function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
   end;
 
@@ -137,8 +133,6 @@ type
     function GetIsClosed: Boolean;
     /// Cria uma nova Session
     function OpenSession: ISession; overload;
-    /// Cria uma nova Session usando a conexao indicada
-    function OpenSession(Connection: IZConnection): ISession; overload;
     /// Fecha essa SessionFactory liberando todos os recursos associados
     procedure Close;
     /// Esta propriedade indica se a SessionFactory está fechada
@@ -147,12 +141,10 @@ type
 
   IPersistenceEngine = interface(IBaseElement)
     ['{F1C7686A-43B6-4FE7-8BF1-6A9C6BC54AE4}']
-    procedure SetConnection(const pConnection: IZConnection);
-    function GetConfiguration: IConfiguration;
     procedure Load(const pSqlCommand: ISQLCommandQuery;
       const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): Integer;
-    property Configuration: IConfiguration read GetConfiguration;
+    function ExecuteAll(const pSqlCommands: ISQLCommandList): Integer;
   end;
 
   ITemplateReader = interface(IElement)

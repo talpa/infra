@@ -415,7 +415,6 @@ var
   vConfig: IConfiguration;
 begin
   FillConfig;
-
   vConfig := FConfiguration.Clone;
   CheckEquals(vConfig.GetAsInteger(InfraOPFConsts.cCONFIGKEY_MAXCONNECTIONS), 10);
   CheckEquals(vConfig.GetAsInteger(InfraOPFConsts.cCONFIGKEY_CONNECTIONTIME), 5000);

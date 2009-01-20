@@ -28,7 +28,6 @@ implementation
 
 uses
   SysUtils,
-  InfraPersistence,
   InfraOPFConfiguration,
   InfraOPFConsts;
 

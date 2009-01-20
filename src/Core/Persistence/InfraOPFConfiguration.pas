@@ -3,7 +3,6 @@ unit InfraOPFConfiguration;
 interface
 
 uses
-  SysUtils,
   Classes,
   InfraCommon,
   InfraOPFIntf,
@@ -23,9 +22,12 @@ type
     function GetAsInteger(const pName: string): Integer; overload;
     function GetAsDouble(const pName: string): Double; overload;
     function GetAsString(const pName: string): string; overload;
-    function GetValue(const pName: string; const pDefaultValue: Integer): Integer; overload;
-    function GetValue(const pName: string; const pDefaultValue: Double): Double; overload;
-    function GetValue(const pName: string; const pDefaultValue: string): string; overload;
+    function GetValue(const pName: string;
+      const pDefaultValue: Integer): Integer; overload;
+    function GetValue(const pName: string;
+      const pDefaultValue: Double): Double; overload;
+    function GetValue(const pName: string;
+      const pDefaultValue: string): string; overload;
     procedure SetValue(const pName: string; const Value: Integer); overload;
     procedure SetValue(const pName: string; const Value: Double); overload;
     procedure SetValue(const pName: string; const Value: string); overload;
@@ -47,6 +49,7 @@ type
 implementation
 
 uses
+  SysUtils,
   Variants,
   InfraOPFSessionFactory;
 
@@ -181,7 +184,6 @@ end;
 
 {**
   Desserializa o objeto, lendo as configurações de um arquivo Xml
-
   @param pXmlDoc Objeto que implemente IXmlDocument que contenha as informações a serem lidas
 }
 procedure TConfiguration.ReadXml(pXmlDoc: IXmlDocument);
@@ -190,12 +192,13 @@ var
 begin
   FProperties.Clear;
   for i := 0 to pXmlDoc.DocumentElement.ChildNodes.Count - 1 do
-    FProperties.Add(pXmlDoc.DocumentElement.ChildNodes[i].NodeName + '=' + VarToStr(pXmlDoc.DocumentElement.ChildNodes[i].NodeValue));
+    FProperties.Add(
+      pXmlDoc.DocumentElement.ChildNodes[i].NodeName + '=' +
+      VarToStr(pXmlDoc.DocumentElement.ChildNodes[i].NodeValue));
 end;
 
 {**
   Serializa o objeto para um Xml
-
   @param pXmlDoc Objeto para o qual o objeto será serializado
 }
 procedure TConfiguration.WriteXml(pXmlDoc: IXmlDocument);
@@ -208,13 +211,14 @@ begin
   pXmlDoc.Encoding := 'utf-8';
   pXmlDoc.AddChild(ClassName);
   for i := 0 to FProperties.Count - 1 do
-    pXmlDoc.DocumentElement.AddChild(FProperties.Names[i]).NodeValue := FProperties.ValueFromIndex[i];
-  pXmlDoc.Xml.Text := StringReplace(pXmlDoc.Xml.Text, #13#10, '', [rfReplaceAll]);
+    pXmlDoc.DocumentElement.AddChild(FProperties.Names[i]).NodeValue :=
+      FProperties.ValueFromIndex[i];
+  pXmlDoc.Xml.Text :=
+    StringReplace(pXmlDoc.Xml.Text, #13#10, '', [rfReplaceAll]);
 end;
 
 {**
   Lê as configurações de um arquivo texto (.conf, .ini, etc)
-
   @param FileName Nome do arquivo que contém as configurações a serem lidas
 }
 procedure TConfiguration.LoadFromFile(const FileName: string);
@@ -224,7 +228,6 @@ end;
 
 {**
   Grava as configurações para um arquivo texto (.conf, .ini, etc)
-
   @param FileName Nome do arquivo que será criado
 }
 procedure TConfiguration.SaveToFile(const FileName: string);
@@ -234,7 +237,6 @@ end;
 
 {**
   Constrói uma nova SessionFactory
-
   @return Retorna um SessionFactory
 }
 function TConfiguration.BuildSessionFactory: ISessionFactory;
@@ -242,16 +244,28 @@ begin
   Result := TSessionFactory.Create(Self);
 end;
 
+{**
+  Lê as configurações de um Stream
+  @param Stream de onde extrair as propriedades
+}
 procedure TConfiguration.LoadFromStream(const Stream: TStream);
 begin
   FProperties.LoadFromStream(Stream);
 end;
 
+{**
+  Salva as configurações para um Stream
+  @param Stream onde gravar as propriedades
+}
 procedure TConfiguration.SaveToStream(const Stream: TStream);
 begin
   FProperties.SaveToStream(Stream);
 end;
 
+{**
+  Gera um cópia exata deste Configuration
+  @returns Um Clone deste Configuration
+}
 function TConfiguration.Clone: IConfiguration;
 var
   vStm: TMemoryStream;
@@ -259,9 +273,7 @@ begin
   vStm := TMemoryStream.Create;
   try
     Self.SaveToStream(vStm);
-
     vStm.Seek(0, 0);
-    
     Result := TConfiguration.Create;
     Result.LoadFromStream(vStm);
   finally
