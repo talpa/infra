@@ -25,7 +25,8 @@ type
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
-    procedure BeginTransaction(pTransactIsolationLevel: TransactionKind = tkReadCommitted);
+    procedure BeginTransaction(pTransIsolationLevel: TInfraTransIsolatLevel =
+        tilReadCommitted);
     procedure Commit;
     procedure Rollback;
   public
@@ -166,9 +167,10 @@ begin
   end;
 end;
 
-procedure TSession.BeginTransaction(pTransactIsolationLevel: TransactionKind);
+procedure TSession.BeginTransaction(pTransIsolationLevel:
+    TInfraTransIsolatLevel = tilReadCommitted);
 begin
-  (FPersistenceEngine as ITransaction).BeginTransaction(pTransactIsolationLevel);
+  (FPersistenceEngine as ITransaction).BeginTransaction(pTransIsolationLevel);
 end;
 
 procedure TSession.Commit;

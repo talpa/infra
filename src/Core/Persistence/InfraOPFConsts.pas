@@ -39,6 +39,9 @@ resourcestring
   cErrorPersistEngineAttributeNotFound = 'Atributo não encontrado para o alias %s (coluna: %s)';
   cErrorPersistEngineCannotMapAttribute = 'Não foi possivel mapear valor para o atributo %s';
   cErrorParamParserInvalidParam = 'Parâmetro inválido';
+  cErrorNotInTransaction = 'Não há nenhuma transação em andamento';
+  cErrorAlreadyInTransaction = 'Já existe uma transação em andamento';
+  cErrorTranIsolLevelUnknown = 'Nível de isolamento de Transação desconhecido';
 
 implementation
 
