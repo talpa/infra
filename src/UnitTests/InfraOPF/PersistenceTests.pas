@@ -12,6 +12,7 @@ type
   TPersistenceTests = class(TTestCase)
   private
     FSessionFactory: ISessionFactory;
+    procedure DoLoad(pSession: ISession);
     procedure PrepararBancoParaCarga;
     procedure PrepararBancoParaDeletar;
     procedure PrepararBancoParaInserir;
@@ -23,6 +24,7 @@ type
     procedure TestLoadWithParams;
     procedure TestSaveInsertWithObject;
     procedure TestDeleteWithObject;
+    procedure TestLoadWithObjectInTransaction;
   end;
 
 implementation
@@ -120,26 +122,13 @@ end;
 procedure TPersistenceTests.TestLoadWithObject;
 var
   vSession: ISession;
-  vObj: IAccount;
-  vSQLCommand: ISQLCommandQuery;
 begin
   PrepararBancoParaCarga;
   // abre uma nova sessão e cria um objeto preenchendo apenas as propriedades
   // que irão servir de parâmetro para a busca
   vSession := FSessionFactory.OpenSession;
-  vObj := TAccount.Create;
-  vObj.Id.AsInteger := 1;
-  // *** verificar estado do objeto
-  // Prepara a carga, definindo o objeto como parâmetro
-  vSQLCommand := vSession.CreateNamedQuery(cLoadAccountByIDTemplateName, vObj);
-  // Executa a carga do objeto
-  vObj := vSQLCommand.GetResult as IAccount;
 
-  CheckNotNull(vObj, cObjetoNaoFoiCarregado);
-  CheckEqualsString('BB 1361', vObj.Name.AsString, cNomeContaIncompativel);
-  CheckEqualsString('1361-2', vObj.AccountNumber.AsString, cNumeroDaContaIncompativel);
-  CheckEquals(125.3, vObj.InitialBalance.AsDouble, cEpsilon, cSaldoInicialIncompativel);
-  CheckEquals(1524.25, vObj.CurrentBalance.AsDouble, cEpsilon, cSaldoAtualIncompativel);
+  DoLoad(vSession);
   // *** verificar estado do objeto
 end;
 
@@ -224,6 +213,47 @@ end;
 function UnitTests: ITest;
 begin
   Result := TRepeatedTest.Create(TPersistenceTests.Suite, cNumVezesRepetirTeste);
+end;
+
+procedure TPersistenceTests.DoLoad(pSession: ISession);
+var
+  vObj: IAccount;
+  vSQLCommand: ISQLCommandQuery;
+begin
+  vObj := TAccount.Create;
+  vObj.Id.AsInteger := 1;
+  // *** verificar estado do objeto
+  // Prepara a carga, definindo o objeto como parâmetro
+  vSQLCommand := pSession.CreateNamedQuery(cLoadAccountByIDTemplateName, vObj);
+  // Executa a carga do objeto
+  vObj := vSQLCommand.GetResult as IAccount;
+
+  CheckNotNull(vObj, cObjetoNaoFoiCarregado);
+  CheckEqualsString('BB 1361', vObj.Name.AsString, cNomeContaIncompativel);
+  CheckEqualsString('1361-2', vObj.AccountNumber.AsString, cNumeroDaContaIncompativel);
+  CheckEquals(125.3, vObj.InitialBalance.AsDouble, cEpsilon, cSaldoInicialIncompativel);
+  CheckEquals(1524.25, vObj.CurrentBalance.AsDouble, cEpsilon, cSaldoAtualIncompativel);
+end;
+
+procedure TPersistenceTests.TestLoadWithObjectInTransaction;
+var
+  vSession: ISession;
+begin
+  PrepararBancoParaCarga;
+  // abre uma nova sessão e cria um objeto preenchendo apenas as propriedades
+  // que irão servir de parâmetro para a busca
+  vSession := FSessionFactory.OpenSession;
+
+  vSession.BeginTransaction;
+  try
+    DoLoad(vSession);
+
+    vSession.Commit;
+  except
+    vSession.Rollback;
+    raise;
+  end;
+  // *** verificar estado do objeto
 end;
 
 initialization

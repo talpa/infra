@@ -42,8 +42,8 @@ uses
 
 procedure TTestConfiguration.FillConfig;
 begin
-  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_MAXCONNECTIONS, 10);
-  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_CONNECTIONTIME, 5000);
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_POOLSIZE, 10);
+  FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_CONNECTTIMEOUT, 5000);
   FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_DRIVER, 'firebird-2.0');
   FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_HOSTNAME, 'localhost');
   FConfiguration.SetValue(InfraOPFConsts.cCONFIGKEY_PASSWORD, 'masterkey');
@@ -200,8 +200,8 @@ end;
 
 procedure TTestConfiguration.TestLoadFromFile;
 const
-  cExpected = 'Pool.MaxConnections=10'#13#10+
-    'Pool.TimeExpirationConnection=5000'#13#10+
+  cExpected = 'Pool.Size=10'#13#10+
+    'Pool.ConnectTimeOut=5000'#13#10+
     'Connection.Driver=firebird-2.0'#13#10+
     'Connection.HostName=localhost'#13#10+
     'Connection.Password=masterkey'#13#10+
@@ -224,8 +224,8 @@ begin
 
   FConfiguration.LoadFromFile(cFileName);
 
-  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_MAXCONNECTIONS), 10);
-  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_CONNECTIONTIME), 5000);
+  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_POOLSIZE), 10);
+  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_CONNECTTIMEOUT), 5000);
   CheckEqualsString('firebird-2.0', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_DRIVER));
   CheckEqualsString('localhost', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_HOSTNAME));
   CheckEqualsString('masterkey', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_PASSWORD));
@@ -241,8 +241,8 @@ end;
 
 procedure TTestConfiguration.TestSaveToFile;
 const
-  cExpected = 'Pool.MaxConnections=10'#13#10+
-    'Pool.TimeExpirationConnection=5000'#13#10+
+  cExpected = 'Pool.Size=10'#13#10+
+    'Pool.ConnectTimeOut=5000'#13#10+
     'Connection.Driver=firebird-2.0'#13#10+
     'Connection.HostName=localhost'#13#10+
     'Connection.Password=masterkey'#13#10+
@@ -279,8 +279,8 @@ procedure TTestConfiguration.TestWriteXml;
 const
   cExpected = '<?xml version="1.0" encoding="utf-8"?>'+
     '<TConfiguration>'+
-      '<Pool.MaxConnections>10</Pool.MaxConnections>'+
-      '<Pool.TimeExpirationConnection>5000</Pool.TimeExpirationConnection>'+
+      '<Pool.Size>10</Pool.Size>'+
+      '<Pool.ConnectTimeOut>5000</Pool.ConnectTimeOut>'+
       '<Connection.Driver>firebird-2.0</Connection.Driver>'+
       '<Connection.HostName>localhost</Connection.HostName>'+
       '<Connection.Password>masterkey</Connection.Password>'+
@@ -306,8 +306,8 @@ procedure TTestConfiguration.TestReadXml;
 const
   cExpected = '<?xml version="1.0" encoding="utf-8"?>'+
     '<TConfiguration>'+
-      '<Pool.MaxConnections>10</Pool.MaxConnections>'+
-      '<Pool.TimeExpirationConnection>5000</Pool.TimeExpirationConnection>'+
+      '<Pool.Size>10</Pool.Size>'+
+      '<Pool.ConnectTimeOut>5000</Pool.ConnectTimeOut>'+
       '<Connection.Driver>firebird-2.0</Connection.Driver>'+
       '<Connection.HostName>localhost</Connection.HostName>'+
       '<Connection.Password>masterkey</Connection.Password>'+
@@ -326,8 +326,8 @@ begin
   xmlDoc.Active := True;
   (FConfiguration as IXmlSerializable).ReadXml(xmlDoc);
 
-  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_MAXCONNECTIONS), 10);
-  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_CONNECTIONTIME), 5000);
+  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_POOLSIZE), 10);
+  CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_CONNECTTIMEOUT), 5000);
   CheckEqualsString('firebird-2.0', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_DRIVER));
   CheckEqualsString('localhost', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_HOSTNAME));
   CheckEqualsString('masterkey', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_PASSWORD));
@@ -340,16 +340,16 @@ end;
 
 procedure TTestConfiguration.TestLoadFromStream;
 const
-  cExpected = 'Pool.MaxConnections=10'#13#10+
-    'Pool.TimeExpirationConnection=5000'#13#10+
-    'Connection.Driver=firebird-2.0'#13#10+
-    'Connection.HostName=localhost'#13#10+
-    'Connection.Password=masterkey'#13#10+
-    'Connection.UserName=sysdba'#13#10+
-    'Connection.DatabaseName=dbdemos.gdb'#13#10+
-    'Template.ClassType=TemplateReader_IO'#13#10+
-    'Template.Path=D:\_working\infra\src\UnitTests\bin\data'#13#10+
-    'Template.Ext=tsql'#13#10;
+  cExpected = InfraOPFConsts.cCONFIGKEY_POOLSIZE+'=10'#13#10+
+    InfraOPFConsts.cCONFIGKEY_CONNECTTIMEOUT+'=5000'#13#10+
+    InfraOPFConsts.cCONFIGKEY_DRIVER+'=firebird-2.0'#13#10+
+    InfraOPFConsts.cCONFIGKEY_HOSTNAME+'=localhost'#13#10+
+    InfraOPFConsts.cCONFIGKEY_PASSWORD+'=masterkey'#13#10+
+    InfraOPFConsts.cCONFIGKEY_USERNAME+'=sysdba'#13#10+
+    InfraOPFConsts.cCONFIGKEY_DATABASENAME+'=dbdemos.gdb'#13#10+
+    InfraOPFConsts.cCONFIGKEY_TEMPLATETYPE+'=TemplateReader_IO'#13#10+
+    InfraOPFConsts.cCONFIGKEY_TEMPLATEPATH+'=D:\_working\infra\src\UnitTests\bin\data'#13#10+
+    InfraOPFConsts.cCONFIGKEY_TEMPLATEEXT+'=tsql'#13#10;
 var
   vStm: TMemoryStream;
 begin
@@ -359,8 +359,8 @@ begin
     vStm.Seek(0, 0);
     FConfiguration.LoadFromStream(vStm);
 
-    CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_MAXCONNECTIONS), 10);
-    CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_CONNECTIONTIME), 5000);
+    CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_POOLSIZE), 10);
+    CheckEquals(FConfiguration.GetAsInteger(InfraOPFConsts.cCONFIGKEY_CONNECTTIMEOUT), 5000);
     CheckEqualsString('firebird-2.0', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_DRIVER));
     CheckEqualsString('localhost', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_HOSTNAME));
     CheckEqualsString('masterkey', FConfiguration.GetAsString(InfraOPFConsts.cCONFIGKEY_PASSWORD));
@@ -377,16 +377,16 @@ end;
 
 procedure TTestConfiguration.TestSaveToStream;
 const
-  cExpected = 'Pool.MaxConnections=10'#13#10+
-    'Pool.TimeExpirationConnection=5000'#13#10+
-    'Connection.Driver=firebird-2.0'#13#10+
-    'Connection.HostName=localhost'#13#10+
-    'Connection.Password=masterkey'#13#10+
-    'Connection.UserName=sysdba'#13#10+
-    'Connection.DatabaseName=dbdemos.gdb'#13#10+
-    'Template.ClassType=TemplateReader_IO'#13#10+
-    'Template.Path=D:\_working\infra\src\UnitTests\bin\data'#13#10+
-    'Template.Ext=tsql'#13#10;
+  cExpected = InfraOPFConsts.cCONFIGKEY_POOLSIZE+'=10'#13#10+
+    InfraOPFConsts.cCONFIGKEY_CONNECTTIMEOUT+'=5000'#13#10+
+    InfraOPFConsts.cCONFIGKEY_DRIVER+'=firebird-2.0'#13#10+
+    InfraOPFConsts.cCONFIGKEY_HOSTNAME+'=localhost'#13#10+
+    InfraOPFConsts.cCONFIGKEY_PASSWORD+'=masterkey'#13#10+
+    InfraOPFConsts.cCONFIGKEY_USERNAME+'=sysdba'#13#10+
+    InfraOPFConsts.cCONFIGKEY_DATABASENAME+'=dbdemos.gdb'#13#10+
+    InfraOPFConsts.cCONFIGKEY_TEMPLATETYPE+'=TemplateReader_IO'#13#10+
+    InfraOPFConsts.cCONFIGKEY_TEMPLATEPATH+'=D:\_working\infra\src\UnitTests\bin\data'#13#10+
+    InfraOPFConsts.cCONFIGKEY_TEMPLATEEXT+'=tsql'#13#10;
 
   cFileName = 'infra.conf';
 var
@@ -416,8 +416,8 @@ var
 begin
   FillConfig;
   vConfig := FConfiguration.Clone;
-  CheckEquals(vConfig.GetAsInteger(InfraOPFConsts.cCONFIGKEY_MAXCONNECTIONS), 10);
-  CheckEquals(vConfig.GetAsInteger(InfraOPFConsts.cCONFIGKEY_CONNECTIONTIME), 5000);
+  CheckEquals(vConfig.GetAsInteger(InfraOPFConsts.cCONFIGKEY_POOLSIZE), 10);
+  CheckEquals(vConfig.GetAsInteger(InfraOPFConsts.cCONFIGKEY_CONNECTTIMEOUT), 5000);
   CheckEqualsString('firebird-2.0', vConfig.GetAsString(InfraOPFConsts.cCONFIGKEY_DRIVER));
   CheckEqualsString('localhost', vConfig.GetAsString(InfraOPFConsts.cCONFIGKEY_HOSTNAME));
   CheckEqualsString('masterkey', vConfig.GetAsString(InfraOPFConsts.cCONFIGKEY_PASSWORD));
