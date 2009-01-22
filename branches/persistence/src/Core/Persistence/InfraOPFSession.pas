@@ -11,7 +11,7 @@ uses
   InfraValueTypeIntf;
 
 type
-  /// Descrição da classe
+  /// Descrição da classe                                                                  h
   TSession = class(TBaseElement, ISession)
   private
     /// Persistence engine associado, usado para acessar o Storage
