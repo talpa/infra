@@ -22,7 +22,7 @@ type
   ISQLCommandParams = interface;
   ISessionFactory = interface; 
 
-  TTransactIsolationLevel = (tiNone, tiReadUncommitted, tiReadCommitted,tiRepeatableRead, tiSerializable);
+  TransactionKind = (tkNone, tkReadUncommitted, tkReadCommitted,tkRepeatableRead, tkSerializable);
 
   IConfiguration = interface(IBaseElement)
     ['{16AF1EFF-FB48-4BAD-BDC7-E0518E83E09E}']
@@ -42,6 +42,13 @@ type
     procedure SaveToStream(const Stream: TStream);
     function Clone: IConfiguration;
     function BuildSessionFactory: ISessionFactory;
+  end;
+
+  ITransaction = interface(IInterface)
+  ['{B9D06F2F-3F18-4AFE-85BF-9525AC1F4773}']
+  procedure BeginTransaction(pTransactIsolationLevel: TransactionKind = tkReadCommitted);
+  procedure Commit;
+  procedure Rollback;
   end;
 
   IConnectionProvider = interface(IBaseElement)

@@ -12,7 +12,7 @@ uses
 
 type
   /// Descrição da classe
-  TSession = class(TBaseElement, ISession)
+  TSession = class(TBaseElement, ISession,ITransaction)
   private
     FPersistenceEngine: IPersistenceEngine;
     /// Lista de comandos pendentes. Durante o Flush os comandos são executados e a lista é limpa
@@ -25,8 +25,12 @@ type
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
+    procedure BeginTransaction(pTransactIsolationLevel: TransactionKind = tkReadCommitted);
+    procedure Commit;
+    procedure Rollback;
   public
     constructor Create(const pConfiguration: IConfiguration); reintroduce;
+
   end;
 
 implementation
@@ -160,6 +164,21 @@ begin
     Result := FPersistenceEngine.ExecuteAll(FPendingCommands);
     FPendingCommands.Clear;
   end;
+end;
+
+procedure TSession.BeginTransaction(pTransactIsolationLevel: TransactionKind);
+begin
+  (FPersistenceEngine as ITransaction).BeginTransaction(pTransactIsolationLevel);
+end;
+
+procedure TSession.Commit;
+begin
+  (FPersistenceEngine as ITransaction).Commit;
+end;
+
+procedure TSession.Rollback;
+begin
+  (FPersistenceEngine as ITransaction).Rollback;
 end;
 
 end.
