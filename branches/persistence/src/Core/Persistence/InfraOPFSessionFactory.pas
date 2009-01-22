@@ -12,7 +12,6 @@ type
   private
     FClosed: Boolean;
     FConfiguration: IConfiguration;
-    FPersistenceEngine: IPersistenceEngine;
     function GetIsClosed: Boolean;
   protected
     function OpenSession: ISession; overload;
@@ -27,7 +26,6 @@ implementation
 uses
   InfraOPFConsts,
   InfraOPFSession,
-  InfraOPFEngine,
   InfraCommonIntf;
 
 { TSessionFactory }
@@ -41,7 +39,6 @@ constructor TSessionFactory.Create(pConfiguration: IConfiguration);
 begin
   inherited Create;
   FConfiguration := pConfiguration;
-  FPersistenceEngine := TPersistenceEngine.Create(FConfiguration);
 end;
 
 {**

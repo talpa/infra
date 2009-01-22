@@ -54,7 +54,7 @@ type
   IConnectionProvider = interface(IBaseElement)
     ['{E4D7AF34-1750-461D-90E3-15F0DFD3167E}']
     function GetConnection: IZConnection;
-    procedure ReleaseConnection(const pConnection: IZConnection);
+    procedure ReleaseConnection;
   end;
 
   IInfraPersistenceService = interface(IInterface)

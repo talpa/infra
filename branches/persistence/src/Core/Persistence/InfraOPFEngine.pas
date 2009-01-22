@@ -14,7 +14,6 @@ type
   /// Descrição da classe
   TPersistenceEngine = class(TBaseElement, IPersistenceEngine,ITransaction)
   private
-    FCurrentConnection: IZConnection;
     FConnectionProvider: IConnectionProvider;
     /// Configuração definida no session factory (imutável)
     FConfiguration: IConfiguration;
@@ -25,7 +24,6 @@ type
     function GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery; const pResultSet: IZResultSet): IInfraObject;
     procedure DoLoad(const pStatement: IZPreparedStatement; const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
     function ReadTemplate(const pSqlCommandName: string): string;
-    function GetCurrentConnection: IZConnection;
   protected
     procedure Load(const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): Integer;
@@ -86,18 +84,6 @@ begin
 end;
 
 {*
-  Define a conexão a ser usada para processar o SQLCommand
-  @return Retorna a conexão atual quando trabalhando em bloco ou uma nova conexão do pool;
-}
-
-function TPersistenceEngine.GetCurrentConnection: IZConnection;
-begin
-  Result := FCurrentConnection;
-  if not Assigned(Result) then
-    Result := FConnectionProvider.GetConnection;
-end;
-
-{*
   Executa uma instrução SQL (Insert/Update/Delete) contra o banco baseado nas informações contidas no parâmetro SqlCommand.
   @param pSqlCommand Objeto com as informações sobre o que e como executar a instrução.
   @return Retornar a quantidade de registros afetados pela atualização.
@@ -107,6 +93,7 @@ function TPersistenceEngine.Execute(const pSqlCommand: ISqlCommand): Integer;
 var
   vSQL: string;
   vStatement: IZPreparedStatement;
+  vConnection: IZConnection;
 begin
   if not Assigned(pSqlCommand) then
     raise EInfraArgumentError.CreateFmt(cErrorPersistEngineWithoutSQLCommand,
@@ -117,11 +104,17 @@ begin
   // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   //   antes de chamar o PrepareStatementWithParams
   // Solicita um connection e prepara a SQL
-  vStatement := GetCurrentConnection.PrepareStatementWithParams(
-    vSQL, FParser.GetParams);
-  // Seta os parametros e executa
-  SetParameters(vStatement, pSqlCommand.Params);
-  Result := vStatement.ExecuteUpdatePrepared;
+  vConnection := FConnectionProvider.GetConnection;
+  try
+    vStatement := vConnection.PrepareStatementWithParams(vSQL,
+      FParser.GetParams);
+    // Seta os parametros e executa
+    SetParameters(vStatement, pSqlCommand.Params);
+    Result := vStatement.ExecuteUpdatePrepared;
+  finally
+    vConnection := nil;
+    FConnectionProvider.ReleaseConnection;
+  end;
 end;
 
 {*
@@ -133,17 +126,19 @@ end;
 function TPersistenceEngine.ExecuteAll(
   const pSqlCommands: ISQLCommandList): Integer;
 var
-  i: integer;
+  vI: integer;
+  vConnection: IZConnection;
 begin
   if not Assigned(pSqlCommands) then
     raise EInfraArgumentError.Create(cErrorPersistEngineWithoutSQLCommands);
   Result := 0;
-  FCurrentConnection := FConnectionProvider.GetConnection;
+  vConnection := FConnectionProvider.GetConnection;
   try
-    for i := 0 to pSqlCommands.Count - 1 do
-      Result := Result + Execute(pSqlCommands[i]);
+    for vI := 0 to pSqlCommands.Count - 1 do
+      Result := Result + Execute(pSqlCommands[vI]);
   finally
-    FCurrentConnection := nil;
+    vConnection := nil;
+    FConnectionProvider.ReleaseConnection;
   end;
 end;
 
@@ -193,6 +188,7 @@ procedure TPersistenceEngine.Load(const pSqlCommand: ISQLCommandQuery;
 var
   vSQL: string;
   vStatement: IZPreparedStatement;
+  vConnection: IZConnection;
 begin
   if not Assigned(pSqlCommand) then
     raise EInfraArgumentError.CreateFmt(cErrorPersistEngineWithoutSQLCommand,
@@ -206,13 +202,16 @@ begin
   vSQL := FParser.Parse(vSQL);
   // *** 2) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   // antes de chamar o PrepareStatementWithParams
-  vStatement := GetCurrentConnection.PrepareStatementWithParams(vSQL,
-    FParser.GetParams);
+  vConnection := FConnectionProvider.GetConnection;
   try
+    vStatement := vConnection.PrepareStatementWithParams(vSQL,
+      FParser.GetParams);
     SetParameters(vStatement, pSqlCommand.Params);
     DoLoad(vStatement, pSqlCommand, pList);
   finally
     vStatement.Close;
+    vConnection := nil;
+    FConnectionProvider.ReleaseConnection;
   end;
 end;
 
@@ -295,8 +294,11 @@ end;
 
 procedure TPersistenceEngine.BeginTransaction(pTransactIsolationLevel: TransactionKind);
 begin
- FConnectionProvider.GetConnection.SetAutoCommit(True);
- FConnectionProvider.GetConnection.SetTransactionIsolation(TZTransactIsolationLevel(Ord(pTransactIsolationLevel)));
+  with FConnectionProvider.GetConnection do
+  begin
+    SetAutoCommit(True);
+    SetTransactionIsolation(TZTransactIsolationLevel(Ord(pTransactIsolationLevel)));
+  end;
 end;
 
 procedure TPersistenceEngine.Commit;
