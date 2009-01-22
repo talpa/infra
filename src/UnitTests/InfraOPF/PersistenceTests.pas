@@ -96,6 +96,13 @@ begin
     '?username=SYSDBA;password=masterkey');
 end;
 
+procedure TPersistenceTests.TearDown;
+begin
+  inherited;
+  FSessionFactory := nil;
+  ReleaseZeosExecutor;
+end;
+
 procedure TPersistenceTests.PrepararBancoParaCarga;
 begin
   GetZeosExecutor.Execute(cSQLDeleteFromAccount);
@@ -201,13 +208,6 @@ begin
   // *** Deveria testar aqui o estado do objeto deveria estar Deleted e Persistent
   // *** pegar um resultset e verificar se o dado foi realmente apagado
   CheckEquals(1, vCont, cQuantidadeDeRegistrosAfetadosInv);
-end;
-
-procedure TPersistenceTests.TearDown;
-begin
-  inherited;
-  FSessionFactory := nil;
-  ReleaseZeosExecutor;
 end;
 
 function UnitTests: ITest;

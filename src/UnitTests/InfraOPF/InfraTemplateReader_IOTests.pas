@@ -43,7 +43,7 @@ end;
 
 procedure TTestTemplateReader_IO.TearDown;
 begin
-  FReader := nil;
+  FReader.Free;
   inherited;
 end;
 
@@ -63,10 +63,14 @@ var
 begin
   vConfiguration := TTestsUtil.GetNewConfiguration;
   vReader := TTemplateReaderHacked.Create;
-  vReader.Configuration := vConfiguration;
-  vExpected := ExtractFilePath(ParamStr(0))+'produtos.sql';
-  vActual := vReader.GetFilename('produtos');
-  CheckEqualsString(vExpected, vActual, 'GetFileName falhou');
+  try
+    vReader.Configuration := vConfiguration;
+    vExpected := ExtractFilePath(ParamStr(0))+'produtos.sql';
+    vActual := vReader.GetFilename('produtos');
+    CheckEqualsString(vExpected, vActual, 'GetFileName falhou');
+  finally
+    vReader.Free;
+  end;
 end;
 
 procedure TTestTemplateReader_IO.TestGetFileNameConfig;
@@ -80,10 +84,14 @@ begin
   vConfiguration.SetValue(cCONFIGKEY_TEMPLATEPATH, 'c:\');
   vConfiguration.SetValue(cCONFIGKEY_TEMPLATEEXT, 'tpl');
   vReader := TTemplateReaderHacked.Create;
-  vReader.Configuration := vConfiguration;
-  vExpected := 'c:\produtos.tpl';
-  vActual := vReader.GetFilename('produtos');
-  CheckEqualsString(vExpected, vActual, 'GetFileName falhou');
+  try
+    vReader.Configuration := vConfiguration;
+    vExpected := 'c:\produtos.tpl';
+    vActual := vReader.GetFilename('produtos');
+    CheckEqualsString(vExpected, vActual, 'GetFileName falhou');
+  finally
+    vReader.Free;
+  end;
 end;
 
 procedure TTestTemplateReader_IO.TestReadFileNotExists;

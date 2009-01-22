@@ -72,7 +72,7 @@ type
   end;
 
   /// Classe que implementa a interface IInfraDBConnection.
-  TInfraDBConnection = class(TInterfacedObject, IInterface, IConnectionProviderItem)
+  TConnectionProviderItem = class(TInterfacedObject, IInterface, IConnectionProviderItem)
   private
     { Private declarations }
     FConnection: IZConnection;
@@ -200,7 +200,7 @@ end;
 function TConnectionProvider.GetConnection: IConnectionProviderItem;
 var
   vI: Integer;
-  vConnection: TInfraDBConnection;
+  vConnection: TConnectionProviderItem;
   vWaitResult: Integer;
 begin
   Result := nil;
@@ -218,7 +218,7 @@ begin
       // ele).
       if FConnections[vI] = nil then
       begin
-        vConnection := TInfraDBConnection.Create(FConnectionString,
+        vConnection := TConnectionProviderItem.Create(FConnectionString,
           Self.FCriticalSection,
           Self.FSemaphore);
         vConnection.Connection.Open;
@@ -316,7 +316,7 @@ end;
 
 { TConnectionModule }
 
-function TInfraDBConnection._AddRef: Integer;
+function TConnectionProviderItem._AddRef: Integer;
 begin
   // increment a contagem de referencias
   FCriticalSection.Enter;
@@ -328,7 +328,7 @@ begin
   end;
 end;
 
-function TInfraDBConnection._Release: Integer;
+function TConnectionProviderItem._Release: Integer;
 var
   tmpCriticalSection: TCriticalSection;
   tmpSemaphore: THandle;
@@ -357,26 +357,26 @@ begin
   end;
 end;
 
-function TInfraDBConnection.Connection: IZConnection;
+function TConnectionProviderItem.Connection: IZConnection;
 begin
   Result := FConnection;
 end;
 
-function TInfraDBConnection.GetRefCount: Integer;
+function TConnectionProviderItem.GetRefCount: Integer;
 begin
   FCriticalSection.Enter;
   Result := FRefCount;
   FCriticalSection.Leave;
 end;
 
-function TInfraDBConnection.GetLastAccess: TDateTime;
+function TConnectionProviderItem.GetLastAccess: TDateTime;
 begin
   FCriticalSection.Enter;
   Result := FLastAccess;
   FCriticalSection.Leave;
 end;
 
-constructor TInfraDBConnection.Create(const pConnectionString: string;
+constructor TConnectionProviderItem.Create(const pConnectionString: string;
   pCriticalSection: TCriticalSection; pSemaphore: THandle);
 begin
   inherited Create;
@@ -385,7 +385,7 @@ begin
   FConnection := DriverManager.GetConnection(pConnectionString);
 end;
 
-destructor TInfraDBConnection.Destroy;
+destructor TConnectionProviderItem.Destroy;
 begin
   FConnection := nil;
   inherited;
