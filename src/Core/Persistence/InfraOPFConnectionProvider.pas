@@ -13,12 +13,14 @@ type
   /// Classe responsável por prover conexões com o SGDB
   TConnectionProvider = class(TBaseElement, IConnectionProvider)
   private
-    FConfiguration: Iconfiguration;
+    FConnRefCount: integer;
+    FCurrentConnection: IZConnection;
+    FConfiguration: IConfiguration;
     FConnectionString: string;
     function BuildConnectionString(pConfiguration: IConfiguration): string;
   protected
     function GetConnection: IZConnection;
-    procedure ReleaseConnection(const pConnection: IZConnection);
+    procedure ReleaseConnection;
   public
     constructor Create(const pConfiguration: IConfiguration); reintroduce;
   end;
@@ -33,7 +35,7 @@ uses
 
 {**
   Cria uma nova instância de TInfraConnectionProvider.
-  @param pConnectionString URL de conexao com o banco de dados 
+  @param pConnectionString URL de conexao com o banco de dados
 }
 constructor TConnectionProvider.Create(const pConfiguration: IConfiguration);
 begin
@@ -43,16 +45,8 @@ begin
       ['TConnectionProvider.Create']);
   FConfiguration := pConfiguration;
   FConnectionString := BuildConnectionString(FConfiguration);
-end;
-
-{**
-  Libera a conexão de volta ao pool para ser reutilizada
-  @param pConnection Conexão a ser liberada
-}
-procedure TConnectionProvider.ReleaseConnection(
-  const pConnection: IZConnection);
-begin
-  // A ser implementado no novo Pool
+  FCurrentConnection := nil;
+  FConnRefCount := 0;
 end;
 
 {**
@@ -63,7 +57,24 @@ end;
 }
 function TConnectionProvider.GetConnection: IZConnection;
 begin
-  Result := DriverManager.GetConnection(FConnectionString);
+  Inc(FConnRefCount);
+  if not Assigned(FCurrentConnection) then
+    FCurrentConnection := DriverManager.GetConnection(FConnectionString);
+  Result := FCurrentConnection;
+end;
+
+{**
+  Libera a conexão de volta ao pool para ser reutilizada
+  @param pConnection Conexão a ser liberada
+}
+procedure TConnectionProvider.ReleaseConnection;
+begin
+  Dec(FConnRefCount);
+  if (FConnRefCount = 0) and Assigned(FCurrentConnection) then
+  begin
+    FCurrentConnection.Close;
+    FCurrentConnection := nil;
+  end;
 end;
 
 {*
