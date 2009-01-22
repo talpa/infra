@@ -17,12 +17,14 @@ type
   EPersistenceTemplateError = class(EInfraPersistenceError);
   EPersistenceEngineError = class(EInfraPersistenceError);
   EInfraParserError = class(EInfraError);
+  EInfraTransactionError = class(EInfraError);
 
-  ISession = interface;  
+  ISession = interface;
   ISQLCommandParams = interface;
-  ISessionFactory = interface; 
+  ISessionFactory = interface;
 
-  TransactionKind = (tkNone, tkReadUncommitted, tkReadCommitted,tkRepeatableRead, tkSerializable);
+  TInfraTransIsolatLevel = (tilNone, tilReadUncommitted, tilReadCommitted,
+    tilRepeatableRead, tilSerializable);
 
   IConfiguration = interface(IBaseElement)
     ['{16AF1EFF-FB48-4BAD-BDC7-E0518E83E09E}']
@@ -46,7 +48,7 @@ type
 
   ITransaction = interface(IInterface)
   ['{B9D06F2F-3F18-4AFE-85BF-9525AC1F4773}']
-  procedure BeginTransaction(pTransactIsolationLevel: TransactionKind = tkReadCommitted);
+  procedure BeginTransaction(pTransactIsolationLevel: TInfraTransIsolatLevel = tilReadCommitted);
   procedure Commit;
   procedure Rollback;
   end;
