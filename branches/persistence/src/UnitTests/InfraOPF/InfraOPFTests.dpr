@@ -5,7 +5,8 @@
 program InfraOPFTests;
 
 uses
-  TestFramework {$IFDEF LINUX},
+  {$IFDEF USE_FASTMM}FastMM4,
+  {$ENDIF}TestFramework {$IFDEF LINUX},
   QForms,
   QGUITestRunner {$ELSE},
   Forms,

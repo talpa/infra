@@ -44,7 +44,7 @@ end;
 
 procedure ReleaseZeosExecutor;
 begin
-  _dbZeosExecutor := nil;
+  FreeAndNil(_dbZeosExecutor);
 end;
 
 { TDBZeosExecutor }

@@ -157,12 +157,8 @@ begin
   Result := 0;
 
   vConnection := GetCurrentConnection;
-  try
-    for vI := 0 to pSqlCommands.Count - 1 do
-      Result := Result + InternallExecute(pSqlCommands[vI], vConnection);
-  finally
-    vConnection := nil;
-  end;
+  for vI := 0 to pSqlCommands.Count - 1 do
+    Result := Result + InternallExecute(pSqlCommands[vI], vConnection);
 end;
 
 {**
@@ -186,6 +182,7 @@ begin
     end;
   finally
     vResultSet.Close;
+    vResultSet := nil;
   end;
 end;
 
@@ -231,7 +228,6 @@ begin
     DoLoad(vStatement, pSqlCommand, pList);
   finally
     vStatement.Close;
-    vConnection := nil;
   end;
 end;
 
