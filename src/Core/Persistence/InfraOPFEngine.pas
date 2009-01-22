@@ -12,7 +12,7 @@ uses
 
 type
   /// Descrição da classe
-  TPersistenceEngine = class(TBaseElement, IPersistenceEngine)
+  TPersistenceEngine = class(TBaseElement, IPersistenceEngine,ITransaction)
   private
     FCurrentConnection: IZConnection;
     FConnectionProvider: IConnectionProvider;
@@ -21,19 +21,18 @@ type
     /// Parser que procura por parametros e macros na instrução SQL
     FParser: ISQLParamsParser;
     function GetReader: ITemplateReader;
-    procedure SetParameters(const pStatement: IZPreparedStatement;
-      const pParams: ISqlCommandParams);
-    function GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery;
-      const pResultSet: IZResultSet): IInfraObject;
-    procedure DoLoad(const pStatement: IZPreparedStatement;
-      const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
+    procedure SetParameters(const pStatement: IZPreparedStatement; const pParams: ISqlCommandParams);
+    function GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery; const pResultSet: IZResultSet): IInfraObject;
+    procedure DoLoad(const pStatement: IZPreparedStatement; const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
     function ReadTemplate(const pSqlCommandName: string): string;
     function GetCurrentConnection: IZConnection;
   protected
-    procedure Load(const pSqlCommand: ISQLCommandQuery;
-      const pList: IInfraList);
+    procedure Load(const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): Integer;
     function ExecuteAll(const pSqlCommands: ISQLCommandList): Integer;
+    procedure BeginTransaction(pTransactIsolationLevel: TransactionKind = tkReadCommitted);
+    procedure Commit;
+    procedure Rollback;
   public
     constructor Create(pConfiguration: IConfiguration); reintroduce;
   end;
@@ -54,6 +53,7 @@ uses
   Cria uma nova instância de TPersistenceEngine
   @param pConfiguration   ParameterDescription
 }
+
 constructor TPersistenceEngine.Create(pConfiguration: IConfiguration);
 begin
   inherited Create;
@@ -68,9 +68,10 @@ begin
 end;
 
 {*
-  Obtem o leitor de template definido no configuration 
+  Obtem o leitor de template definido no configuration
   @return Retorna um leitor de templates
 }
+
 function TPersistenceEngine.GetReader: ITemplateReader;
 var
   vReaderClassName: string;
@@ -88,6 +89,7 @@ end;
   Define a conexão a ser usada para processar o SQLCommand
   @return Retorna a conexão atual quando trabalhando em bloco ou uma nova conexão do pool;
 }
+
 function TPersistenceEngine.GetCurrentConnection: IZConnection;
 begin
   Result := FCurrentConnection;
@@ -100,6 +102,7 @@ end;
   @param pSqlCommand Objeto com as informações sobre o que e como executar a instrução.
   @return Retornar a quantidade de registros afetados pela atualização.
 }
+
 function TPersistenceEngine.Execute(const pSqlCommand: ISqlCommand): Integer;
 var
   vSQL: string;
@@ -126,6 +129,7 @@ end;
   @param pSqlCommands Lista com as informações sobre as instruçòes e como executá-las
   @return Retorna a quantidade de registros afetados pela atualização.
 }
+
 function TPersistenceEngine.ExecuteAll(
   const pSqlCommands: ISQLCommandList): Integer;
 var
@@ -149,8 +153,9 @@ end;
   @param pSqlCommand   ParameterDescription
   @param pList   ParameterDescription
 }
+
 procedure TPersistenceEngine.DoLoad(const pStatement: IZPreparedStatement;
-    const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
+  const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
 var
   vResultSet: IZResultSet;
   vObject: IInfraObject;
@@ -182,6 +187,7 @@ end;
   @param pSqlCommand SqlCommandQuery que será usado para efetuar a consulta no banco de dados
   @param pList Lista que será preenchida com os objetos lidos
 }
+
 procedure TPersistenceEngine.Load(const pSqlCommand: ISQLCommandQuery;
   const pList: IInfraList);
 var
@@ -216,6 +222,7 @@ end;
   @param pResultSet   ParameterDescription
   @return ResultDescription
 }
+
 function TPersistenceEngine.GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery;
   const pResultSet: IZResultSet): IInfraObject;
 var
@@ -237,7 +244,7 @@ begin
       vAliasName := pResultSet.GetMetadata.GetColumnLabel(vIndex);
       vAttribute := Result.TypeInfo.GetProperty(Result, vAliasName) as IInfraType;
       if not Assigned(vAttribute) then
-        Raise EPersistenceEngineError.CreateFmt(
+        raise EPersistenceEngineError.CreateFmt(
           cErrorPersistEngineAttributeNotFound,
           [vAliasName, pResultSet.GetMetadata.GetColumnName(vIndex)]);
       if Supports(vAttribute.TypeInfo, IZTypeAnnotation, vZeosType) then
@@ -263,6 +270,7 @@ end;
                     a substuição de parâmetros
   @param pParams Lista de parametros do tipo ISqlCommandParams
 }
+
 procedure TPersistenceEngine.SetParameters(
   const pStatement: IZPreparedStatement; const pParams: ISqlCommandParams);
 var
@@ -272,17 +280,33 @@ var
   vZeosType: IZTypeAnnotation;
 begin
   vParams := pStatement.GetParameters;
-  for vIndex := 0 to vParams.Count-1 do
+  for vIndex := 0 to vParams.Count - 1 do
   begin
     vParamValue := pParams[vParams[vIndex]];
     if Assigned(vParamValue)
       and Supports(vParamValue.TypeInfo, IZTypeAnnotation, vZeosType) then
       // Aumenta o vIndex por que no Zeos as colunas começam de 1
-      vZeosType.NullSafeSet(pStatement, vIndex+1, vParamValue)
+      vZeosType.NullSafeSet(pStatement, vIndex + 1, vParamValue)
     else
       raise EPersistenceEngineError.CreateFmt(
         cErrorPersistEngineParamNotFound, [vParams[vIndex]]);
   end;
+end;
+
+procedure TPersistenceEngine.BeginTransaction(pTransactIsolationLevel: TransactionKind);
+begin
+ FConnectionProvider.GetConnection.SetAutoCommit(True);
+ FConnectionProvider.GetConnection.SetTransactionIsolation(TZTransactIsolationLevel(Ord(pTransactIsolationLevel)));
+end;
+
+procedure TPersistenceEngine.Commit;
+begin
+  FConnectionProvider.GetConnection.Commit;
+end;
+
+procedure TPersistenceEngine.Rollback;
+begin
+  FConnectionProvider.GetConnection.Rollback;
 end;
 
 end.
