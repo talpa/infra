@@ -6,8 +6,9 @@ const
   // TODO: Documentar todas as propriedades listando os possíveis valores
   
   // Constantes relacionadas ao pool de conexões
-  cCONFIGKEY_MAXCONNECTIONS = 'Pool.MaxConnections';
-  cCONFIGKEY_CONNECTIONTIME = 'Pool.TimeExpirationConnection';
+  cCONFIGKEY_POOLSIZE = 'Pool.Size';
+  cCONFIGKEY_CONNECTTIMEOUT = 'Pool.ConnectTimeOut';
+  cCONFIGKEY_CLEANUPDELAYMINUTES = 'Pool.CleanupDelayMinutes';
   // Constantes relacionadas com a conexao com o banco de dados
   cCONFIGKEY_DRIVER = 'Connection.Driver';
   cCONFIGKEY_HOSTNAME = 'Connection.HostName';
@@ -21,6 +22,15 @@ const
 
   // Valores padrões para items do configuration
   cGlobalMaxConnections = 30;
+
+  // Tamanho padrão do Pool
+  DefaultPoolSize = 10;
+  // Por default, 5 minutos é o tempo q ele vai esperar até liberar uma conexão inativa
+  DefaultCleanupConnMIN = 5;
+  // 10s é o tempo que ele vai esperar que uma conexao seja liberada quando
+  // solicitada uma nova conexao e o pool estiver cheio, antes de dar erro de
+  // timeout
+  DefaultGetConnTimeoutMS = 10000;
 
 resourcestring
   // Erros da persistência

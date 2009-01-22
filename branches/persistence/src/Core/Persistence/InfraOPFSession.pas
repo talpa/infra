@@ -12,8 +12,9 @@ uses
 
 type
   /// Descrição da classe
-  TSession = class(TBaseElement, ISession,ITransaction)
+  TSession = class(TBaseElement, ISession)
   private
+    /// Persistence engine associado, usado para acessar o Storage
     FPersistenceEngine: IPersistenceEngine;
     /// Lista de comandos pendentes. Durante o Flush os comandos são executados e a lista é limpa
     FPendingCommands: ISQLCommandList;
@@ -25,13 +26,12 @@ type
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
-    procedure BeginTransaction(pTransIsolationLevel: TInfraTransIsolatLevel =
+    procedure BeginTransaction(pTransIsolatLevel: TInfraTransIsolatLevel =
         tilReadCommitted);
     procedure Commit;
     procedure Rollback;
   public
-    constructor Create(const pConfiguration: IConfiguration); reintroduce;
-
+    constructor Create(pPersistenceEngine: IPersistenceEngine); reintroduce;
   end;
 
 implementation
@@ -40,7 +40,6 @@ uses
   InfraConsts,
   List_SQLCommandList,
   InfraOPFSqlCommands,
-  InfraOPFEngine,
   InfraOPFConsts;
 
 { TSession }
@@ -48,13 +47,12 @@ uses
 
   @param pPersistenceEngine   ParameterDescription
 }
-constructor TSession.Create(const pConfiguration: IConfiguration);
+constructor TSession.Create(pPersistenceEngine: IPersistenceEngine);
 begin
-  if not Assigned(pConfiguration) then
-    raise EInfraArgumentError.CreateFmt(cErrorPersistenceWithoutConfig,
-      ['TSession.Create']);
+  if not Assigned(pPersistenceEngine) then
+    raise EInfraArgumentError.Create('pPersistenceEngine');
   inherited Create;
-  FPersistenceEngine := TPersistenceEngine.Create(pConfiguration);
+  FPersistenceEngine := pPersistenceEngine;
   FPendingCommands := TSQLCommandList.Create;
 end;
 
@@ -154,7 +152,7 @@ begin
 end;
 
 {*
-
+  Envia todos os comandos pendentes para o banco de dados
   @return A quantidade de registros afetados pela gravação
 }
 function TSession.Flush: Integer;
@@ -167,20 +165,39 @@ begin
   end;
 end;
 
-procedure TSession.BeginTransaction(pTransIsolationLevel:
-    TInfraTransIsolatLevel = tilReadCommitted);
+{**
+  Inicia uma nova transação nesta unidade de trabalho
+  @param pTransIsolatLevel Nível de isolamento desejado
+}
+procedure TSession.BeginTransaction(pTransIsolatLevel: TInfraTransIsolatLevel =
+    tilReadCommitted);
 begin
-  (FPersistenceEngine as ITransaction).BeginTransaction(pTransIsolationLevel);
+  (FPersistenceEngine as ITransaction).BeginTransaction(pTransIsolatLevel);
 end;
 
+{**
+  Efetiva a transação
+  Se houver algum comando na lista de pendencias, executa o Flush antes
+}
 procedure TSession.Commit;
 begin
+  // Se houver algum comando na lista de pendencias, executa o Flush
+  // para enviá-los ao banco de dados antes de dar o Commit
+  if FPendingCommands.Count > 0 then
+    Flush;
+  // Efetiva a transação
   (FPersistenceEngine as ITransaction).Commit;
 end;
 
+{**
+  Desfaz a transação e limpa a lista de comandos pendentes
+}
 procedure TSession.Rollback;
 begin
+  // Desfaz a transação
   (FPersistenceEngine as ITransaction).Rollback;
+  // Limpa a lista de pendências, já que a transação foi desfeita
+  FPendingCommands.Clear;
 end;
 
 end.

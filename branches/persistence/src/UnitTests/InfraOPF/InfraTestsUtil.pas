@@ -29,7 +29,8 @@ implementation
 uses
   SysUtils,
   InfraOPFConfiguration,
-  InfraOPFConsts;
+  InfraOPFConsts,
+  Forms;
 
 var
   _dbZeosExecutor: TDBZeosExecutor;
@@ -81,8 +82,12 @@ class function TTestsUtil.GetNewConfiguration: IConfiguration;
 begin
   Result := TConfiguration.Create;
   Result.SetValue(cCONFIGKEY_DRIVER, 'firebird-2.0');
-  Result.SetValue(cCONFIGKEY_CONNECTIONTIME, 10);
-  Result.SetValue(cCONFIGKEY_MAXCONNECTIONS, 2);
+  Result.SetValue(cCONFIGKEY_CONNECTTIMEOUT, 10);
+  Result.SetValue(cCONFIGKEY_POOLSIZE, 2);
+  Result.SetValue(cCONFIGKEY_HOSTNAME, 'localhost');
+  Result.SetValue(cCONFIGKEY_DATABASENAME, ExtractFilePath(Application.ExeName)+'data\dbdemos.fdb');
+  Result.SetValue(cCONFIGKEY_USERNAME, 'sysdba');
+  Result.SetValue(cCONFIGKEY_PASSWORD, 'masterkey');
 end;
 
 initialization

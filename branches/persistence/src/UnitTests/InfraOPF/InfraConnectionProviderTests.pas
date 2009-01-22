@@ -21,10 +21,6 @@ type
     procedure TestGetConnectionObjAvailableInPool;
     procedure TestGetConnectionObjUnavailableInPool;
     procedure TestGetConnectionBeyoundMaxSize;
-    procedure TestCloseConnection;
-    procedure TestCloseConnectionAlreadyClosed;
-    procedure TestCloseConnectionNotFound;
-    procedure TestClose;
   end;
 
 implementation
@@ -61,46 +57,61 @@ end;
 
 procedure TTestConnectionProvider.TestGetConnection;
 var
-  lConnection: IZConnection;
+  vConnection1, vConnection2: IConnectionProviderItem;
 begin
-  lConnection := FConnProvider.GetConnection;
-  CheckNotNull(lConnection, 'Falha no retorno da conexão');
-  CheckTrue(lConnection.IsClosed, 'Conexao está aberta');
+  vConnection1 := FConnProvider.GetConnection;
+  CheckNotNull(vConnection1, 'Falha no retorno da conexão #1');
+  CheckEquals(1, FConnProvider.ActiveConnections);
+
+  vConnection2 := FConnProvider.GetConnection;
+  CheckNotNull(vConnection2, 'Falha no retorno da conexão #2');
+  CheckEquals(2, FConnProvider.ActiveConnections);
 end;
 
 procedure TTestConnectionProvider.TestGetConnectionObjAvailableInPool;
+var
+  vConnection1, vConnection2: IConnectionProviderItem;
 begin
-  // TODO: Implementar teste
+  vConnection1 := FConnProvider.GetConnection;
+  CheckNotNull(vConnection1, 'Falha no retorno da conexão #1');
+  CheckEquals(1, FConnProvider.ActiveConnections);
+  vConnection1 := nil; // A conexão foi liberada mas deve permanecer no Pool
+
+  vConnection2 := FConnProvider.GetConnection;
+  CheckNotNull(vConnection2, 'Falha no retorno da conexão #2');
+  CheckEquals(1, FConnProvider.ActiveConnections);
 end;
 
 procedure TTestConnectionProvider.TestGetConnectionObjUnavailableInPool;
+var
+  vConnection1, vConnection2: IConnectionProviderItem;
 begin
-  // TODO: Implementar teste
+  vConnection1 := FConnProvider.GetConnection;
+  CheckNotNull(vConnection1, 'Falha no retorno da conexão #1');
+
+  vConnection2 := FConnProvider.GetConnection;
+  CheckNotNull(vConnection2, 'Falha no retorno da conexão #2');
+
+  CheckFalse(vConnection1 = vConnection2, 'O ConnectionProvider retornou a mesma conexão');
+  CheckEquals(2, FConnProvider.ActiveConnections, 'Número de conexões errado');
 end;
 
 procedure TTestConnectionProvider.TestGetConnectionBeyoundMaxSize;
+var
+  vConnections: array of IConnectionProviderItem;
+  vAnotherConnection: IConnectionProviderItem;
+  i: Integer;
 begin
-  // TODO: Implementar teste
-end;
+  SetLength(vConnections, FConnProvider.PoolSize);
+  for i := Low(vConnections) to High(vConnections) do
+  begin
+    vConnections[i] := FConnProvider.GetConnection;
+    CheckNotNull(vConnections[i], 'Falha no retorno da conexão #'+IntToStr(i+1));
+  end;
 
-procedure TTestConnectionProvider.TestCloseConnection;
-begin
-  // TODO: Implementar teste
-end;
-
-procedure TTestConnectionProvider.TestCloseConnectionNotFound;
-begin
-  // TODO: Implementar teste
-end;
-
-procedure TTestConnectionProvider.TestCloseConnectionAlreadyClosed;
-begin
-  // TODO: Implementar teste
-end;
-
-procedure TTestConnectionProvider.TestClose;
-begin
-  // TODO: Implementar teste
+  ExpectedException := EInfraConnPoolException;
+  vAnotherConnection := FConnProvider.GetConnection;
+  ExpectedException := nil;
 end;
 
 initialization

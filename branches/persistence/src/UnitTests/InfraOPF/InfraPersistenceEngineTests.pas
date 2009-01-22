@@ -40,7 +40,8 @@ var
 begin
   inherited;
   vConfig := TTestsUtil.GetNewConfiguration;
-  FPersistenceEngine := TPersistenceEngine.Create(vConfig);
+  FPersistenceEngine := TPersistenceEngine.Create(vConfig,
+    TConnectionProvider.Create(vConfig));
 end;
 
 procedure TTestPersistenceEngine.TearDown;
@@ -52,7 +53,7 @@ end;
 procedure TTestPersistenceEngine.TestCreate;
 begin
   ExpectedException := EInfraArgumentError;
-  TPersistenceEngine.Create(nil);
+  TPersistenceEngine.Create(nil, nil);
   ExpectedException := nil;
 end;
 
@@ -74,7 +75,6 @@ procedure TTestPersistenceEngine.TestLoadWithInvalidArgs1;
 var
   List: IInfraList;
 begin
-//  List := ??
   ExpectedException := EInfraArgumentError;
   FPersistenceEngine.Load(nil, List);
   ExpectedException := nil;

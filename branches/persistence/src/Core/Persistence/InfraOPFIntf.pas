@@ -18,6 +18,7 @@ type
   EPersistenceEngineError = class(EInfraPersistenceError);
   EInfraParserError = class(EInfraError);
   EInfraTransactionError = class(EInfraError);
+  EInfraConnPoolException = class(EInfraError);
 
   ISession = interface;
   ISQLCommandParams = interface;
@@ -48,15 +49,29 @@ type
 
   ITransaction = interface(IInterface)
   ['{B9D06F2F-3F18-4AFE-85BF-9525AC1F4773}']
-  procedure BeginTransaction(pTransactIsolationLevel: TInfraTransIsolatLevel = tilReadCommitted);
-  procedure Commit;
-  procedure Rollback;
+    procedure BeginTransaction(pTransactIsolationLevel: TInfraTransIsolatLevel = tilReadCommitted);
+    procedure Commit;
+    procedure Rollback;
+  end;
+
+  IConnectionProviderItem = interface
+  ['{0580C47C-F40C-48A6-A60E-704EA32DE666}']
+    function GetLastAccess: TDateTime;
+    function GetRefCount: Integer;
+
+    function Connection: IZConnection;
+
+    property LastAccess: TDateTime read GetLastAccess;
+    property RefCount: Integer read GetRefCount;
   end;
 
   IConnectionProvider = interface(IBaseElement)
     ['{E4D7AF34-1750-461D-90E3-15F0DFD3167E}']
-    function GetConnection: IZConnection;
-    procedure ReleaseConnection;
+    function GetActiveConnections: Integer;
+    function GetPoolSize: Integer;
+    function GetConnection: IConnectionProviderItem;
+    property ActiveConnections: Integer read GetActiveConnections;
+    property PoolSize: Integer read GetPoolSize;
   end;
 
   IInfraPersistenceService = interface(IInterface)
@@ -134,6 +149,9 @@ type
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
+    procedure BeginTransaction(pTransactIsolationLevel: TInfraTransIsolatLevel = tilReadCommitted);
+    procedure Commit;
+    procedure Rollback;
   end;
 
   ISessionFactory = interface(IBaseElement)

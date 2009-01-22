@@ -12,6 +12,7 @@ type
   private
     FClosed: Boolean;
     FConfiguration: IConfiguration;
+    FConnectionProvider: IConnectionProvider;
     function GetIsClosed: Boolean;
   protected
     function OpenSession: ISession; overload;
@@ -26,7 +27,9 @@ implementation
 uses
   InfraOPFConsts,
   InfraOPFSession,
-  InfraCommonIntf;
+  InfraCommonIntf,
+  InfraOPFConnectionProvider,
+  InfraOPFEngine;
 
 { TSessionFactory }
 
@@ -39,6 +42,7 @@ constructor TSessionFactory.Create(pConfiguration: IConfiguration);
 begin
   inherited Create;
   FConfiguration := pConfiguration;
+  FConnectionProvider := TConnectionProvider.Create(FConfiguration);
 end;
 
 {**
@@ -59,7 +63,7 @@ end;
 }
 function TSessionFactory.OpenSession: ISession;
 begin
-  Result := TSession.Create(FConfiguration);
+  Result := TSession.Create(TPersistenceEngine.Create(FConfiguration, FConnectionProvider));
 end;
 
 end.
