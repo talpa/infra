@@ -19,7 +19,7 @@ type
   // classe que gerencia o pool de conexões
   TConnectionProvider = class(TBaseElement, IConnectionProvider)
   private
-    FConnections: array of IConnectionProviderItem;
+    FItems: TArrayConnectionItem;
     FPoolSize: Integer;
     FTimeout: Int64;
     FCleanupThread: TCleanupThread;
@@ -40,9 +40,11 @@ type
     //that implements the IPoolConnection interface.
     //This object can be a data module, as was
     //done in this example.
-    function GetConnection: IConnectionProviderItem;
+    function Acquire: IConnectionItem;
     procedure Lock;
     procedure UnLock;
+    function GetInternallEvent: TEvent;
+    function GetItems: TArrayConnectionItem;
     property ActiveConnections: Integer read GetActiveConnections;
     property PoolSize: Integer read GetPoolSize;
   public
@@ -59,7 +61,7 @@ type
   TCleanupThread = class(TThread)
   private
     FCleanupDelay: Integer;
-    FConnectionPool: TConnectionProvider;
+    FConnectionPool: IConnectionProvider;
   protected
     // Quando a thread é criada, o campo secao critica irá ser definido para
     // a secao critica do pool. Esta secao critica é usada para sincronizar
@@ -67,12 +69,12 @@ type
     procedure Execute; override;
     constructor Create(CreateSuspended: Boolean;
       const CleanupDelayMinutes: Integer);
-    property ConnectionPool: TConnectionProvider read FConnectionPool
+    property ConnectionPool: IConnectionProvider read FConnectionPool
       write FConnectionPool;
   end;
 
   /// Classe que implementa a interface IInfraDBConnection.
-  TConnectionProviderItem = class(TInterfacedObject, IInterface, IConnectionProviderItem)
+  TConnectionProviderItem = class(TInterfacedObject, IInterface, IConnectionItem)
   private
     { Private declarations }
     FConnection: IZConnection;
@@ -83,6 +85,8 @@ type
     /// Este semaforo aponta para o semáforo do pool. Ele irá ser usado para chamar
     /// ReleaseSemaphore do método _Release desta classe.
     FSemaphore: THandle;
+    function ConvertIsolationLevel(
+      pIsolationLevel: TIsolationLevel): TZTransactIsolationLevel;
   protected
     function _AddRef: Integer; stdcall;
     function _Release: Integer; stdcall;
@@ -90,6 +94,7 @@ type
     function GetLastAccess: TDateTime;
     function GetRefCount: Integer;
     function Connection: IZConnection;
+    procedure Configure(pIsolationLevel: TIsolationLevel);
   public
     { Public declarations }
     constructor Create(const pConnectionString: string;
@@ -102,7 +107,8 @@ implementation
 uses
   InfraCommonIntf,
   InfraOPFConsts,
-  DateUtils;
+  DateUtils,
+  TypInfo;
 
 { TDBXConnectionPool }
 
@@ -115,16 +121,16 @@ begin
     raise EInfraArgumentError.Create('pConfiguration');
 
   FConnectionString := BuildConnectionString(pConfiguration);
-  FPoolSize := pConfiguration.GetValue(cCONFIGKEY_POOLSIZE, DefaultPoolSize);
-  FTimeout := pConfiguration.GetValue(cCONFIGKEY_CONNECTTIMEOUT, DefaultGetConnTimeoutMS);
-  vCleanupDelayMinutes := pConfiguration.GetValue(cCONFIGKEY_CLEANUPDELAYMINUTES, DefaultCleanupConnMIN);
+  FPoolSize := pConfiguration.GetValue(cCONFIGKEY_POOLSIZE, cDefaultPoolSize);
+  FTimeout := pConfiguration.GetValue(cCONFIGKEY_CONNECTTIMEOUT, cDefaultGetConnTimeoutMS);
+  vCleanupDelayMinutes := pConfiguration.GetValue(cCONFIGKEY_CLEANUPDELAYMINUTES, cDefaultCleanupConnMIN);
 
   FSemaphore := CreateSemaphore(nil, FPoolSize, FPoolSize, '');
   FCriticalSection := TCriticalSection.Create;
   FInternallEvent := TEvent.Create(nil, False, False, '');
   
   // Define o tamanho do pool
-  SetLength(FConnections, FPoolSize);
+  SetLength(FItems, FPoolSize);
   // Cria e inicia a thread de limpeza
   FCleanupThread := TCleanupThread.Create(True, vCleanupDelayMinutes);
   with FCleanupThread do
@@ -157,9 +163,9 @@ begin
     // Libera todas as connections modules restantes.
     Lock;
     try
-      for i := Low(FConnections) to High(FConnections) do
-        FConnections[i] := nil;
-      SetLength(FConnections, 0);
+      for i := Low(FItems) to High(FItems) do
+        FItems[i] := nil;
+      SetLength(FItems, 0);
     finally
       Unlock;
     end;
@@ -197,7 +203,7 @@ begin
   FCriticalSection.Leave;
 end;
 
-function TConnectionProvider.GetConnection: IConnectionProviderItem;
+function TConnectionProvider.Acquire: IConnectionItem;
 var
   vI: Integer;
   vConnection: TConnectionProviderItem;
@@ -206,32 +212,32 @@ begin
   Result := nil;
   vWaitResult := WaitForSingleObject(FSemaphore, FTimeout);
   if vWaitResult <> WAIT_OBJECT_0 then
-    raise EInfraConnPoolException.Create('Connection pool timeout. ' +
+    raise EPersistenceConnectionProviderError.Create('Connection pool timeout. ' +
       'Cannot obtain a connection');
   Lock;
   try
-    for vI := Low(FConnections) to High(FConnections) do
+    for vI := Low(FItems) to High(FItems) do
     begin
-      // Se o FConnections[i] = nil, o IPoolConnection ainda nao foi criado. Então
-      // cria-se, inicializa e o retorna. Se FConnections[i] <> nil, então
+      // Se o FItems[i] = nil, o IPoolConnection ainda nao foi criado. Então
+      // cria-se, inicializa e o retorna. Se FItems[i] <> nil, então
       // verifica se seu RefCount é 1 (somente o pool está fazendo referencia a
       // ele).
-      if FConnections[vI] = nil then
+      if FItems[vI] = nil then
       begin
         vConnection := TConnectionProviderItem.Create(FConnectionString,
           Self.FCriticalSection,
           Self.FSemaphore);
         vConnection.Connection.Open;
-        FConnections[vI] := vConnection;
-        Result := FConnections[vI];
+        FItems[vI] := vConnection;
+        Result := FItems[vI];
         Break;
       end
       else
-      // se FConnections[i].RefCount = 1 então a conexão está disponível para
+      // se FItems[i].RefCount = 1 então a conexão está disponível para
       // retorná-la.
-      if FConnections[vI].RefCount = 1 then
+      if FItems[vI].RefCount = 1 then
       begin
-        Result := FConnections[vI];
+        Result := FItems[vI];
         Break;
       end;
     end; //for
@@ -245,14 +251,24 @@ var
   i: Integer;
 begin
   Result := 0;
-  for i := Low(FConnections) to High(FConnections) do
-    if Assigned(FConnections[i]) then
+  for i := Low(FItems) to High(FItems) do
+    if Assigned(FItems[i]) then
       Inc(Result);
 end;
 
 function TConnectionProvider.GetPoolSize: Integer;
 begin
-  Result := Length(FConnections);
+  Result := Length(FItems);
+end;
+
+function TConnectionProvider.GetInternallEvent: TEvent;
+begin
+  Result := FInternallEvent;
+end;
+
+function TConnectionProvider.GetItems: TArrayConnectionItem;
+begin
+  Result := FItems;
 end;
 
 { TCleanupThread }
@@ -281,7 +297,7 @@ begin
     // espera pelo periodo definido em FCleanupDelay
     // InternalEvent foi assinalado, está em erro, ou abandonado,
     // são situações nas quais a thread deveria terminar.
-    if FConnectionPool.FInternallEvent.WaitFor(WaitMinutes) <> wrTimeout then
+    if FConnectionPool.GetInternallEvent.WaitFor(WaitMinutes) <> wrTimeout then
       Exit;
 
     if Terminated then
@@ -292,19 +308,19 @@ begin
     begin
       Lock;
       try
-        for i := Low(FConnections) to High(FConnections) do
+        for i := Low(GetItems) to High(GetItems) do
         begin
           // Libera a conexão se ela existir, nao tem referencias externas e nao
           // foi recentemente usada.
-          vActiveConnection := FConnections[i] <> nil;
+          vActiveConnection := GetItems[i] <> nil;
           if vActiveConnection then
           begin
-            vNoMoreReferences := FConnections[i].RefCount = 1;
-            vElapsedTime := MinutesBetween(FConnections[i].LastAccess, Now);
+            vNoMoreReferences := GetItems[i].RefCount = 1;
+            vElapsedTime := MinutesBetween(GetItems[i].LastAccess, Now);
 
             if (vNoMoreReferences) and (vElapsedTime >= FCleanupDelay) then
               // Fecha a conexao
-              FConnections[i] := nil;
+              GetItems[i] := nil;
           end;
         end;
       finally
@@ -391,4 +407,38 @@ begin
   inherited;
 end;
 
+procedure TConnectionProviderItem.Configure(
+  pIsolationLevel: TIsolationLevel);
+begin
+  with FConnection do
+  begin
+    SetTransactionIsolation(ConvertIsolationLevel(pIsolationLevel));
+    SetAutoCommit(pIsolationLevel = tilNone);
+  end;
+end;
+
+{**
+  Converte TIsolationLevel para TZTransactIsolationLevel.
+  Efetua a conversão de maneira segura
+  @param pTransIsolationLevel Nível de isolamento do tipo TIsolationLevel
+  @return Retorna o nível de isolamento da transação já convertido
+}
+function TConnectionProviderItem.ConvertIsolationLevel(
+  pIsolationLevel: TIsolationLevel): TZTransactIsolationLevel;
+begin
+  case pIsolationLevel of
+    tilNone: Result := tiNone;
+    tilReadUncommitted: Result := tiReadUnCommitted;
+    tilReadCommitted: Result := tiReadCommitted;
+    tilRepeatableRead: Result := tiRepeatableRead;
+    tilSerializable: Result := tiSerializable;
+  else
+    raise EPersistenceConnectionProviderError.CreateFmt(
+      cErrorTranIsolLevelUnknown,
+      [GetEnumName(TypeInfo(TIsolationLevel), Ord(pIsolationLevel))]);
+  end;
+end;
+
 end.
+
+

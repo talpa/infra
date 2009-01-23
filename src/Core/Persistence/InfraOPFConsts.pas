@@ -24,17 +24,18 @@ const
   cGlobalMaxConnections = 30;
 
   // Tamanho padrão do Pool
-  DefaultPoolSize = 10;
+  cDefaultPoolSize = 10;
   // Por default, 5 minutos é o tempo q ele vai esperar até liberar uma conexão inativa
-  DefaultCleanupConnMIN = 5;
+  cDefaultCleanupConnMIN = 5;
   // 10s é o tempo que ele vai esperar que uma conexao seja liberada quando
   // solicitada uma nova conexao e o pool estiver cheio, antes de dar erro de
   // timeout
-  DefaultGetConnTimeoutMS = 10000;
+  cDefaultGetConnTimeoutMS = 10000;
 
 resourcestring
   // Erros da persistência
   cErrorPersistenceWithoutConfig = 'Configuration não definido no %s';
+  cErrorPersistenceWithoutConnProvider  = 'ConnectionProvider não definido no %s';
   cErrorConnectionNotFoundOnPool = 'Conexão não encontrada no Pool deste Provider';
   cErrorConnectionsLimitExceeded = 'Número máximo de conexões excedido';
   cErrorAlreadyClosedConnection = 'Conexão já fechada';
@@ -51,7 +52,7 @@ resourcestring
   cErrorParamParserInvalidParam = 'Parâmetro inválido';
   cErrorNotInTransaction = 'Não há nenhuma transação em andamento';
   cErrorAlreadyInTransaction = 'Já existe uma transação em andamento';
-  cErrorTranIsolLevelUnknown = 'Nível de isolamento de Transação desconhecido';
+  cErrorTranIsolLevelUnknown = 'Nível de isolamento de Transação desconhecido: %s';
 
 implementation
 

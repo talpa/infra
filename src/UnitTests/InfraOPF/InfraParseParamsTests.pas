@@ -132,7 +132,7 @@ procedure TTestSQLParamsParser.TestParserParamNoName;
 const
   cSql = 'update tabela set id = :id, codigo = :codigo, nome = :nome where id = :';
 begin
-  ExpectedException := EInfraParserError;
+  ExpectedException := EPersistenceParserError;
   FParser.Parse(cSql);
   ExpectedException := nil;
 end;
@@ -161,7 +161,7 @@ procedure TTestSQLParamsParser.TestParserMacroNoName;
 const
   cSql = 'update # set codigo = :codigo, nome = :nome where id = :id';
 begin
-  ExpectedException := EInfraParserError;
+  ExpectedException := EPersistenceParserError;
   FParser.Parse(cSql);
   ExpectedException := nil;
 end;

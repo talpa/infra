@@ -5,6 +5,7 @@ interface
 
 uses
   Classes,
+  SyncObjs,
   {Infra}
   InfraCommonIntf,
   InfraValueTypeIntf,
@@ -16,15 +17,14 @@ type
   EPersistenceConnectionProviderError = class(EInfraPersistenceError);
   EPersistenceTemplateError = class(EInfraPersistenceError);
   EPersistenceEngineError = class(EInfraPersistenceError);
-  EInfraParserError = class(EInfraError);
-  EInfraTransactionError = class(EInfraError);
-  EInfraConnPoolException = class(EInfraError);
+  EPersistenceParserError = class(EInfraPersistenceError);
+  EPersistenceTransactionError = class(EInfraPersistenceError);
 
   ISession = interface;
   ISQLCommandParams = interface;
   ISessionFactory = interface;
 
-  TInfraTransIsolatLevel = (tilNone, tilReadUncommitted, tilReadCommitted,
+  TIsolationLevel = (tilNone, tilReadUncommitted, tilReadCommitted,
     tilRepeatableRead, tilSerializable);
 
   IConfiguration = interface(IBaseElement)
@@ -49,28 +49,33 @@ type
 
   ITransaction = interface(IInterface)
   ['{B9D06F2F-3F18-4AFE-85BF-9525AC1F4773}']
-    procedure BeginTransaction(pTransactIsolationLevel: TInfraTransIsolatLevel = tilReadCommitted);
+    procedure BeginTransaction(pTransactIsolationLevel: TIsolationLevel = tilReadCommitted);
     procedure Commit;
     procedure Rollback;
   end;
 
-  IConnectionProviderItem = interface
+  IConnectionItem = interface
   ['{0580C47C-F40C-48A6-A60E-704EA32DE666}']
     function GetLastAccess: TDateTime;
     function GetRefCount: Integer;
-
     function Connection: IZConnection;
-
+    procedure Configure(pIsolationLevel: TIsolationLevel);
     property LastAccess: TDateTime read GetLastAccess;
     property RefCount: Integer read GetRefCount;
   end;
+
+  TArrayConnectionItem = array of IConnectionItem;
 
   IConnectionProvider = interface(IBaseElement)
     ['{E4D7AF34-1750-461D-90E3-15F0DFD3167E}']
     function GetActiveConnections: Integer;
     function GetPoolSize: Integer;
-    function GetConnection: IConnectionProviderItem;
+    procedure Lock;
+    procedure UnLock;
+    function GetItems: TArrayConnectionItem;
+    function Acquire: IConnectionItem;
     property ActiveConnections: Integer read GetActiveConnections;
+    function GetInternallEvent: TEvent;
     property PoolSize: Integer read GetPoolSize;
   end;
 
@@ -149,7 +154,7 @@ type
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
-    procedure BeginTransaction(pTransactIsolationLevel: TInfraTransIsolatLevel = tilReadCommitted);
+    procedure BeginTransaction(pTransactIsolationLevel: TIsolationLevel = tilReadCommitted);
     procedure Commit;
     procedure Rollback;
   end;
@@ -238,4 +243,6 @@ initialization
   InfraOPFAnnotation.RegisterZeosTypeMapping;
 
 end.
+
+
 
