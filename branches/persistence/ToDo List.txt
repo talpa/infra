@@ -1,3 +1,6 @@
+Duvidas:
+a) Qual a necessidade o IsClosed e Close no SessionFactory?
+
 1) Colocar propriedade LegacyConnection no Configuration para que o programador possa passar um connection já existente na aplicação;
    O configuration.clear precisa por para nil o legacyconnection
 

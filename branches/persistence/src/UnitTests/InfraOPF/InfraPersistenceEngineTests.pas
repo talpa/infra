@@ -16,7 +16,6 @@ type
     procedure SetUp; override;
     procedure TearDown; override;
   published
-    procedure TestCreate;
     procedure TestExecuteWithInvalidArgs;
     procedure TestExecuteAllWithInvalidArgs;
     procedure TestLoadWithInvalidArgs1;
@@ -48,13 +47,6 @@ procedure TTestPersistenceEngine.TearDown;
 begin
   FPersistenceEngine := nil;
   inherited;
-end;
-
-procedure TTestPersistenceEngine.TestCreate;
-begin
-  ExpectedException := EInfraArgumentError;
-  TPersistenceEngine.Create(nil, nil);
-  ExpectedException := nil;
 end;
 
 procedure TTestPersistenceEngine.TestExecuteWithInvalidArgs;

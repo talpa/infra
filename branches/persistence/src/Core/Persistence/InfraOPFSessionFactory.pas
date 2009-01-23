@@ -4,8 +4,7 @@ interface
 
 uses
   InfraCommon,
-  InfraOPFIntf,
-  ZDbcIntfs;
+  InfraOPFIntf;
 
 type
   TSessionFactory = class(TBaseElement, ISessionFactory)
@@ -15,7 +14,7 @@ type
     FConnectionProvider: IConnectionProvider;
     function GetIsClosed: Boolean;
   protected
-    function OpenSession: ISession; overload;
+    function OpenSession: ISession;
     procedure Close;
     property isClosed: Boolean read GetIsClosed;
   public
@@ -25,18 +24,10 @@ type
 implementation
 
 uses
-  InfraOPFConsts,
   InfraOPFSession,
-  InfraCommonIntf,
-  InfraOPFConnectionProvider,
-  InfraOPFEngine;
+  InfraOPFConnectionProvider;
 
 { TSessionFactory }
-
-procedure TSessionFactory.Close;
-begin
-  FClosed := True;
-end;
 
 constructor TSessionFactory.Create(pConfiguration: IConfiguration);
 begin
@@ -46,9 +37,8 @@ begin
 end;
 
 {**
-  Retorna se a fábrica está fechada
-
-  @return Retorna True se a fábrica estiver fechada
+  Define se a fábrica está fechada
+  @return Retorna verdadeiro caso a fábrica de sessões esteja fechada
 }
 function TSessionFactory.GetIsClosed: Boolean;
 begin
@@ -56,14 +46,18 @@ begin
 end;
 
 {**
-  Cria uma nova Session. Cria uma nova conexao
-  Chame OpenSession para criar uma nova instancia de Session.
-
+  Abre uma nova Session passando um PersistenceEngine.
+  Chame OpenSession para criar uma nova instancia do Session.
   @return Retorna um novo objeto Session
 }
 function TSessionFactory.OpenSession: ISession;
 begin
-  Result := TSession.Create(TPersistenceEngine.Create(FConfiguration, FConnectionProvider));
+  Result := TSession.Create(FConfiguration, FConnectionProvider);
+end;
+
+procedure TSessionFactory.Close;
+begin
+  FClosed := True;
 end;
 
 end.

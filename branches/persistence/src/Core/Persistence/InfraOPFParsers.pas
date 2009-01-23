@@ -79,7 +79,7 @@ begin
     // Verifica se existe algum(a) param/macro sem nome
     vRegEx.Expression := '[:#]$|\s[:#]\s';
     if vRegEx.Exec (vSql) then
-      raise EInfraParserError.Create(cErrorParamParserInvalidParam);
+      raise EPersistenceParserError.Create(cErrorParamParserInvalidParam);
 
     // Depois de remover do texto as partes a serem ignoradas,
     // procuramos por parametros e macros válidos

@@ -4,7 +4,6 @@ interface
 
 uses
   SysUtils,
-  ZDbcIntfs,
   InfraCommon,
   InfraCommonIntf,
   InfraOPFIntf,
@@ -26,12 +25,12 @@ type
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
-    procedure BeginTransaction(pTransIsolatLevel: TInfraTransIsolatLevel =
-        tilReadCommitted);
+    procedure BeginTransaction(pIsolationLevel: TIsolationLevel = tilReadCommitted);
     procedure Commit;
     procedure Rollback;
   public
-    constructor Create(pPersistenceEngine: IPersistenceEngine); reintroduce;
+    constructor Create(const pConfiguration: IConfiguration;
+      const pConnectionProvider: IConnectionProvider); reintroduce;
   end;
 
 implementation
@@ -40,19 +39,26 @@ uses
   InfraConsts,
   List_SQLCommandList,
   InfraOPFSqlCommands,
-  InfraOPFConsts;
+  InfraOPFConsts, InfraOPFEngine;
 
 { TSession }
 {*
 
-  @param pPersistenceEngine   ParameterDescription
+  @param pConfiguration   Configurações gerais para o Session e agregados
+  @param pConnectionProvider   Provedor de Conexões ao banco
 }
-constructor TSession.Create(pPersistenceEngine: IPersistenceEngine);
+constructor TSession.Create(const pConfiguration: IConfiguration;
+  const pConnectionProvider: IConnectionProvider);
 begin
-  if not Assigned(pPersistenceEngine) then
-    raise EInfraArgumentError.Create('pPersistenceEngine');
   inherited Create;
-  FPersistenceEngine := pPersistenceEngine;
+  if not Assigned(pConfiguration) then
+    raise EInfraArgumentError.CreateFmt(cErrorPersistenceWithoutConfig,
+      ['TSession.Create']);
+  if not Assigned(pConnectionProvider) then
+    raise EInfraArgumentError.CreateFmt(cErrorPersistenceWithoutConnProvider,
+      ['TSession.Create']);
+  FPersistenceEngine := TPersistenceEngine.Create(pConfiguration,
+    pConnectionProvider);
   FPendingCommands := TSQLCommandList.Create;
 end;
 
@@ -167,12 +173,12 @@ end;
 
 {**
   Inicia uma nova transação nesta unidade de trabalho
-  @param pTransIsolatLevel Nível de isolamento desejado
+  @param pIsolationLevel Nível de isolamento desejado
 }
-procedure TSession.BeginTransaction(pTransIsolatLevel: TInfraTransIsolatLevel =
-    tilReadCommitted);
+procedure TSession.BeginTransaction(pIsolationLevel: TIsolationLevel =
+  tilReadCommitted);
 begin
-  (FPersistenceEngine as ITransaction).BeginTransaction(pTransIsolatLevel);
+  (FPersistenceEngine as ITransaction).BeginTransaction(pIsolationLevel);
 end;
 
 {**
@@ -201,4 +207,3 @@ begin
 end;
 
 end.
-
