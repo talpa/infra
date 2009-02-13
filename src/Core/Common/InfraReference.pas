@@ -53,12 +53,15 @@ begin
   X := Pointer(Sender as IInterface);
   for i := FReferences.Count -1 downto 0 do
   begin
-    P := FReferences.ValueOfPosition(i);
-    if (FReferences.IndexOfPosition(i) = X) or
-      (Pointer(IInterface(P^) as IInterface) = X) then
+    with FReferences do
     begin
-      P^ := nil;
-      FReferences.DeletePosition(i);
+      P := ValueOfPosition(i);
+      if (IndexOfPosition(i) = X) or
+        (Pointer(IInterface(P^) as IInterface) = X) then
+      begin
+        P^ := nil;
+        DeletePosition(i);
+      end;
     end;
   end;
 end;

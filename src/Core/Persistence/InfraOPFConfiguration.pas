@@ -39,8 +39,8 @@ type
     function BuildSessionFactory: ISessionFactory;
     function Clone: IConfiguration;
     {IXmlSerializable members}
-    procedure WriteXml(pXmlDoc: IXmlDocument);
-    procedure ReadXml(pXmlDoc: IXmlDocument);
+    procedure WriteXml(const pXmlDoc: IXmlDocument);
+    procedure ReadXml(const pXmlDoc: IXmlDocument);
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -186,7 +186,7 @@ end;
   Desserializa o objeto, lendo as configurações de um arquivo Xml
   @param pXmlDoc Objeto que implemente IXmlDocument que contenha as informações a serem lidas
 }
-procedure TConfiguration.ReadXml(pXmlDoc: IXmlDocument);
+procedure TConfiguration.ReadXml(const pXmlDoc: IXmlDocument);
 var
   i: Integer;
 begin
@@ -201,7 +201,7 @@ end;
   Serializa o objeto para um Xml
   @param pXmlDoc Objeto para o qual o objeto será serializado
 }
-procedure TConfiguration.WriteXml(pXmlDoc: IXmlDocument);
+procedure TConfiguration.WriteXml(const pXmlDoc: IXmlDocument);
 var
   i: Integer;
 begin

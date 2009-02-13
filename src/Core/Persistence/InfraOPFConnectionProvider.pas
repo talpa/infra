@@ -32,7 +32,7 @@ type
     FCriticalSection: TCriticalSection;
     FInitialized: Boolean;
     FInternallEvent: TEvent;
-    function BuildConnectionString(pConfiguration: IConfiguration): string;
+    function BuildConnectionString(const pConfiguration: IConfiguration): string;
     function GetActiveConnections: Integer;
     function GetPoolSize: Integer;
   protected
@@ -183,7 +183,7 @@ end;
   @return Retorna uma string no formato
     zdbc:<driver>://<hostname>/<databasename>?username=<username>;password=<password>
 *}
-function TConnectionProvider.BuildConnectionString(pConfiguration:
+function TConnectionProvider.BuildConnectionString(const pConfiguration:
     IConfiguration): string;
 begin
   Result := 'zdbc:' + pConfiguration.GetAsString(cCONFIGKEY_DRIVER) +
@@ -206,7 +206,7 @@ end;
 function TConnectionProvider.Acquire: IConnectionItem;
 var
   vI: Integer;
-  vConnection: TConnectionProviderItem;
+  vConnection: IConnectionItem;
   vWaitResult: Integer;
 begin
   Result := nil;

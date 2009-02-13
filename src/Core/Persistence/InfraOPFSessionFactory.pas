@@ -18,7 +18,7 @@ type
     procedure Close;
     property isClosed: Boolean read GetIsClosed;
   public
-    constructor Create(pConfiguration: IConfiguration); reintroduce;
+    constructor Create(const pConfiguration: IConfiguration); reintroduce;
   end;
 
 implementation
@@ -29,7 +29,7 @@ uses
 
 { TSessionFactory }
 
-constructor TSessionFactory.Create(pConfiguration: IConfiguration);
+constructor TSessionFactory.Create(const pConfiguration: IConfiguration);
 begin
   inherited Create;
   FConfiguration := pConfiguration;
