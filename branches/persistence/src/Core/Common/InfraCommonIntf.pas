@@ -645,8 +645,8 @@ type
 
   IXmlSerializable = interface
     ['{10590A29-B7A7-47E6-A1A9-3363EBE8AA99}']
-    procedure WriteXml(pXmlDoc: IXmlDocument);
-    procedure ReadXml(pXmlDoc: IXmlDocument);
+    procedure WriteXml(const pXmlDoc: IXmlDocument);
+    procedure ReadXml(const pXmlDoc: IXmlDocument);
   end;
 
 procedure RegisterApplicationContext(const Context: IApplicationContext);

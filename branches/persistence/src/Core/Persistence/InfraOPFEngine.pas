@@ -26,8 +26,8 @@ type
     function GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery; const pResultSet: IZResultSet): IInfraObject;
     procedure DoLoad(const pStatement: IZPreparedStatement; const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
     function ReadTemplate(const pSqlCommandName: string): string;
-    function InternallExecute(pSqlCommand: ISqlCommand;
-      pConnection: IConnectionItem): Integer;
+    function InternallExecute(const pSqlCommand: ISqlCommand;
+      const pConnection: IZConnection): Integer;
     procedure CheckInTransaction;
     function InTransaction: Boolean;
     function GetCurrentConnectionItem: IConnectionItem;
@@ -41,8 +41,8 @@ type
     procedure Commit;
     procedure Rollback;
   public
-    constructor Create(pConfiguration: IConfiguration;
-      pConnectionProvider: IConnectionProvider); reintroduce;
+    constructor Create(const pConfiguration: IConfiguration;
+      const pConnectionProvider: IConnectionProvider); reintroduce;
   end;
 
 implementation
@@ -60,8 +60,8 @@ uses
   Cria uma nova instância de TPersistenceEngine
   @param pConfiguration   ParameterDescription
 }
-constructor TPersistenceEngine.Create(pConfiguration: IConfiguration;
-  pConnectionProvider: IConnectionProvider);
+constructor TPersistenceEngine.Create(const pConfiguration: IConfiguration;
+  const pConnectionProvider: IConnectionProvider);
 begin
   inherited Create;
   FConfiguration := pConfiguration;
@@ -99,8 +99,8 @@ end;
   @param pConnection Conexão na qual os comandos serão executados
   @return Retorna a quantidade de registros afetados pela atualização.
 }
-function TPersistenceEngine.InternallExecute(pSqlCommand: ISqlCommand;
-  pConnection: IConnectionItem): Integer;
+function TPersistenceEngine.InternallExecute(const pSqlCommand: ISqlCommand;
+  const pConnection: IZConnection): Integer;
 var
   vSQL: string;
   vStatement: IZPreparedStatement;
@@ -111,7 +111,7 @@ begin
   // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   //   antes de chamar o PrepareStatementWithParams
   // Solicita um connection e prepara a SQL
-  vStatement := pConnection.Connection.PrepareStatementWithParams(
+  vStatement := pConnection.PrepareStatementWithParams(
     vSQL, FParser.GetParams);
   // Seta os parametros e executa
   SetParameters(vStatement, pSqlCommand.Params);
@@ -130,7 +130,7 @@ begin
     raise EInfraArgumentError.CreateFmt(cErrorPersistEngineWithoutSQLCommand,
       ['TPersistenceEngine.Execute']);
 
-  Result := InternallExecute(pSqlCommand, GetCurrentConnectionItem);
+  Result := InternallExecute(pSqlCommand, GetCurrentConnectionItem.Connection);
 end;
 
 {**
@@ -142,15 +142,15 @@ end;
 function TPersistenceEngine.ExecuteAll(
   const pSqlCommands: ISQLCommandList): Integer;
 var
-  vI: integer;
-  vConnectionItem: IConnectionItem;
+  vI: Integer;
+  vConnection: IZConnection;
 begin
   if not Assigned(pSqlCommands) then
     raise EInfraArgumentError.Create(cErrorPersistEngineWithoutSQLCommands);
   Result := 0;
-  vConnectionItem := GetCurrentConnectionItem;
+  vConnection := GetCurrentConnectionItem.Connection;
   for vI := 0 to pSqlCommands.Count - 1 do
-    Result := Result + InternallExecute(pSqlCommands[vI], vConnectionItem);
+    Result := Result + InternallExecute(pSqlCommands[vI], vConnection);
 end;
 
 {**
@@ -214,12 +214,14 @@ begin
   // *** 2) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   // antes de chamar o PrepareStatementWithParams
   vConnection := GetCurrentConnectionItem;
+  vStatement := nil;
   try
     vStatement := vConnection.Connection.PrepareStatementWithParams(vSQL, FParser.GetParams);
     SetParameters(vStatement, pSqlCommand.Params);
     DoLoad(vStatement, pSqlCommand, pList);
   finally
-    vStatement.Close;
+    if Assigned(vStatement) then
+      vStatement.Close;
   end;
 end;
 
@@ -236,6 +238,8 @@ var
   vAttribute: IInfraType;
   vZeosType: IZTypeAnnotation;
   vAliasName: string;
+  vTypeInfo: IClassInfo;
+  vMetadata: IZResultSetMetadata;
 begin
   // *** Será que isso deveria estar aqui?????
   //  if IsEqualGUID(pSqlCommand.GetClassID, InfraConsts.NullGUID) then
@@ -244,20 +248,21 @@ begin
   Result := TypeService.CreateInstance(pSqlCommand.GetClassID) as IInfraObject;
   if Assigned(Result) then
   begin
+    vMetadata := pResultSet.GetMetadata;
+    vTypeInfo := Result.TypeInfo;
     // A lista de colunas do ResultSet.GetMetadata do Zeos começa do 1.
     for vIndex := 1 to pResultSet.GetMetadata.GetColumnCount do
     begin
-      vAliasName := pResultSet.GetMetadata.GetColumnLabel(vIndex);
-      vAttribute := Result.TypeInfo.GetProperty(Result, vAliasName) as IInfraType;
+      vAliasName := vMetadata.GetColumnLabel(vIndex);
+      vAttribute := vTypeInfo.GetProperty(Result, vAliasName) as IInfraType;
       if not Assigned(vAttribute) then
-        raise EPersistenceEngineError.CreateFmt(
-          cErrorPersistEngineAttributeNotFound,
-          [vAliasName, pResultSet.GetMetadata.GetColumnName(vIndex)]);
+        raise EPersistenceEngineError.CreateFmt(cErrorPersistEngineAttributeNotFound,
+          [vAliasName, vMetadata.GetColumnName(vIndex)]);
       if Supports(vAttribute.TypeInfo, IZTypeAnnotation, vZeosType) then
         vZeosType.NullSafeGet(pResultSet, vIndex, vAttribute)
       else
-        raise EPersistenceEngineError.CreateFmt(
-          cErrorPersistEngineCannotMapAttribute, [vAttribute.TypeInfo.Name]);
+        raise EPersistenceEngineError.CreateFmt(cErrorPersistEngineCannotMapAttribute,
+          [vAttribute.TypeInfo.Name]);
     end;
   end;
 end;

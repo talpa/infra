@@ -17,13 +17,13 @@ type
     FPersistenceEngine: IPersistenceEngine;
   protected
     function GetName: string;
-    function GetParams:ISQLCommandParams;
+    function GetParams: ISQLCommandParams;
     procedure SetName(const Value: string);
     /// PersistenceEngine ao qual o SQLCommand está vinculado
     property PersistenceEngine: IPersistenceEngine read FPersistenceEngine;
     property Params: ISQLCommandParams read GetParams;
   public
-    constructor Create(pPersistenceEngine: IPersistenceEngine); reintroduce;
+    constructor Create(const pPersistenceEngine: IPersistenceEngine); reintroduce;
   end;
 
   /// Descrição da classe
@@ -54,7 +54,7 @@ uses
   Cria uma nova instância de TSQLCommand.
   @param pPersistenceEngine
 }
-constructor TSQLCommand.Create(pPersistenceEngine: IPersistenceEngine);
+constructor TSQLCommand.Create(const pPersistenceEngine: IPersistenceEngine);
 begin
   inherited Create;
   FPersistenceEngine := pPersistenceEngine;
