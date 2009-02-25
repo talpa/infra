@@ -446,19 +446,22 @@ var
   bByProperty: Boolean;
   TheType: IClassInfo;
 begin
-  bByProperty := FPropertyName <> EmptyStr;
-  if bByProperty then
+  if not Assigned(FFilter) or FFilter(Event) then
   begin
-    TheType := (FSubscriber as IElement).TypeInfo;
-    TheValue := IElement(TheType.GetProperty(
-      FSubscriber as IElement, FPropertyName));
-    if Assigned(TheValue) and
-      not IsEqualGUID(TheValue.TypeInfo.TypeID, IElement) then
-      TheValue := TheValue as IElement;
+    bByProperty := FPropertyName <> EmptyStr;
+    if bByProperty then
+    begin
+      TheType := (FSubscriber as IElement).TypeInfo;
+      TheValue := IElement(TheType.GetProperty(
+        FSubscriber as IElement, FPropertyName));
+      if Assigned(TheValue) and
+        not IsEqualGUID(TheValue.TypeInfo.TypeID, IElement) then
+        TheValue := TheValue as IElement;
+    end;
+    if (not bByProperty or (Assigned(TheValue) and (TheValue = Event.Source)))
+      and (not Assigned(FFilter) or FFilter(Event)) then
+      FInform(Event);
   end;
-  if (not bByProperty or (Assigned(TheValue) and (TheValue = Event.Source)))
-    and (not Assigned(FFilter) or FFilter(Event)) then
-    FInform(Event);
 end;
 
 { TClassicSubscription }

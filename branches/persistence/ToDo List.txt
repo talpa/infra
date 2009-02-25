@@ -198,3 +198,14 @@ a) Qual a necessidade o IsClosed e Close no SessionFactory?
 
 "As soon as you do something that requires access to the database, a JDBC connection will be obtained from the pool."
 
+- TCallBackSubscription.Publish
+(segunda forma), só está verificando o MetodoFilter no Final em vez de no
+começo
+
+- Criar um tipo de Subscription que injete uma lista e possa adicionar observers especificos àquele objeto;
+
+- Por o AsString no InfraType
+
+- Eliminar o Publishers, Publishers for SubscribeIterator do eventserviceitem
+
+- Montar testes unitários para o InfraNotify
