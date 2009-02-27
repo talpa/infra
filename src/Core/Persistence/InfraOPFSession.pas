@@ -10,7 +10,7 @@ uses
   InfraValueTypeIntf;
 
 type
-  /// Descrição da classe                                                                  h
+  /// Descrição da classe                                                                  
   TSession = class(TBaseElement, ISession)
   private
     /// Persistence engine associado, usado para acessar o Storage
