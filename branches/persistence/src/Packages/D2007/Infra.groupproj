@@ -1,0 +1,94 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{7c29e743-b9fb-40d7-a1fe-a94aaacdc2b6}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Projects Include="InfraAOP.dproj" />
+    <Projects Include="InfraBinding.dproj" />
+    <Projects Include="InfraCore.dproj" />
+    <Projects Include="InfraGUI.dproj" />
+    <Projects Include="InfraMVP.dproj" />
+    <Projects Include="InfraOPF.dproj" />
+    <Projects Include="InfraTypes.dproj" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Default.Personality</Borland.Personality>
+    <Borland.ProjectType />
+    <BorlandProject>
+  <BorlandProject xmlns=""> <Default.Personality> </Default.Personality> </BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Target Name="InfraGUI">
+    <MSBuild Projects="InfraGUI.dproj" Targets="" />
+  </Target>
+  <Target Name="InfraGUI:Clean">
+    <MSBuild Projects="InfraGUI.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="InfraGUI:Make">
+    <MSBuild Projects="InfraGUI.dproj" Targets="Make" />
+  </Target>
+  <Target Name="InfraOPF">
+    <MSBuild Projects="InfraOPF.dproj" Targets="" />
+  </Target>
+  <Target Name="InfraOPF:Clean">
+    <MSBuild Projects="InfraOPF.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="InfraOPF:Make">
+    <MSBuild Projects="InfraOPF.dproj" Targets="Make" />
+  </Target>
+  <Target Name="InfraAOP">
+    <MSBuild Projects="InfraAOP.dproj" Targets="" />
+  </Target>
+  <Target Name="InfraAOP:Clean">
+    <MSBuild Projects="InfraAOP.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="InfraAOP:Make">
+    <MSBuild Projects="InfraAOP.dproj" Targets="Make" />
+  </Target>
+  <Target Name="InfraCore">
+    <MSBuild Projects="InfraCore.dproj" Targets="" />
+  </Target>
+  <Target Name="InfraCore:Clean">
+    <MSBuild Projects="InfraCore.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="InfraCore:Make">
+    <MSBuild Projects="InfraCore.dproj" Targets="Make" />
+  </Target>
+  <Target Name="InfraMVP">
+    <MSBuild Projects="InfraMVP.dproj" Targets="" />
+  </Target>
+  <Target Name="InfraMVP:Clean">
+    <MSBuild Projects="InfraMVP.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="InfraMVP:Make">
+    <MSBuild Projects="InfraMVP.dproj" Targets="Make" />
+  </Target>
+  <Target Name="InfraTypes">
+    <MSBuild Projects="InfraTypes.dproj" Targets="" />
+  </Target>
+  <Target Name="InfraTypes:Clean">
+    <MSBuild Projects="InfraTypes.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="InfraTypes:Make">
+    <MSBuild Projects="InfraTypes.dproj" Targets="Make" />
+  </Target>
+  <Target Name="InfraBinding">
+    <MSBuild Projects="InfraBinding.dproj" Targets="" />
+  </Target>
+  <Target Name="InfraBinding:Clean">
+    <MSBuild Projects="InfraBinding.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="InfraBinding:Make">
+    <MSBuild Projects="InfraBinding.dproj" Targets="Make" />
+  </Target>
+  <Target Name="Build">
+    <CallTarget Targets="InfraGUI;InfraOPF;InfraAOP;InfraCore;InfraMVP;InfraTypes;InfraBinding" />
+  </Target>
+  <Target Name="Clean">
+    <CallTarget Targets="InfraGUI:Clean;InfraOPF:Clean;InfraAOP:Clean;InfraCore:Clean;InfraMVP:Clean;InfraTypes:Clean;InfraBinding:Clean" />
+  </Target>
+  <Target Name="Make">
+    <CallTarget Targets="InfraGUI:Make;InfraOPF:Make;InfraAOP:Make;InfraCore:Make;InfraMVP:Make;InfraTypes:Make;InfraBinding:Make" />
+  </Target>
+  <Import Condition="Exists('$(MSBuildBinPath)\Borland.Group.Targets')" Project="$(MSBuildBinPath)\Borland.Group.Targets" />
+</Project>

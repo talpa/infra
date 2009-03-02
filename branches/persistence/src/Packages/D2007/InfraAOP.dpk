@@ -1,4 +1,4 @@
-package InfraBinding;
+package InfraAOP;
 
 {$R *.res}
 {$ALIGN 8}
@@ -22,17 +22,20 @@ package InfraBinding;
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
-{$DESCRIPTION 'InfraBinding'}
+{$DESCRIPTION 'InfraAspect - Framework de Programacao Orientada a Aspectos'}
 {$LIBSUFFIX '70'}
 {$IMPLICITBUILD OFF}
 
 requires
   rtl,
-  xmlrtl,
-  vcl;
+  InfraCore;
 
 contains
-  InfraBindingIntf in '..\..\Core\Binding\InfraBindingIntf.pas',
-  InfraControlBinding in '..\..\Core\Binding\InfraControlBinding.pas';
+  InfraAspectEval in '..\..\Core\Aspect\InfraAspectEval.pas',
+  InfraAspectIntf in '..\..\Core\Aspect\InfraAspectIntf.pas',
+  InfraAspectUtil in '..\..\Core\Aspect\InfraAspectUtil.pas',
+  List_InterceptMethod in '..\..\Core\Aspect\List_InterceptMethod.pas',
+  List_JointPoint in '..\..\Core\Aspect\List_JointPoint.pas',
+  InfraAspect in '..\..\Core\Aspect\InfraAspect.pas';
 
 end.

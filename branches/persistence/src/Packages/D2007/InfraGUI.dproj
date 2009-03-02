@@ -1,0 +1,156 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{498b0d25-ff48-4dae-ac31-de4e5b1e6f05}</ProjectGuid>
+    <MainSource>InfraGUI.dpk</MainSource>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>C:\Users\Public\Documents\RAD Studio\5.0\Bpl\InfraGUI70.bpl</DCC_DependencyCheckOutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_Define>RELEASE</DCC_Define>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType>Package</Borland.ProjectType>
+    <BorlandProject>
+<BorlandProject xmlns=""> <Delphi.Personality>   <Parameters>
+      <Parameters Name="UseLauncher">False</Parameters>
+      <Parameters Name="LoadAllSymbols">True</Parameters>
+      <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+    </Parameters>
+    <Package_Options>
+      <Package_Options Name="PackageDescription">InfraGUI - Framework de geração de GUI</Package_Options>
+      <Package_Options Name="ImplicitBuild">False</Package_Options>
+      <Package_Options Name="DesigntimeOnly">False</Package_Options>
+      <Package_Options Name="RuntimeOnly">False</Package_Options>
+      <Package_Options Name="LibSuffix">70</Package_Options>
+    </Package_Options>
+    <VersionInfo>
+      <VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+      <VersionInfo Name="AutoIncBuild">False</VersionInfo>
+      <VersionInfo Name="MajorVer">1</VersionInfo>
+      <VersionInfo Name="MinorVer">0</VersionInfo>
+      <VersionInfo Name="Release">0</VersionInfo>
+      <VersionInfo Name="Build">0</VersionInfo>
+      <VersionInfo Name="Debug">False</VersionInfo>
+      <VersionInfo Name="PreRelease">False</VersionInfo>
+      <VersionInfo Name="Special">False</VersionInfo>
+      <VersionInfo Name="Private">False</VersionInfo>
+      <VersionInfo Name="DLL">False</VersionInfo>
+      <VersionInfo Name="Locale">1046</VersionInfo>
+      <VersionInfo Name="CodePage">1252</VersionInfo>
+    </VersionInfo>
+    <VersionInfoKeys>
+      <VersionInfoKeys Name="CompanyName"></VersionInfoKeys>
+      <VersionInfoKeys Name="FileDescription"></VersionInfoKeys>
+      <VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+      <VersionInfoKeys Name="InternalName"></VersionInfoKeys>
+      <VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys>
+      <VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
+      <VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
+      <VersionInfoKeys Name="ProductName"></VersionInfoKeys>
+      <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+      <VersionInfoKeys Name="Comments"></VersionInfoKeys>
+    </VersionInfoKeys>
+    <Excluded_Packages>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <Excluded_Packages Name="C:\Users\Public\Documents\RAD Studio\5.0\Bpl\dclfrxZ11.bpl">FastReport 4.0 Z Components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Program Files\FastReports\FastReport 4\LibD11\dclfrxDBX11.bpl">FastReport 4.0 DBX Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dcloffice2k100.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclofficexp100.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Program Files\FastReports\FastReport 4\LibD11\dclfrxcs11.bpl">FastReport 4.0 Client/Server Components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Program Files\FastReports\FastReport 4\LibD11\dclfsbde11.bpl">FastScript 1.9 BDE Components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Program Files\FastReports\FastReport 4\LibD11\dclfrxbde11.bpl">FastReport 4.0 BDE Components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Program Files\FastReports\FastReport 4\LibD11\dclfsado11.bpl">FastScript 1.9 ADO Components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Program Files\FastReports\FastReport 4\LibD11\dclfrxado11.bpl">FastReport 4.0 ADO Components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Program Files\FastReports\FastReport 4\LibD11\dclfsibx11.bpl">FastScript 1.9 IBX Components</Excluded_Packages>
+      <Excluded_Packages Name="C:\Program Files\FastReports\FastReport 4\LibD11\dclfrxibx11.bpl">FastReport 4.0 IBX Components</Excluded_Packages>
+    </Excluded_Packages>
+    <Source>
+      <Source Name="MainSource">InfraGUI.dpk</Source>
+    </Source>
+  </Delphi.Personality> </BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <ItemGroup />
+  <ItemGroup>
+    <DelphiCompile Include="InfraGUI.dpk">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <DCCReference Include="..\..\Core\Binding\designide.dcp" />
+    <DCCReference Include="..\..\Core\Binding\inet.dcp" />
+    <DCCReference Include="..\..\Core\Binding\InfraCore.dcp" />
+    <DCCReference Include="..\..\Core\Binding\InfraTypes.dcp" />
+    <DCCReference Include="..\..\Core\Binding\rtl.dcp" />
+    <DCCReference Include="..\..\Core\Binding\vcl.dcp" />
+    <DCCReference Include="..\..\Core\Binding\vclactnband.dcp" />
+    <DCCReference Include="..\..\Core\Binding\vclx.dcp" />
+    <DCCReference Include="..\..\Core\Binding\xmlrtl.dcp" />
+    <DCCReference Include="..\..\Core\GUIBuilder\CustomizeScreen.pas">
+      <Form>CustomizeScreen</Form>
+    </DCCReference>
+    <DCCReference Include="..\..\Core\GUIBuilder\CustomizeScreenControl.pas">
+      <Form>CustomizeScreenControl</Form>
+    </DCCReference>
+    <DCCReference Include="..\..\Core\GUIBuilder\GUIAnnotation.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\GUIAnnotationIntf.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\GUIAnnotationLoaderIntf.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\GUIAnnotationLoaderXML.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\InfraGUIBuilder.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\InfraGUIBuilderForm.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\InfraGUIBuilderIntf.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\InfraGUIBuilderRegister.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\List_CustomProperty.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\List_GUIControl.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\List_GUIMapping.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\List_Screen.pas" />
+    <DCCReference Include="..\..\Core\GUIBuilder\List_ScreenItem.pas" />
+    <DCCReference Include="..\..\Core\LayoutManager\LayoutManager.dcr" />
+    <DCCReference Include="..\..\Core\LayoutManager\LayoutManager.dcr" />
+    <DCCReference Include="..\..\Core\LayoutManager\LayoutManager.pas" />
+    <DCCReference Include="..\..\Core\LayoutManager\LayoutManagerReg.pas" />
+    <DCCReference Include="..\..\Core\LayoutManager\TabOrderForm.pas">
+      <Form>TabOrderForm</Form>
+    </DCCReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+</Project>
