@@ -1,0 +1,56 @@
+package InfraOPF;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'InfraPersistence - Framework de Persistencia'}
+{$LIBSUFFIX '70'}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  InfraCore,
+  InfraTypes,
+  ZDbc,
+  designide,
+  vclactnband,
+  vclx,
+  vcl,
+  dbrtl;
+
+contains
+  InfraOPFIntf in '..\..\Core\Persistence\InfraOPFIntf.pas',
+  InfraOPFService in '..\..\Core\Persistence\InfraOPFService.pas',
+  InfraOPFConsts in '..\..\Core\Persistence\InfraOPFConsts.pas',
+  List_SQLCommandParam in '..\..\Core\Persistence\List_SQLCommandParam.pas',
+  List_SQLCommandList in '..\..\Core\Persistence\List_SQLCommandList.pas',
+  InfraOPFAnnotation in '..\..\Core\Persistence\InfraOPFAnnotation.pas',
+  InfraOPFConnectionProvider in '..\..\Core\Persistence\InfraOPFConnectionProvider.pas',
+  InfraOPFConfiguration in '..\..\Core\Persistence\InfraOPFConfiguration.pas',
+  InfraOPFTemplates in '..\..\Core\Persistence\InfraOPFTemplates.pas',
+  InfraOPFParsers in '..\..\Core\Persistence\InfraOPFParsers.pas',
+  InfraOPFSqlCommands in '..\..\Core\Persistence\InfraOPFSqlCommands.pas',
+  InfraOPFSession in '..\..\Core\Persistence\InfraOPFSession.pas',
+  InfraOPFEngine in '..\..\Core\Persistence\InfraOPFEngine.pas',
+  InfraOPFSessionFactory in '..\..\Core\Persistence\InfraOPFSessionFactory.pas';
+
+end.
