@@ -35,20 +35,20 @@ type
 
   IBinding = interface(IBaseElement)
     ['{A3171542-76CB-4FD0-8689-70AD8785B727}']
-    function getMode: TBindingMode;
-    function getSource: IBindable;
-    function getTarget: IBindable;
-    function getValueConverter: IValueConverter;
-    procedure setMode(value: TBindingMode);
-    procedure setSource(value: IBindable);
-    procedure setTarget(value: IBindable);
-    procedure setValueConverter(value: IValueConverter);
+    function GetMode: TBindingMode;
+    function GetLeft: IBindable;
+    function GetRight: IBindable;
+    function GetValueConverter: IValueConverter;
+    procedure SetMode(value: TBindingMode);
+    procedure SetLeft(value: IBindable);
+    procedure SetRight(value: IBindable);
+    procedure SetValueConverter(value: IValueConverter);
     procedure UpdateSource;
     function TwoWay: IBindable;
-    property Mode: TBindingMode read getMode write setMode;
-    property Source: IBindable read getSource write setSource;
-    property Target: IBindable read getTarget write setTarget;
-    property ValueConverter: IValueConverter read getValueConverter write setValueConverter;
+    property Mode: TBindingMode read GetMode write SetMode;
+    property Left: IBindable read GetLeft write SetLeft;
+    property Right: IBindable read GetRight write SetRight;
+    property ValueConverter: IValueConverter read GetValueConverter write SetValueConverter;
   end;
 
   IBindManager = interface(IBaseElement)
