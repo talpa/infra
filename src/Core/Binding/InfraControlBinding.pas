@@ -42,7 +42,7 @@ begin
   FPropertyPath := PropertyPath;
   if SupportPropertyByRTTI(PropertyPath) then
     FPropertyAccessMode := paRTTI
-  else if CustomSupportProperty(PropertyPath)) then
+  else if CustomSupportProperty(PropertyPath) then
     FPropertyAccessMode := paCustom
   else
   begin
@@ -50,6 +50,12 @@ begin
     (Returning false means that this TBindableControl does not support the
     specified property path) }
   end;
+end;
+
+function TBindableControl.CustomSupportProperty(
+  const PropertyPath: String): Boolean;
+begin
+
 end;
 
 function TBindableControl.GetPropertyPath: String;
@@ -91,6 +97,12 @@ begin
   case Info^.PropType^.Kind of
     tkString: SetStrProp(FControl, Info, (Value as IInfraString).AsString);
   end;
+end;
+
+function TBindableControl.SupportPropertyByRTTI(
+  const PropertyPath: String): Boolean;
+begin
+
 end;
 
 end.

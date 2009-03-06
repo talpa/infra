@@ -8,7 +8,7 @@ uses
   InfraValueTypeIntf;
 
 type
-  TBindingMode = (bmOneWay, bmTwoWay);
+  TBindingMode = (bmLeftToRight, bmTwoWay);
   TUpdateTrigger = (utLostFocus, utPropertyChanged, utExplicit);
 
   IBindable = interface(IBaseElement)
@@ -39,11 +39,11 @@ type
     function GetLeft: IBindable;
     function GetRight: IBindable;
     function GetValueConverter: IValueConverter;
-    procedure SetMode(value: TBindingMode);
-    procedure SetLeft(value: IBindable);
-    procedure SetRight(value: IBindable);
-    procedure SetValueConverter(value: IValueConverter);
-    procedure UpdateSource;
+    procedure SetMode(Value: TBindingMode);
+    procedure SetLeft(Value: IBindable);
+    procedure SetRight(Value: IBindable);
+    procedure SetValueConverter(Value: IValueConverter);
+    procedure UpdateLeft;
     function TwoWay: IBindable;
     property Mode: TBindingMode read GetMode write SetMode;
     property Left: IBindable read GetLeft write SetLeft;
