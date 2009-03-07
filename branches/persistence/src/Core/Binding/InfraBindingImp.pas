@@ -1,4 +1,4 @@
-unit InfraBinding;
+unit InfraBindingImp;
 
 interface
 
@@ -27,7 +27,7 @@ type
     constructor Create(const Left, Right: IBindable); reintroduce;
   end;
 
-  TBindManager = class(TElem ent, IBindManager)
+  TBindManager = class(TElement, IBindManager)
   private
 
   protected
@@ -91,10 +91,22 @@ end;
 function TBinding.TwoWay: IBindable;
 begin
   SetMode(bmTwoWay);
-  Result := Self;
+//  Result := Self;
 end;
 
 procedure TBinding.UpdateLeft;
+begin
+
+end;
+
+{ TBindManager }
+
+procedure TBindManager.Add(Binding: IBinding);
+begin
+
+end;
+
+procedure TBindManager.ClearBindings;
 begin
 
 end;
