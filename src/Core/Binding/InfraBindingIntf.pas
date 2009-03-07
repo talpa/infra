@@ -61,6 +61,17 @@ type
     procedure ClearBindings ;
   end;
 
+  IBindingList = interface
+   ['{1E1FFA53-17FA-4437-8902-CD790EA9B0C7}']
+    function Add(const Item: IBinding): Integer;
+    function GetCount: Integer;
+    function GetItem(Index: Integer): IBinding;
+    procedure Clear;
+    property Items[Index: Integer]: IBinding read GetItem; default;
+    property Count: Integer read GetCount;
+  end;
+
+
 implementation
 
 end.
