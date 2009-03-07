@@ -29,10 +29,12 @@ package InfraBinding;
 requires
   rtl,
   xmlrtl,
-  vcl;
+  vcl,
+  InfraTypes;
 
 contains
   InfraBindingIntf in '..\..\Core\Binding\InfraBindingIntf.pas',
-  InfraControlBinding in '..\..\Core\Binding\InfraControlBinding.pas';
+  InfraControlBinding in '..\..\Core\Binding\InfraControlBinding.pas',
+  InfraBindingConsts in '..\..\Core\Binding\InfraBindingConsts.pas';
 
 end.

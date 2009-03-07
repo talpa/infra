@@ -8,6 +8,8 @@ uses
   InfraValueTypeIntf;
 
 type
+  EInfraBindingError = class(EInfraError);
+
   TBindingMode = (bmLeftToRight, bmTwoWay);
   TUpdateTrigger = (utLostFocus, utPropertyChanged, utExplicit);
 
@@ -15,7 +17,6 @@ type
     ['{E9FE85E6-91D1-49DA-9A07-BF2F61C2B16A}']
     function GetValue: IInfraType;
     procedure SetValue(const Value: IInfraType);
-
     property Value: IInfraType read GetValue write SetValue;
   end;
 
@@ -23,10 +24,6 @@ type
     ['{E87E4DE0-B553-4C40-8220-3B16EBBF78EC}']
     function GetPropertyPath: String;
     property PropertyPath: String read GetPropertyPath;
-  end;
-
-  IInfraTypeBindable = interface(IBindable)
-    ['{F4EAFEA7-323E-4BCE-A068-358E3517A1B1}']
   end;
 
   IValueConverter = interface(IBaseElement)
