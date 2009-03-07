@@ -1,4 +1,4 @@
-unit InfraControlBinding;
+unit InfraBindingControl;
 
 interface
 
@@ -50,7 +50,7 @@ begin
   else if SupportPropertyByRTTI(PropertyPath) then
     FPropertyAccessMode := paRTTI
   else
-    Raise EInfraBindingError.CreateFMT(
+    Raise EInfraBindingError.CreateFmt(
       cErrorBindingProprtyNotExists, [FPropertyPath]);
 end;
 

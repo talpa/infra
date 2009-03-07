@@ -2,7 +2,7 @@ unit List_Binding;
 
 interface
 
-{$I InfraPersistence.Inc} 
+{$I InfraBinding.Inc} 
 
 uses
   {$IFDEF USE_GXDEBUG}DBugIntf, {$ENDIF}
