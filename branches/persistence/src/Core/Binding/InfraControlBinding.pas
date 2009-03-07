@@ -3,13 +3,14 @@ unit InfraControlBinding;
 interface
 
 uses
-  Controls, InfraBindingIntf, InfraCommon, InfraValueTypeIntf;
+  InfraCommon, InfraBindingIntf, TypInfo, Controls, InfraValueTypeIntf;
 
 type
   TPropertyAccessMode = (paRTTI, paCustom);
 
-  TBindableControl = class abstract(TBaseElement, IBindableControl)
+  TBindableControl = class(TBaseElement, IBindableControl)
   private
+    FPropInfo: PPropInfo;
     FControl: TControl;
     FPropertyPath: String;
     FPropertyAccessMode: TPropertyAccessMode;
@@ -20,17 +21,21 @@ type
     procedure SetValueByRTTI(const Value: IInfraType);
     function SupportPropertyByRTTI(const PropertyPath: String): Boolean;
   protected
-    function CustomSupportProperty(const PropertyPath: String): Boolean; virtual;
-    function CustomGetValue: IInfraType; virtual; abstract;
+    function SupportCustomProperty(const PropertyPath: String): Boolean; virtual;
+    function GetCustomValue: IInfraType; virtual; abstract;
     procedure CustomSetValue(const Value: IInfraType); virtual; abstract;
   protected
     constructor Create(Control: TControl; const PropertyPath: String); reintroduce;
   end;
 
+  TBindableEdit = class(TBindableControl)
+    // implementar para TEdit
+  end;
+
 implementation
 
 uses
-  SysUtils, TypInfo, InfraValueType;
+  InfraValueType, SysUtils, InfraBindingConsts;
 
 { TBindableControl }
 
@@ -40,22 +45,19 @@ begin
   inherited Create;
   FControl := Control;
   FPropertyPath := PropertyPath;
-  if SupportPropertyByRTTI(PropertyPath) then
-    FPropertyAccessMode := paRTTI
-  else if CustomSupportProperty(PropertyPath) then
+  if SupportCustomProperty(PropertyPath) then
     FPropertyAccessMode := paCustom
+  else if SupportPropertyByRTTI(PropertyPath) then
+    FPropertyAccessMode := paRTTI
   else
-  begin
-  { TODO: Raise an exception if SelectBindablePropertyByPath returns False
-    (Returning false means that this TBindableControl does not support the
-    specified property path) }
-  end;
+    Raise EInfraBindingError.CreateFMT(
+      cErrorBindingProprtyNotExists, [FPropertyPath]);
 end;
 
-function TBindableControl.CustomSupportProperty(
+function TBindableControl.SupportCustomProperty(
   const PropertyPath: String): Boolean;
 begin
-
+  Result := False;
 end;
 
 function TBindableControl.GetPropertyPath: String;
@@ -67,17 +69,7 @@ function TBindableControl.GetValue: IInfraType;
 begin
   case FPropertyAccessMode of
     paRTTI: Result := GetValueByRTTI;
-    paCustom: Result := CustomGetValue;
-  end;
-end;
-
-function TBindableControl.GetValueByRTTI: IInfraType;
-var
-  Info: PPropInfo;
-begin
-  Info := GetPropInfo(FControl, FPropertyPath);
-  case Info^.PropType^.Kind of
-    tkString: Result := TInfraString.NewFrom(GetStrProp(FControl, Info));
+    paCustom: Result := GetCustomValue;
   end;
 end;
 
@@ -89,20 +81,27 @@ begin
   end;
 end;
 
-procedure TBindableControl.SetValueByRTTI(const Value: IInfraType);
-var
-  Info: PPropInfo;
+function TBindableControl.GetValueByRTTI: IInfraType;
 begin
-  Info := GetPropInfo(FControl, FPropertyPath);
-  case Info^.PropType^.Kind of
-    tkString: SetStrProp(FControl, Info, (Value as IInfraString).AsString);
+  case FPropInfo^.PropType^.Kind of
+    tkString, tkLString, tkWString:
+      Result := TInfraString.NewFrom(GetStrProp(FControl, FPropInfo));
+  end;
+end;
+
+procedure TBindableControl.SetValueByRTTI(const Value: IInfraType);
+begin
+  case FPropInfo^.PropType^.Kind of
+    tkString, tkLString, tkWString:
+      SetStrProp(FControl, FPropInfo, (Value as IInfraString).AsString);
   end;
 end;
 
 function TBindableControl.SupportPropertyByRTTI(
   const PropertyPath: String): Boolean;
 begin
-
+  FPropInfo := GetPropInfo(FControl, FPropertyPath);
+  Result := Assigned(FPropInfo);
 end;
 
 end.
