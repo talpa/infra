@@ -29,16 +29,16 @@ type
 
   TBindManager = class(TElement, IBindManager)
   private
-
+   FListBind : IBindingList;
   protected
     procedure Add(Binding: IBinding); overload;
     procedure ClearBindings ;
   public
-
+    constructor Create;
   end;
 
 implementation
-
+uses List_Binding;
 { TBinding }
 
 constructor TBinding.Create(const Left, Right: IBindable);
@@ -103,12 +103,17 @@ end;
 
 procedure TBindManager.Add(Binding: IBinding);
 begin
-
+  FListBind.Add(Binding)
 end;
 
 procedure TBindManager.ClearBindings;
 begin
+ FListBind.Clear;
+end;
 
+constructor TBindManager.Create;
+begin
+  FListBind := TBindingList.Create;
 end;
 
 end.
