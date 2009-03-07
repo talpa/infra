@@ -33,8 +33,10 @@ requires
   InfraTypes;
 
 contains
+  InfraBindingConsts in '..\..\Core\Binding\InfraBindingConsts.pas',
+  InfraBindingControl in '..\..\Core\Binding\InfraBindingControl.pas',
   InfraBindingIntf in '..\..\Core\Binding\InfraBindingIntf.pas',
-  InfraControlBinding in '..\..\Core\Binding\InfraControlBinding.pas',
-  InfraBindingConsts in '..\..\Core\Binding\InfraBindingConsts.pas';
+  List_Binding in '..\..\Core\Binding\List_Binding.pas',
+  InfraBindingManager in '..\..\Core\Binding\InfraBindingManager.pas';
 
 end.

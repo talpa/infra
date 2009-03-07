@@ -1,4 +1,4 @@
-unit InfraBinding;
+unit InfraBindingManager;
 
 interface
 
@@ -17,27 +17,30 @@ type
     function GetMode: TBindingMode;
     function GetRight: IBindable;
     function GetValueConverter: IValueConverter;
-    procedure SetLeft(Value: IBindable);
+    procedure SetLeft(const Value: IBindable);
     procedure SetMode(Value: TBindingMode);
-    procedure SetRight(Value: IBindable);
-    procedure SetValueConverter(Value: IValueConverter);
+    procedure SetRight(const Value: IBindable);
+    procedure SetValueConverter(const Value: IValueConverter);
     procedure UpdateLeft;
-    function TwoWay: IBindable;
+    function TwoWay: IBinding;
   public
     constructor Create(const Left, Right: IBindable); reintroduce;
   end;
 
-  TBindManager = class(TElem ent, IBindManager)
+  TBindManager = class(TElement, IBindManager)
   private
-
+    FListBind : IBindingList;
   protected
-    procedure Add(Binding: IBinding); overload;
+    procedure Add(const Binding: IBinding); overload;
     procedure ClearBindings ;
   public
-
+    constructor Create; override;
   end;
 
 implementation
+
+uses
+  List_Binding;
 
 { TBinding }
 
@@ -68,7 +71,7 @@ begin
   Result := FValueConverter;
 end;
 
-procedure TBinding.SetLeft(Value: IBindable);
+procedure TBinding.SetLeft(const Value: IBindable);
 begin
   FLeft := Value;
 end;
@@ -78,17 +81,17 @@ begin
   FMode := Value;
 end;
 
-procedure TBinding.SetRight(Value: IBindable);
+procedure TBinding.SetRight(const Value: IBindable);
 begin
   FRight := Value;
 end;
 
-procedure TBinding.SetValueConverter(Value: IValueConverter);
+procedure TBinding.SetValueConverter(const Value: IValueConverter);
 begin
   FValueConverter := Value;
 end;
 
-function TBinding.TwoWay: IBindable;
+function TBinding.TwoWay: IBinding;
 begin
   SetMode(bmTwoWay);
   Result := Self;
@@ -97,6 +100,24 @@ end;
 procedure TBinding.UpdateLeft;
 begin
 
+end;
+
+{ TBindManager }
+
+procedure TBindManager.Add(const Binding: IBinding);
+begin
+  FListBind.Add(Binding)
+end;
+
+procedure TBindManager.ClearBindings;
+begin
+  FListBind.Clear;
+end;
+
+constructor TBindManager.Create;
+begin
+  inherited Create;
+  FListBind := TBindingList.Create;
 end;
 
 end.
