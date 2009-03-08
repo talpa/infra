@@ -39,6 +39,7 @@ contains
   List_Binding in '..\..\Core\Binding\List_Binding.pas',
   InfraBindingManager in '..\..\Core\Binding\InfraBindingManager.pas',
   InfraBindingType in '..\..\Core\Binding\InfraBindingType.pas',
-  InfraBindingService in '..\..\Core\Binding\InfraBindingService.pas';
+  InfraBindingService in '..\..\Core\Binding\InfraBindingService.pas',
+  List_Bindable in '..\..\Core\Binding\List_Bindable.pas';
 
 end.

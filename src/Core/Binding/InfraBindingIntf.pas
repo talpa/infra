@@ -23,8 +23,8 @@ type
 
   IBindableControl = interface(IBindable)
     ['{CDDB1FF4-D5DC-4BFC-9D6A-A20578D54724}']
-    function GetPropertyPath: String;
-    property PropertyPath: String read GetPropertyPath;
+    procedure Initialize(pControl: TControl;
+      const pPropertyPath: String);
   end;
 
   IBinding = interface(IBaseElement)
@@ -63,7 +63,7 @@ type
   end;
   
   IBindableList = interface
- ['{A927D310-BBFD-4FD2-98BC-807317A83463}']
+    ['{A927D310-BBFD-4FD2-98BC-807317A83463}']
     function GetItem(Index: string): IInfraType;
     procedure SetItem(Index: string; Value: IInfraType);
     function GetCount: Integer;
