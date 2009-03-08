@@ -3,7 +3,7 @@ unit InfraBindingControl;
 interface
 
 uses
-  InfraCommon, InfraBindingIntf, TypInfo, Controls, InfraValueTypeIntf;
+  InfraCommon, InfraBindingIntf, TypInfo, InfraValueTypeIntf, Controls;
 
 type
   TPropertyAccessMode = (paRTTI, paCustom);
