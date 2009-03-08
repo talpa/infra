@@ -3,6 +3,7 @@ unit InfraBindingManager;
 interface
 
 uses
+  Controls,
   InfraBindingIntf,
   InfraCommon;
 
@@ -32,6 +33,14 @@ type
     FListBind : IBindingList;
   protected
     procedure Add(const Binding: IBinding); overload;
+    procedure Add(pSourceControl: TControl;
+      const pSourcePath: string;
+      pTargetControl: TControl;
+      const TargetProperty: string = '';
+      const ValueConverter: IValueConverter = nil); overload;
+    procedure add(const pSourcePath: string; pTargetControl: TControl;
+      const TargetProperty: string = '';
+      const ValueConverter: IValueConverter = nil);   overload;
     procedure ClearBindings ;
   public
     constructor Create; override;
@@ -107,6 +116,20 @@ end;
 procedure TBindManager.Add(const Binding: IBinding);
 begin
   FListBind.Add(Binding)
+end;
+
+procedure TBindManager.Add(pSourceControl: TControl;
+  const pSourcePath: string; pTargetControl: TControl;
+  const TargetProperty: string; const ValueConverter: IValueConverter);
+begin
+
+end;
+
+procedure TBindManager.Add(const pSourcePath: string;
+  pTargetControl: TControl; const TargetProperty: string;
+  const ValueConverter: IValueConverter);
+begin
+
 end;
 
 procedure TBindManager.ClearBindings;
