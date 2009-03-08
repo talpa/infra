@@ -32,16 +32,21 @@ type
   TBindManager = class(TElement, IBindManager)
   private
     FListBind: IBindingList;
+    FDataContext: IInfraType;
   protected
-    function Add(const pLeft, pRight: IBindable): IBinding; overload;
+    function GetDataContext: IInfraType;
+    procedure SetDataContext(const Value: IInfraType);
+    function Add(const pLeft, pRight: IBindable;
+      const pConverter: ITypeConverter = nil): IBinding; overload;
     function Add(
       pLeftControl: TControl; const pLeftProperty: string;
       pRightControl: TControl; const pRightProperty: string;
-      const pValueConverter: ITypeConverter = nil): IBinding; overload;
+      const pConverter: ITypeConverter = nil): IBinding; overload;
     function Add(const pLeftProperty: string;
       pRightControl: TControl; const pRightProperty: string = '';
-      const pValueConverter: ITypeConverter = nil): IBinding; overload;
+      const pConverter: ITypeConverter = nil): IBinding; overload;
     procedure ClearBindings;
+    property DataContext: IInfraType read GetDataContext write SetDataContext;
   public
     constructor Create; override;
   end;
@@ -122,29 +127,53 @@ end;
 function TBindManager.Add(
   pLeftControl: TControl; const pLeftProperty: string;
   pRightControl: TControl; const pRightProperty: string;
-  const pValueConverter: ITypeConverter = nil): IBinding;
+  const pConverter: ITypeConverter = nil): IBinding;
+var
+  vLeft, vRight: IBindable;
 begin
-
+  {
+  vLeft := BindableControlFactory.GetBindable(pLeftControl, pLeftProperty);
+  vRight := BindableControlFactory.GetBindable(pRightControl, pRightProperty);
+  }
+  Result := Add(vLeft, vRight, pConverter);
 end;
 
 function TBindManager.Add(const pLeftProperty: string;
   pRightControl: TControl; const pRightProperty: string = '';
-  const pValueConverter: ITypeConverter = nil): IBinding;
+  const pConverter: ITypeConverter = nil): IBinding;
+var
+  vLeft, vRight: IBindable;
 begin
-
+  {
+  vLeft := BindableInfraTypeFactory.GetBindable(FDataContext, pLeftProperty);
+  vRight := BindableControlFactory.GetBindable(pRightControl, pRightProperty);
+  }
+  Result := Add(vLeft, vRight, pConverter);
 end;
 
-function TBindManager.Add(const pLeft, pRight: IBindable): IBinding;
+function TBindManager.Add(const pLeft, pRight: IBindable;
+  const pConverter: ITypeConverter = nil): IBinding;
 var
   vBinding: IBinding;
 begin
   vBinding := TBinding.Create(pLeft, pRight);
+  vBinding.ValueConverter := pConverter;
   FListBind.Add(vBinding)
 end;
 
 procedure TBindManager.ClearBindings;
 begin
   FListBind.Clear;
+end;
+
+function TBindManager.GetDataContext: IInfraType;
+begin
+  Result := FDataContext;
+end;
+
+procedure TBindManager.SetDataContext(const Value: IInfraType);
+begin
+  FDataContext := Value;
 end;
 
 end.

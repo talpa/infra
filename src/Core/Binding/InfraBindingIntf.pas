@@ -15,20 +15,20 @@ type
   TUpdateTrigger = (utLostFocus, utPropertyChanged, utExplicit);
 
   IBindable = interface(IBaseElement)
-    ['{E9FE85E6-91D1-49DA-9A07-BF2F61C2B16A}']
+    ['{9ABF8CA0-E75A-48A6-9C20-4E3FDB781A2F}']
     function GetValue: IInfraType;
     procedure SetValue(const Value: IInfraType);
     property Value: IInfraType read GetValue write SetValue;
   end;
 
   IBindableControl = interface(IBindable)
-    ['{E87E4DE0-B553-4C40-8220-3B16EBBF78EC}']
+    ['{CDDB1FF4-D5DC-4BFC-9D6A-A20578D54724}']
     function GetPropertyPath: String;
     property PropertyPath: String read GetPropertyPath;
   end;
 
   IBinding = interface(IBaseElement)
-    ['{A3171542-76CB-4FD0-8689-70AD8785B727}']
+    ['{CD591A5F-2A29-4605-A398-707F5839F4EB}']
     function GetMode: TBindingMode;
     function GetLeft: IBindable;
     function GetRight: IBindable;
@@ -46,20 +46,24 @@ type
   end;
 
   IBindManager = interface(IBaseElement)
-    ['{78F93777-11FF-4980-93E7-BABBDA7648BB}']
-    function Add(const pLeft, pRight: IBindable): IBinding; overload;
+    ['{19C48BD7-62C9-4C55-9A86-1702B7BA5E61}']
+    function GetDataContext: IInfraType;
+    procedure SetDataContext(const Value: IInfraType);
+    function Add(const pLeft, pRight: IBindable;
+      const pConverter: ITypeConverter = nil): IBinding; overload;
     function Add(
       pLeftControl: TControl; const pLeftProperty: string;
       pRightControl: TControl; const pRightProperty: string;
-      const pValueConverter: ITypeConverter = nil): IBinding; overload;
+      const pConverter: ITypeConverter = nil): IBinding; overload;
     function Add(const pLeftProperty: string;
       pRightControl: TControl; const pRightProperty: string = '';
-      const pValueConverter: ITypeConverter = nil): IBinding; overload;
-    procedure ClearBindings ;
+      const pConverter: ITypeConverter = nil): IBinding; overload;
+    procedure ClearBindings;
+    property DataContext: IInfraType read GetDataContext write SetDataContext;
   end;
 
   IBindingList = interface
-   ['{1E1FFA53-17FA-4437-8902-CD790EA9B0C7}']
+    ['{F48F2F24-9324-42B3-AC64-93C15CFA5C4C}']
     function Add(const Item: IBinding): Integer;
     function GetCount: Integer;
     function GetItem(Index: Integer): IBinding;
@@ -68,7 +72,16 @@ type
     property Count: Integer read GetCount;
   end;
 
+  IInfraBindingService = interface(IInterface)
+    ['{AE2A98DE-01B4-49BB-9225-F349C68D2DCD}']
+    function GetNewBindManager: IBindManager;
+  end;
+  
 implementation
 
-end.
+function BindingService: IInfraBindingService;
+begin
+  Result := ApplicationContext as IInfraBindingService;
+end;
 
+end.

@@ -232,7 +232,6 @@ procedure TClassInfoTests.TestProperties;
 var
   i: integer;
   It: IPropertyInfoIterator;
-  FPropertyInfo: IPropertyInfo;
   Value: IInfraType;
   p:  IPerson;
 begin
