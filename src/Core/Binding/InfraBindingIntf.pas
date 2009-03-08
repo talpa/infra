@@ -68,7 +68,6 @@ type
     procedure SetItem(Index: string; Value: IInfraType);
     function GetCount: Integer;
     function Add(Index: string; Value: IInfraType): string;
-    procedure CreateParamsFrom(const Value: IInfraObject);	
     procedure Delete(Index: string);
     procedure DeletePosition(Index: integer);
     procedure Clear;
