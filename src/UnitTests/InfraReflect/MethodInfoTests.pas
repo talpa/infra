@@ -26,6 +26,8 @@ type
     procedure TestGetReturnType;
     procedure TestInvoke_Procedures;
     procedure TestInvoke_Functions;
+    procedure TestInvoke_Constructor;
+    procedure TestInvoke_ConstructorWithParams;
   end;
 
 implementation
@@ -357,6 +359,34 @@ begin
     SysUtils.BoolToStr(True, True), 125.5,
     (fResult as IInfraDouble).AsDouble]),
     mm.Message.AsString, 'Mismatch in MethodFunc5');
+end;
+
+procedure TMethodInfoTests.TestInvoke_Constructor;
+//var
+//  vPerson: IPerson;
+//  vClassInfo: IClassInfo;
+//  vMethodInfo: IConstructorInfo;
+//  vParams: IInterfaceList;
+//  vResult: IInterface;
+begin
+  // Criar método GetConstructor podendo passar os parametros para descobrir
+  // o Create correto, caso seja sobrecarregado.
+//  vParams := TInterfaceList.Create;
+//  vParams.Add(TInfraString.NewFrom('Marcos Barreto'));
+//  vParams.Add(TInfraInteger.NewFrom('mrbar2000@gmail.com'));
+//  vConstructorInfo := TypeService.GetType(IPerson, True).GetMethodInfo(
+//    'Create', vParams);
+//  CheckNotNull(vConstructorInfo, 'vConstructorInfo Not found!');
+//  IConstructorInfo.
+//  vResult := vConstructorInfo.Invoke(mm as IInfraInstance, nil);
+//  CheckEquals(Format(cMessageFunc0,
+//    [(fResult as IInfraString).AsString]),
+//    mm.Message.AsString, 'Erro invoking MethodFunc0');
+end;
+
+procedure TMethodInfoTests.TestInvoke_ConstructorWithParams;
+begin
+
 end;
 
 initialization
