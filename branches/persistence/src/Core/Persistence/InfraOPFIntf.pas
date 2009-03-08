@@ -243,6 +243,3 @@ initialization
   InfraOPFAnnotation.RegisterZeosTypeMapping;
 
 end.
-
-
-

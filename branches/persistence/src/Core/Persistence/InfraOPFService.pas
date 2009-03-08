@@ -24,7 +24,7 @@ implementation
   Cria um novo objeto Configuration
   Chame GetConfiguration para obter um novo objeto configuration, com o qual
   poderá construir uma nova SessionFactory.
-  
+
   @return Retorna um objeto que implementa IConfiguration
 *}
 function TInfraPersistenceService.GetConfiguration: IConfiguration;
@@ -46,4 +46,3 @@ initialization
   InjectPersistenceService;
   
 end.
-
