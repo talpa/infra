@@ -5,23 +5,24 @@ interface
 uses
   Controls,
   InfraBindingIntf,
+  InfraValueTypeIntf,
   InfraCommon;
 
 type
   TBinding = class(TElement, IBinding)
   private
     FLeft, FRight: IBindable;
-    FValueConverter: IValueConverter;
+    FValueConverter: ITypeConverter;
     FMode: TBindingMode;
   protected
     function GetLeft: IBindable;
     function GetMode: TBindingMode;
     function GetRight: IBindable;
-    function GetValueConverter: IValueConverter;
+    function GetValueConverter: ITypeConverter;
     procedure SetLeft(const Value: IBindable);
     procedure SetMode(Value: TBindingMode);
     procedure SetRight(const Value: IBindable);
-    procedure SetValueConverter(const Value: IValueConverter);
+    procedure SetValueConverter(const Value: ITypeConverter);
     procedure UpdateLeft;
     function TwoWay: IBinding;
   public
@@ -30,18 +31,17 @@ type
 
   TBindManager = class(TElement, IBindManager)
   private
-    FListBind : IBindingList;
+    FListBind: IBindingList;
   protected
-    procedure Add(const Binding: IBinding); overload;
-    procedure Add(pSourceControl: TControl;
-      const pSourcePath: string;
-      pTargetControl: TControl;
-      const TargetProperty: string = '';
-      const ValueConverter: IValueConverter = nil); overload;
-    procedure add(const pSourcePath: string; pTargetControl: TControl;
-      const TargetProperty: string = '';
-      const ValueConverter: IValueConverter = nil);   overload;
-    procedure ClearBindings ;
+    function Add(const pLeft, pRight: IBindable): IBinding; overload;
+    function Add(
+      pLeftControl: TControl; const pLeftProperty: string;
+      pRightControl: TControl; const pRightProperty: string;
+      const pValueConverter: ITypeConverter = nil): IBinding; overload;
+    function Add(const pLeftProperty: string;
+      pRightControl: TControl; const pRightProperty: string = '';
+      const pValueConverter: ITypeConverter = nil): IBinding; overload;
+    procedure ClearBindings;
   public
     constructor Create; override;
   end;
@@ -57,7 +57,7 @@ constructor TBinding.Create(const Left, Right: IBindable);
 begin
   SetLeft(Left);
   SetRight(Right);
-  SetMode(bmTwoWay);
+  SetMode(bmLeftToRight);
 end;
 
 function TBinding.GetLeft: IBindable;
@@ -75,7 +75,7 @@ begin
   Result := FRight;
 end;
 
-function TBinding.GetValueConverter: IValueConverter;
+function TBinding.GetValueConverter: ITypeConverter;
 begin
   Result := FValueConverter;
 end;
@@ -95,7 +95,7 @@ begin
   FRight := Value;
 end;
 
-procedure TBinding.SetValueConverter(const Value: IValueConverter);
+procedure TBinding.SetValueConverter(const Value: ITypeConverter);
 begin
   FValueConverter := Value;
 end;
@@ -113,34 +113,38 @@ end;
 
 { TBindManager }
 
-procedure TBindManager.Add(const Binding: IBinding);
+constructor TBindManager.Create;
 begin
-  FListBind.Add(Binding)
+  inherited Create;
+  FListBind := TBindingList.Create;
 end;
 
-procedure TBindManager.Add(pSourceControl: TControl;
-  const pSourcePath: string; pTargetControl: TControl;
-  const TargetProperty: string; const ValueConverter: IValueConverter);
+function TBindManager.Add(
+  pLeftControl: TControl; const pLeftProperty: string;
+  pRightControl: TControl; const pRightProperty: string;
+  const pValueConverter: ITypeConverter = nil): IBinding;
 begin
 
 end;
 
-procedure TBindManager.Add(const pSourcePath: string;
-  pTargetControl: TControl; const TargetProperty: string;
-  const ValueConverter: IValueConverter);
+function TBindManager.Add(const pLeftProperty: string;
+  pRightControl: TControl; const pRightProperty: string = '';
+  const pValueConverter: ITypeConverter = nil): IBinding;
 begin
 
+end;
+
+function TBindManager.Add(const pLeft, pRight: IBindable): IBinding;
+var
+  vBinding: IBinding;
+begin
+  vBinding := TBinding.Create(pLeft, pRight);
+  FListBind.Add(vBinding)
 end;
 
 procedure TBindManager.ClearBindings;
 begin
   FListBind.Clear;
-end;
-
-constructor TBindManager.Create;
-begin
-  inherited Create;
-  FListBind := TBindingList.Create;
 end;
 
 end.

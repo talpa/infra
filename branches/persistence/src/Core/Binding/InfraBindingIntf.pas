@@ -27,39 +27,34 @@ type
     property PropertyPath: String read GetPropertyPath;
   end;
 
-  IValueConverter = interface(IBaseElement)
-    ['{69019EE6-40A5-42DF-9E4F-0DFC17073196}']
-  end;
-
   IBinding = interface(IBaseElement)
     ['{A3171542-76CB-4FD0-8689-70AD8785B727}']
     function GetMode: TBindingMode;
     function GetLeft: IBindable;
     function GetRight: IBindable;
-    function GetValueConverter: IValueConverter;
+    function GetValueConverter: ITypeConverter;
     procedure SetMode(Value: TBindingMode);
     procedure SetLeft(const Value: IBindable);
     procedure SetRight(const Value: IBindable);
-    procedure SetValueConverter(const Value: IValueConverter);
+    procedure SetValueConverter(const Value: ITypeConverter);
     procedure UpdateLeft;
     function TwoWay: IBinding;
     property Mode: TBindingMode read GetMode write SetMode;
     property Left: IBindable read GetLeft write SetLeft;
     property Right: IBindable read GetRight write SetRight;
-    property ValueConverter: IValueConverter read GetValueConverter write SetValueConverter;
+    property ValueConverter: ITypeConverter read GetValueConverter write SetValueConverter;
   end;
 
   IBindManager = interface(IBaseElement)
     ['{78F93777-11FF-4980-93E7-BABBDA7648BB}']
-    procedure Add(const Binding: IBinding); overload;
-    procedure Add(pSourceControl: TControl;
-      const pSourcePath: string;
-      pTargetControl: TControl;
-      const TargetProperty: string = '';
-      const ValueConverter: IValueConverter = nil); overload;
-    procedure add(const pSourcePath: string; pTargetControl: TControl;
-      const TargetProperty: string = '';
-      const ValueConverter: IValueConverter = nil);   overload;
+    function Add(const pLeft, pRight: IBindable): IBinding; overload;
+    function Add(
+      pLeftControl: TControl; const pLeftProperty: string;
+      pRightControl: TControl; const pRightProperty: string;
+      const pValueConverter: ITypeConverter = nil): IBinding; overload;
+    function Add(const pLeftProperty: string;
+      pRightControl: TControl; const pRightProperty: string = '';
+      const pValueConverter: ITypeConverter = nil): IBinding; overload;
     procedure ClearBindings ;
   end;
 
