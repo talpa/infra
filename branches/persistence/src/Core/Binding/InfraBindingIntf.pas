@@ -3,6 +3,7 @@ unit InfraBindingIntf;
 interface
 
 uses
+  Controls,
   {Infra}
   InfraCommonIntf,
   InfraValueTypeIntf;
@@ -51,14 +52,14 @@ type
   IBindManager = interface(IBaseElement)
     ['{78F93777-11FF-4980-93E7-BABBDA7648BB}']
     procedure Add(const Binding: IBinding); overload;
-//    procedure Add(pSourceControl: TControl;
-//      const pSourcePath: string;
-//      pTargetControl: TControl;
-//      const TargetProperty: string = '';
-//      const ValueConverter: IValueConverter = nil); overload;
-//    procedure add(const pSourcePath: string; pTargetControl: TControl;
-//      const TargetProperty: string = '';
-//      const ValueConverter: IValueConverter = nil);   overload;
+    procedure Add(pSourceControl: TControl;
+      const pSourcePath: string;
+      pTargetControl: TControl;
+      const TargetProperty: string = '';
+      const ValueConverter: IValueConverter = nil); overload;
+    procedure add(const pSourcePath: string; pTargetControl: TControl;
+      const TargetProperty: string = '';
+      const ValueConverter: IValueConverter = nil);   overload;
     procedure ClearBindings ;
   end;
 
