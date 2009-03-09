@@ -40,6 +40,6 @@ contains
   InfraBindingManager in '..\..\Core\Binding\InfraBindingManager.pas',
   InfraBindingType in '..\..\Core\Binding\InfraBindingType.pas',
   InfraBindingService in '..\..\Core\Binding\InfraBindingService.pas',
-  List_Bindable in '..\..\Core\Binding\List_Bindable.pas';
+  List_MappingControl in '..\..\Core\Binding\List_MappingControl.pas';
 
 end.
