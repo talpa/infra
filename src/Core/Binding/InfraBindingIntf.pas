@@ -68,13 +68,13 @@ type
     function GetItem(Index: TClass): TGUID;
     procedure SetItem(Index: TClass ; Value: TGUID);
     function GetCount: Integer;
-    function Add(Index: TClass; Value: TGUID): string;
+    function Add(Index: TClass; Value: TGUID): TClass;
     procedure Delete(Index: TClass);
     procedure DeletePosition(Index: integer);
     procedure Clear;
     function PositionOf(Index: TClass; Value: TGUID): integer;
     function ValueOfPosition(Index: Integer): TGUID;
-    function IndexOfPosition(Index: Integer): string;
+    function IndexOfPosition(Index: Integer): TClass;
     property Count: Integer read GetCount;
     property Params[Index: TClass]: TGUID read GetItem write SetItem; default;
   end;
