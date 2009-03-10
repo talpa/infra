@@ -33,6 +33,9 @@ type
   private
     FListBind: IBindingList;
     FDataContext: IInfraType;
+    FBindableControlFactory: IBindableControlFactory;
+    FBindableInfraTypeFactory: IBindableInfraTypeFactory;
+    FMappingControl : IMappingControl;
   protected
     function GetDataContext: IInfraType;
     procedure SetDataContext(const Value: IInfraType);
@@ -42,19 +45,33 @@ type
       pLeftControl: TControl; const pLeftProperty: string;
       pRightControl: TControl; const pRightProperty: string;
       const pConverter: ITypeConverter = nil): IBinding; overload;
-    function Add(const pLeftProperty: string;
+    function Add(
+      const pLeftProperty: string;
       pRightControl: TControl; const pRightProperty: string = '';
       const pConverter: ITypeConverter = nil): IBinding; overload;
     procedure ClearBindings;
     property DataContext: IInfraType read GetDataContext write SetDataContext;
+    property BindableControlFactory: IBindableControlFactory read FBindableControlFactory;
+    property BindableInfraTypeFactory: IBindableInfraTypeFactory read FBindableInfraTypeFactory;
   public
     constructor Create; override;
+  end;
+
+  TBindableControlFactory = class(TElement, IBindableControlFactory)
+  public
+    function GetBindable(Control: TControl; PropertyPath: string): IBindable;
+    function RegisterControl(Control: TControl; BindableID: TGUID): IBindable;
+  end;
+
+  TBindableInfraTypeFactory = class(TElement, IBindableInfraTypeFactory)
+  public
+    function GetBindable(Value: IInfraType; FDataContext: string): IBindable;
   end;
 
 implementation
 
 uses
-  List_Binding;
+  List_Binding,InfraBindingControl, InfraBase;
 
 { TBinding }
 
@@ -122,6 +139,7 @@ constructor TBindManager.Create;
 begin
   inherited Create;
   FListBind := TBindingList.Create;
+  FBindableControlFactory := TBindableControlFactory.create;
 end;
 
 function TBindManager.Add(
@@ -131,10 +149,8 @@ function TBindManager.Add(
 var
   vLeft, vRight: IBindable;
 begin
-  {
   vLeft := BindableControlFactory.GetBindable(pLeftControl, pLeftProperty);
   vRight := BindableControlFactory.GetBindable(pRightControl, pRightProperty);
-  }
   Result := Add(vLeft, vRight, pConverter);
 end;
 
@@ -144,10 +160,8 @@ function TBindManager.Add(const pLeftProperty: string;
 var
   vLeft, vRight: IBindable;
 begin
-  {
-  vLeft := BindableInfraTypeFactory.GetBindable(FDataContext, pLeftProperty);
+//  vLeft := BindableInfraTypeFactory.GetBindable(pRightControl, pLeftProperty);
   vRight := BindableControlFactory.GetBindable(pRightControl, pRightProperty);
-  }
   Result := Add(vLeft, vRight, pConverter);
 end;
 
@@ -174,6 +188,29 @@ end;
 procedure TBindManager.SetDataContext(const Value: IInfraType);
 begin
   FDataContext := Value;
+end;
+
+{ TBindableControlFactory }
+
+function TBindableControlFactory.GetBindable(Control: TControl;
+  PropertyPath: string): IBindable;
+begin
+   Result := TBindableControl.Create as IBindableControl;
+   (Result as IBindableControl).Initialize(Control,PropertyPath);
+end;
+
+function TBindableControlFactory.RegisterControl(Control: TControl;
+  BindableID: TGUID): IBindable;
+begin
+
+end;
+
+{ TBindableInfraTypeFactory }
+
+function TBindableInfraTypeFactory.GetBindable(Value: IInfraType;
+  FDataContext: string): IBindable;
+begin
+
 end;
 
 end.

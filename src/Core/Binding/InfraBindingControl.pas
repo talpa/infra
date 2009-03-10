@@ -19,8 +19,7 @@ type
     function SupportPropertyByRTTI(const PropertyPath: String): Boolean;
     function GetValue: IInfraType;
     procedure SetValue(const Value: IInfraType);
-    procedure Initialize(pControl: TControl;
-      const pPropertyPath: String); overload;
+    procedure Initialize(pControl: TControl; const pPropertyPath: String); overload;
   protected
     function SupportCustomProperty(const PropertyPath: String): Boolean; virtual;
     function GetCustomValue: IInfraType; virtual; abstract;
