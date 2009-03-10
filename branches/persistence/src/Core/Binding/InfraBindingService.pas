@@ -3,20 +3,24 @@ unit InfraBindingService;
 interface
 
 uses
-  InfraCommon, InfraBindingIntf;
+    Controls,InfraCommon, InfraBindingIntf;
 
 type
   /// Serviço de Binding
   TInfraBindingService = class(TBaseElement, IInfraBindingService)
+  private
+     FMappingControl : IMappingControl;
   protected
     function GetNewBindManager: IBindManager;
+    function RegisterControl(Control: TControl; BindableID: TGUID): IBindable;
   end;
 
 implementation
 
 uses
   InfraCommonIntf,
-  InfraBindingManager;
+  InfraBindingManager,
+  List_MappingControl;
 
 { TInfraBindingService }
 
@@ -31,6 +35,7 @@ uses
 function TInfraBindingService.GetNewBindManager: IBindManager;
 begin
   Result := TBindManager.Create;
+  FMappingControl:= TMappingControl.Create;
 end;
 
 // Não entendi, mas se pôr direto no Initialization acontece Access Violations.
@@ -41,6 +46,12 @@ procedure InjectBindingService;
 begin
   (ApplicationContext as IBaseElement).Inject(
     IInfraBindingService, TInfraBindingService.Create);
+end;
+
+function TInfraBindingService.RegisterControl(Control: TControl;
+  BindableID: TGUID): IBindable;
+begin
+  FMappingControl.Add(Control.ClassType,BindableID)
 end;
 
 initialization
