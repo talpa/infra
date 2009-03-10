@@ -89,20 +89,10 @@ type
     property Count: Integer read GetCount;
   end;
 
-  IBindableControlFactory = interface
-    ['{3D17D593-3109-47D1-B4D4-8ED8E3F934D4}']
-    function GetBindable(Control: TControl; PropertyPath: string): IBindable;
-    function RegisterControl(Control: TControl; BindableID: TGUID): IBindable;
-  end;
-
-  IBindableInfraTypeFactory = interface
-    ['{559FC756-8A9B-44FF-82C1-46452DE9C4B5}']
-    function GetBindable(Value: IInfraType; FDataContext: string): IBindable;
-  end;
-
   IInfraBindingService = interface(IInterface)
     ['{AE2A98DE-01B4-49BB-9225-F349C68D2DCD}']
     function GetNewBindManager: IBindManager;
+    function RegisterControl(Control: TControl; BindableID: TGUID): IBindable;
   end;
 
 implementation

@@ -33,9 +33,6 @@ type
   private
     FListBind: IBindingList;
     FDataContext: IInfraType;
-    FBindableControlFactory: IBindableControlFactory;
-    FBindableInfraTypeFactory: IBindableInfraTypeFactory;
-    FMappingControl : IMappingControl;
   protected
     function GetDataContext: IInfraType;
     procedure SetDataContext(const Value: IInfraType);
@@ -51,21 +48,18 @@ type
       const pConverter: ITypeConverter = nil): IBinding; overload;
     procedure ClearBindings;
     property DataContext: IInfraType read GetDataContext write SetDataContext;
-    property BindableControlFactory: IBindableControlFactory read FBindableControlFactory;
-    property BindableInfraTypeFactory: IBindableInfraTypeFactory read FBindableInfraTypeFactory;
   public
     constructor Create; override;
   end;
 
-  TBindableControlFactory = class(TElement, IBindableControlFactory)
+  BindableControlFactory = class
   public
-    function GetBindable(Control: TControl; PropertyPath: string): IBindable;
-    function RegisterControl(Control: TControl; BindableID: TGUID): IBindable;
+   class function GetBindable(Control: TControl; PropertyPath: string): IBindable;
   end;
 
-  TBindableInfraTypeFactory = class(TElement, IBindableInfraTypeFactory)
+  BindableInfraTypeFactory = class
   public
-    function GetBindable(Value: IInfraType; FDataContext: string): IBindable;
+   class function GetBindable(Value: IInfraType; FDataContext: string): IBindable;
   end;
 
 implementation
@@ -139,7 +133,6 @@ constructor TBindManager.Create;
 begin
   inherited Create;
   FListBind := TBindingList.Create;
-  FBindableControlFactory := TBindableControlFactory.create;
 end;
 
 function TBindManager.Add(
@@ -192,22 +185,16 @@ end;
 
 { TBindableControlFactory }
 
-function TBindableControlFactory.GetBindable(Control: TControl;
+class function BindableControlFactory.GetBindable(Control: TControl;
   PropertyPath: string): IBindable;
 begin
    Result := TBindableControl.Create as IBindableControl;
    (Result as IBindableControl).Initialize(Control,PropertyPath);
 end;
 
-function TBindableControlFactory.RegisterControl(Control: TControl;
-  BindableID: TGUID): IBindable;
-begin
-
-end;
-
 { TBindableInfraTypeFactory }
 
-function TBindableInfraTypeFactory.GetBindable(Value: IInfraType;
+class function BindableInfraTypeFactory.GetBindable(Value: IInfraType;
   FDataContext: string): IBindable;
 begin
 
