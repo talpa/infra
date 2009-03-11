@@ -14,7 +14,7 @@ type
   TBindingMode = (bmLeftToRight, bmTwoWay);
   TUpdateTrigger = (utLostFocus, utPropertyChanged, utExplicit);
 
-  IBindable = interface(IBaseElement)
+  IBindable = interface(IElement)
     ['{9ABF8CA0-E75A-48A6-9C20-4E3FDB781A2F}']
     function GetValue: IInfraType;
     procedure SetValue(const Value: IInfraType);
@@ -43,6 +43,10 @@ type
     property Left: IBindable read GetLeft write SetLeft;
     property Right: IBindable read GetRight write SetRight;
     property ValueConverter: ITypeConverter read GetValueConverter write SetValueConverter;
+  end;
+
+  IBindableValueChanged = interface(IInfraEvent)
+    ['{D7A4897D-A856-4A1A-BB0E-9E54AECB4BDA}']
   end;
 
   IBindManager = interface(IBaseElement)
