@@ -3,26 +3,38 @@ unit InfraBindingService;
 interface
 
 uses
-    Controls,InfraCommon, InfraBindingIntf;
+  Controls,
+  InfraCommon,
+  List_MappingControl,
+  InfraBindingControl,
+  InfraBindingIntf;
 
 type
   /// Serviço de Binding
   TInfraBindingService = class(TBaseElement, IInfraBindingService)
   private
-     FMappingControl : IMappingControl;
+    FMappingControls: IMappingControlList;
+    function GetMappingControlList: IMappingControlList;
   protected
     function GetNewBindManager: IBindManager;
-    function RegisterControl(Control: TControl; BindableID: TGUID): IBindable;
+    procedure RegisterControl(pClass, pBindableClass: TClass);
+    property MappingControls: IMappingControlList read GetMappingControlList;
   end;
 
 implementation
 
 uses
   InfraCommonIntf,
-  InfraBindingManager,
-  List_MappingControl;
+  InfraBindingManager;
 
 { TInfraBindingService }
+
+function TInfraBindingService.GetMappingControlList: IMappingControlList;
+begin
+  if not Assigned(FMappingControls) then
+    FMappingControls := TMappingControlList.Create;
+  Result := FMappingControls;
+end;
 
 {**
   Cria um novo objeto BindManager
@@ -35,23 +47,21 @@ uses
 function TInfraBindingService.GetNewBindManager: IBindManager;
 begin
   Result := TBindManager.Create;
-  FMappingControl:= TMappingControl.Create;
+end;
+
+procedure TInfraBindingService.RegisterControl(pClass, pBindableClass: TClass);
+begin
+  MappingControls.Add(pClass, pBindableClass)
 end;
 
 // Não entendi, mas se pôr direto no Initialization acontece Access Violations.
-// ATENÇÃO: Vc não deve atribuir PersistenceService para uma variável de
+// ATENÇÃO: Vc não deve atribuir BindingService para uma variável de
 // instancia nem global sem que no final da aplicação atribuia nil a ela explicitamente,
 // sob pena de acontecer um AV no final da aplicação
 procedure InjectBindingService;
 begin
   (ApplicationContext as IBaseElement).Inject(
     IInfraBindingService, TInfraBindingService.Create);
-end;
-
-function TInfraBindingService.RegisterControl(Control: TControl;
-  BindableID: TGUID): IBindable;
-begin
-  FMappingControl.Add(Control.ClassType,BindableID)
 end;
 
 initialization
