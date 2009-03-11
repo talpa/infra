@@ -21,10 +21,12 @@ type
     property Value: IInfraType read GetValue write SetValue;
   end;
 
+  IBindableInfraType = interface(IBindable)
+    ['{CBE66F0E-CEF6-4B18-A254-A1F28B804B1B}']
+  end;
+
   IBindableControl = interface(IBindable)
     ['{CDDB1FF4-D5DC-4BFC-9D6A-A20578D54724}']
-    procedure Initialize(pControl: TControl;
-      const pPropertyPath: String);
   end;
 
   IBinding = interface(IBaseElement)
@@ -66,23 +68,6 @@ type
     property DataContext: IInfraType read GetDataContext write SetDataContext;
   end;
   
-
-  IMappingControl = interface
-    ['{A927D310-BBFD-4FD2-98BC-807317A83463}']
-    function GetItem(Index: TClass): TGUID;
-    procedure SetItem(Index: TClass ; Value: TGUID);
-    function GetCount: Integer;
-    function Add(Index: TClass; Value: TGUID): TClass;
-    procedure Delete(Index: TClass);
-    procedure DeletePosition(Index: integer);
-    procedure Clear;
-    function PositionOf(Index: TClass; Value: TGUID): integer;
-    function ValueOfPosition(Index: Integer): TGUID;
-    function IndexOfPosition(Index: Integer): TClass;
-    property Count: Integer read GetCount;
-    property Params[Index: TClass]: TGUID read GetItem write SetItem; default;
-  end;
-
   IBindingList = interface
     ['{F48F2F24-9324-42B3-AC64-93C15CFA5C4C}']
     function Add(const Item: IBinding): Integer;
@@ -93,11 +78,32 @@ type
     property Count: Integer read GetCount;
   end;
 
+  IMappingControlList = interface
+    ['{A927D310-BBFD-4FD2-98BC-807317A83463}']
+    function GetItem(Index: TClass): TClass;
+    procedure SetItem(Index: TClass ; Value: TClass);
+    function GetCount: Integer;
+    function Add(Index: TClass; Value: TClass): TClass;
+    procedure Delete(Index: TClass);
+    procedure DeletePosition(Index: integer);
+    procedure Clear;
+    function PositionOf(Index: TClass; Value: TClass): integer;
+    function ValueOfPosition(Index: Integer): TClass;
+    function IndexOfPosition(Index: Integer): TClass;
+    property Count: Integer read GetCount;
+    property Items[Index: TClass]: TClass read GetItem
+      write SetItem; default;
+  end;
+
   IInfraBindingService = interface(IInterface)
     ['{AE2A98DE-01B4-49BB-9225-F349C68D2DCD}']
     function GetNewBindManager: IBindManager;
-    function RegisterControl(Control: TControl; BindableID: TGUID): IBindable;
+    procedure RegisterControl(pClass, pBindableClass: TClass);
+    function GetMappingControlList: IMappingControlList;
+    property MappingControls: IMappingControlList read GetMappingControlList;
   end;
+
+function BindingService: IInfraBindingService;
 
 implementation
 

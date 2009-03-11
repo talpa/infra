@@ -4,9 +4,11 @@ interface
 
 uses
   Controls,
+  InfraCommon,
+  InfraNotify,
+  InfraCommonIntf,
   InfraBindingIntf,
-  InfraValueTypeIntf,
-  InfraCommon;
+  InfraValueTypeIntf;
 
 type
   TBinding = class(TElement, IBinding)
@@ -52,20 +54,21 @@ type
     constructor Create; override;
   end;
 
-  BindableControlFactory = class
+  TBindableValueChanged = class(TInfraEvent, IBindableValueChanged)
+  private
+    FSource: IBindable;
+    function GetSource: IElement;
+    procedure SetSource(const Value: IElement);
   public
-   class function GetBindable(Control: TControl; PropertyPath: string): IBindable;
-  end;
-
-  BindableInfraTypeFactory = class
-  public
-   class function GetBindable(Value: IInfraType; FDataContext: string): IBindable;
+    constructor Create(const Source: IBindable); reintroduce;
   end;
 
 implementation
 
 uses
-  List_Binding,InfraBindingControl, InfraBase;
+  List_Binding,
+  InfraBindingControl,
+  InfraBindingType;
 
 { TBinding }
 
@@ -140,10 +143,16 @@ function TBindManager.Add(
   pRightControl: TControl; const pRightProperty: string;
   const pConverter: ITypeConverter = nil): IBinding;
 var
+  vLeftClass, vRightClass: TBindableControlClass;
   vLeft, vRight: IBindable;
 begin
-  vLeft := BindableControlFactory.GetBindable(pLeftControl, pLeftProperty);
-  vRight := BindableControlFactory.GetBindable(pRightControl, pRightProperty);
+  with BindingService.MappingControls do
+  begin
+    vLeftClass := TBindableControlClass(Items[pLeftControl.ClassType]);
+    vRightClass := TBindableControlClass(Items[pRightControl.ClassType]);
+  end;
+  vLeft := vLeftClass.Create(pLeftControl, pLeftProperty);
+  vRight := vRightClass.Create(pRightControl, pRightProperty);
   Result := Add(vLeft, vRight, pConverter);
 end;
 
@@ -151,10 +160,13 @@ function TBindManager.Add(const pLeftProperty: string;
   pRightControl: TControl; const pRightProperty: string = '';
   const pConverter: ITypeConverter = nil): IBinding;
 var
+  vRightClass: TBindableControlClass;
   vLeft, vRight: IBindable;
 begin
-//  vLeft := BindableInfraTypeFactory.GetBindable(pRightControl, pLeftProperty);
-  vRight := BindableControlFactory.GetBindable(pRightControl, pRightProperty);
+  vLeft := TBindableInfraType.GetBindable(FDataContext, pLeftProperty);
+  with BindingService.MappingControls do
+    vRightClass := TBindableControlClass(Items[pRightControl.ClassType]);
+  vRight := vRightClass.Create(pRightControl, pRightProperty);
   Result := Add(vLeft, vRight, pConverter);
 end;
 
@@ -183,22 +195,22 @@ begin
   FDataContext := Value;
 end;
 
-{ TBindableControlFactory }
+{ TBindableValueChanged }
 
-class function BindableControlFactory.GetBindable(Control: TControl;
-  PropertyPath: string): IBindable;
+constructor TBindableValueChanged.Create(const Source: IBindable);
 begin
-   Result := TBindableControl.Create as IBindableControl;
-   (Result as IBindableControl).Initialize(Control,PropertyPath);
+  inherited Create;
+  FSource := Source;
 end;
 
-{ TBindableInfraTypeFactory }
-
-class function BindableInfraTypeFactory.GetBindable(Value: IInfraType;
-  FDataContext: string): IBindable;
+function TBindableValueChanged.GetSource: IElement;
 begin
+  Result := FSource;
+end;
 
+procedure TBindableValueChanged.SetSource(const Value: IElement);
+begin
+  FSource := Value as IBindable;
 end;
 
 end.
-

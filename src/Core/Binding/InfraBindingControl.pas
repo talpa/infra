@@ -3,13 +3,18 @@ unit InfraBindingControl;
 interface
 
 uses
-  Controls,InfraCommon, InfraBindingIntf, TypInfo, InfraValueTypeIntf,
-  Messages;
+  Controls,
+  TypInfo,
+  InfraCommon,
+  Messages,
+  InfraBindingIntf,
+  InfraBindingType,
+  InfraValueTypeIntf;
 
 type
   TPropertyAccessMode = (paRTTI, paCustom);
 
-  TBindableControl = class(TElement, IBindableControl)
+  TBindableControl = class(TBindable, IBindableControl)
   private
     FPropInfo: PPropInfo;
     FControl: TControl;
@@ -19,15 +24,20 @@ type
     function GetValueByRTTI: IInfraType;
     procedure SetValueByRTTI(const Value: IInfraType);
     function SupportPropertyByRTTI(const PropertyPath: String): Boolean; virtual;
-    function GetValue: IInfraType;
-    procedure SetValue(const Value: IInfraType);
-    procedure Initialize(pControl: TControl; const pPropertyPath: String); overload;
   protected
-    procedure WindowProc(var Message: TMessage); virtual;
+    procedure WindowProc(var Message: TMessage); virtual;    function GetValue: IInfraType; override;
+    procedure SetValue(const Value: IInfraType); override;
     function SupportCustomProperty(const PropertyPath: String): Boolean; virtual;
     function GetCustomValue: IInfraType; virtual; abstract;
     procedure CustomSetValue(const Value: IInfraType); virtual; abstract;
+  public
+    class function GetBindable(pControl: TControl;
+      const pPropertyPath: string): IBindable; virtual; abstract;
+    constructor Create(pControl: TControl; const pPropertyPath: string); reintroduce;
   end;
+
+  TBindableClass = class of TBindable;
+  TBindableControlClass = class of TBindableControl;
 
   TBindableEdit = class(TBindableControl)
   protected
@@ -38,13 +48,17 @@ type
 implementation
 
 uses
-  InfraValueType, SysUtils, InfraBindingConsts, InfraCommonIntf, InfraBinding;
+  SysUtils,
+  InfraValueType,
+  InfraBindingConsts,
+  InfraCommonIntf, InfraBindingManager;
 
 { TBindableControl }
 
-procedure TBindableControl.Initialize(pControl: TControl;
-  const pPropertyPath: String);
+constructor TBindableControl.Create(pControl: TControl;
+  const pPropertyPath: string);
 begin
+  inherited Create;
   FControl := pControl;
   FPropertyPath := pPropertyPath;
   if SupportCustomProperty(pPropertyPath) then
@@ -118,7 +132,7 @@ procedure TBindableEdit.WindowProc(var Message: TMessage);
 begin
   inherited;
   if Message.Msg = WM_SETTEXT then
-    EventService.Publish(TBindableValueChanged.Create(Self));
+    Publisher.Publish(TBindableValueChanged.Create(Self) as IBindableValueChanged);
 end;
 
 end.

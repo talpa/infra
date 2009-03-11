@@ -13,23 +13,23 @@ uses
   InfraValueTypeIntf;
 
 type
-  {.$DEFINE EQUAL_INDEX_DEFAULT implementing here}
-  {.$DEFINE EQUAL_VALUE_DEFAULT implementing here}
-  {.$DEFINE INVALID_INDEX_DEFAULT implementing here}
-  {.$DEFINE INVALID_VALUE_DEFAULT implementing here}
-  _ITERABLELIST_BASE_ = TBaseElement;      // List's Class Base
-  _ITERABLELIST_INTF_ = IMappingControl;   // List's Interface Implementing
-  _ITERATOR_INTF_ = IInterface;            // List's Interface Implementing
-  _INDEX_ = TClass;                        // List's Item Index ===>>> string
-  _VALUE_ = TGUID;                         // List's Item Value
+  {$DEFINE EQUAL_INDEX_DEFAULT implementing here}
+  {$DEFINE EQUAL_VALUE_DEFAULT implementing here}
+  {$DEFINE INVALID_INDEX_DEFAULT implementing here}
+  {$DEFINE INVALID_VALUE_DEFAULT implementing here}
+  _ITERABLELIST_BASE_ = TBaseElement;          // List's Class Base
+  _ITERABLELIST_INTF_ = IMappingControlList;   // List's Interface Implementing
+  _ITERATOR_INTF_ = IInterface;                // List's Interface Implementing
+  _INDEX_ = TClass;                            // List's Item Index ===>>> string
+  _VALUE_ = TClass;                            // List's Item Value
   {$I ..\Templates\InfraTempl_ListDynIndex.inc}
-    function InvalidIndex: _INDEX_;
-    function InvalidValue: _VALUE_;
-    function IsIndexEqual(const Index1, Index2: _INDEX_): boolean;
-    function IsValueEqual(Value1, Value2: _VALUE_): boolean;
+//    function InvalidIndex: _INDEX_;
+//    function InvalidValue: _VALUE_;
+//    function IsIndexEqual(const Index1, Index2: _INDEX_): boolean;
+//    function IsValueEqual(Value1, Value2: _VALUE_): boolean;
   end;
 
-  TMappingControl = class(_ITERABLELIST_);
+  TMappingControlList = class(_ITERABLELIST_);
 
 implementation
 
@@ -47,6 +47,7 @@ begin
   inherited;
 end;
 
+{
 function _ITERABLELIST_.InvalidIndex: _INDEX_;
 begin
   Result := nil;
@@ -66,6 +67,10 @@ function _ITERABLELIST_.IsValueEqual(Value1, Value2: _VALUE_): boolean;
 begin
   Result := IsEqualGUID(Value1, Value2);
 end;
+}
 
 end.
+
+
+
 

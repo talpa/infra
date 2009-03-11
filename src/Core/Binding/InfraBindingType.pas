@@ -6,27 +6,53 @@ uses
   InfraCommon, InfraBindingIntf, InfraValueTypeIntf;
 
 type
-  TBindableInfraType = class(TElement, IBindable)
+  TBindable = class(TElement, IBindable)
   private
-    FValue: IInfraType;
-    function GetValue: IInfraType;
-    procedure SetValue(const Value: IInfraType);
+    FInfraType: IInfraType;
   protected
+    function GetValue: IInfraType; virtual;
+    procedure SetValue(const Value: IInfraType); virtual;
     property Value: IInfraType read GetValue write SetValue;
+  end;
+
+  TBindableInfraType = class(TBindable, IBindableInfraType)
+  public
+    class function GetBindable(pValue: IInfraType;
+      const pPropertyPath: string): IBindable; virtual;
   end;
 
 implementation
 
-{ TBindableInfraType }
+uses
+  SysUtils;
 
-function TBindableInfraType.GetValue: IInfraType;
+{ TBindable }
+
+function TBindable.GetValue: IInfraType;
 begin
-  Result := FValue;
+  Result := FInfraType;
 end;
 
-procedure TBindableInfraType.SetValue(const Value: IInfraType);
+procedure TBindable.SetValue(const Value: IInfraType);
 begin
-  FValue := Value;
+  FInfraType := Value;
+end;
+
+{ TBindableInfraType }
+
+class function TBindableInfraType.GetBindable(pValue: IInfraType;
+  const pPropertyPath: string): IBindable;
+var
+  vObject: IInfraObject;
+  vProperty: IProperty;
+begin
+  if Supports(pValue, IInfraObject, vObject) then
+  begin
+    vProperty := vObject.GetProperty(pPropertyPath);
+    // *** gerar exceção quando a propriedade nao estiver lá?
+    Result := TBindableInfraType.Create;
+    Result.Value := vProperty as IInfraType;
+  end;
 end;
 
 end.
