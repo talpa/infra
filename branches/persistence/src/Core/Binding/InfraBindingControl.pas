@@ -3,7 +3,8 @@ unit InfraBindingControl;
 interface
 
 uses
-    Controls,InfraCommon, InfraBindingIntf, TypInfo, InfraValueTypeIntf;
+  Controls,InfraCommon, InfraBindingIntf, TypInfo, InfraValueTypeIntf,
+  Messages;
 
 type
   TPropertyAccessMode = (paRTTI, paCustom);
@@ -14,26 +15,30 @@ type
     FControl: TControl;
     FPropertyPath: String;
     FPropertyAccessMode: TPropertyAccessMode;
+    FOldWndProc: TWndMethod;
     function GetValueByRTTI: IInfraType;
     procedure SetValueByRTTI(const Value: IInfraType);
-    function SupportPropertyByRTTI(const PropertyPath: String): Boolean;
+    function SupportPropertyByRTTI(const PropertyPath: String): Boolean; virtual;
     function GetValue: IInfraType;
     procedure SetValue(const Value: IInfraType);
     procedure Initialize(pControl: TControl; const pPropertyPath: String); overload;
   protected
+    procedure WindowProc(var Message: TMessage); virtual;
     function SupportCustomProperty(const PropertyPath: String): Boolean; virtual;
     function GetCustomValue: IInfraType; virtual; abstract;
     procedure CustomSetValue(const Value: IInfraType); virtual; abstract;
   end;
 
   TBindableEdit = class(TBindableControl)
-    // implementar para TEdit
+  protected
+    function SupportPropertyByRTTI(const PropertyPath: String): Boolean; override;
+    procedure WindowProc(var Message: TMessage); override;
   end;
 
 implementation
 
 uses
-  InfraValueType, SysUtils, InfraBindingConsts;
+  InfraValueType, SysUtils, InfraBindingConsts, InfraCommonIntf, InfraBinding;
 
 { TBindableControl }
 
@@ -56,6 +61,11 @@ function TBindableControl.SupportPropertyByRTTI(
 begin
   FPropInfo := GetPropInfo(FControl, FPropertyPath);
   Result := Assigned(FPropInfo);
+end;
+
+procedure TBindableControl.WindowProc(var Message: TMessage);
+begin
+  FOldWndProc(Message);
 end;
 
 function TBindableControl.SupportCustomProperty(
@@ -94,6 +104,21 @@ begin
     tkString, tkLString, tkWString:
       SetStrProp(FControl, FPropInfo, (Value as IInfraString).AsString);
   end;
+end;
+
+{ TBindableEdit }
+
+function TBindableEdit.SupportPropertyByRTTI(
+  const PropertyPath: String): Boolean;
+begin
+  Result := AnsiSameText(PropertyPath, 'Text');
+end;
+
+procedure TBindableEdit.WindowProc(var Message: TMessage);
+begin
+  inherited;
+  if Message.Msg = WM_SETTEXT then
+    EventService.Publish(TBindableValueChanged.Create(Self));
 end;
 
 end.
