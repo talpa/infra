@@ -21,9 +21,7 @@ type
     function GetMode: TBindingMode;
     function GetRight: IBindable;
     function GetValueConverter: ITypeConverter;
-    procedure SetLeft(const Value: IBindable);
     procedure SetMode(Value: TBindingMode);
-    procedure SetRight(const Value: IBindable);
     procedure SetValueConverter(const Value: ITypeConverter);
     procedure UpdateLeft;
     function TwoWay: IBinding;
@@ -68,14 +66,19 @@ implementation
 uses
   List_Binding,
   InfraBindingControl,
-  InfraBindingType;
+  InfraBindingType,
+  InfraBindingConsts;
 
 { TBinding }
 
 constructor TBinding.Create(const Left, Right: IBindable);
 begin
-  SetLeft(Left);
-  SetRight(Right);
+  if not Assigned(Left) then
+    Raise EInfraBindingError.Create(cErrorLeftBindableNotDefined);
+  if not Assigned(Right) then
+    Raise EInfraBindingError.Create(cErrorRightBindableNotDefined);
+  FLeft := Left;
+  FRight := Right;
   SetMode(bmLeftToRight);
 end;
 
@@ -99,19 +102,12 @@ begin
   Result := FValueConverter;
 end;
 
-procedure TBinding.SetLeft(const Value: IBindable);
-begin
-  FLeft := Value;
-end;
-
 procedure TBinding.SetMode(Value: TBindingMode);
 begin
+  if (Value = bmTwoWay)
+    and not FRight.Supports2Way then
+    Raise EInfraBindingError.Create(cErrorBindable2WayNotSupported);
   FMode := Value;
-end;
-
-procedure TBinding.SetRight(const Value: IBindable);
-begin
-  FRight := Value;
 end;
 
 procedure TBinding.SetValueConverter(const Value: ITypeConverter);

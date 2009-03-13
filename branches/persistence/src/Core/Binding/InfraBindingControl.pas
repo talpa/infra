@@ -20,12 +20,15 @@ type
     FControl: TControl;
     FPropertyPath: String;
     FPropertyAccessMode: TPropertyAccessMode;
-    FOldWndProc: TWndMethod;
+    FDefaultWindowProc: TWndMethod;
+    FTriggeringMessage: Cardinal;
+    procedure VerifySupport(pPropertyPath:  string);
     function GetValueByRTTI: IInfraType;
     procedure SetValueByRTTI(const Value: IInfraType);
-    function SupportPropertyByRTTI(const PropertyPath: String): Boolean; virtual;
+    function SupportPropertyByRTTI(const pPropertyPath: String): Boolean; virtual;
   protected
-    procedure WindowProc(var Message: TMessage); virtual;    function GetValue: IInfraType; override;
+    procedure WindowProc(var Message: TMessage); virtual;
+    function GetValue: IInfraType; override;
     procedure SetValue(const Value: IInfraType); override;
     function SupportCustomProperty(const PropertyPath: String): Boolean; virtual;
     function GetCustomValue: IInfraType; virtual; abstract;
@@ -34,14 +37,14 @@ type
     class function GetBindable(pControl: TControl;
       const pPropertyPath: string): IBindable; virtual; abstract;
     constructor Create(pControl: TControl; const pPropertyPath: string); reintroduce;
+    destructor Destroy; override;
   end;
 
-  TBindableClass = class of TBindable;
   TBindableControlClass = class of TBindableControl;
 
   TBindableEdit = class(TBindableControl)
   protected
-    function SupportPropertyByRTTI(const PropertyPath: String): Boolean; override;
+    function SupportPropertyByRTTI(const pPropertyPath: String): Boolean; override;
     procedure WindowProc(var Message: TMessage); override;
   end;
 
@@ -55,31 +58,51 @@ uses
 
 { TBindableControl }
 
+procedure TBindableControl.VerifySupport(pPropertyPath: string);
+begin
+  if SupportCustomProperty(pPropertyPath)  then
+    FPropertyAccessMode := paCustom
+  else
+  if SupportPropertyByRTTI(pPropertyPath)  then
+    FPropertyAccessMode := paRTTI
+  else
+   Raise EInfraBindingError.CreateFmt(
+     cErrorBindingProprtyNotExists, [pPropertyPath]);
+end;
+
 constructor TBindableControl.Create(pControl: TControl;
   const pPropertyPath: string);
 begin
   inherited Create;
   FControl := pControl;
   FPropertyPath := pPropertyPath;
-  if SupportCustomProperty(pPropertyPath) then
-    FPropertyAccessMode := paCustom
-  else if SupportPropertyByRTTI(pPropertyPath) then
-    FPropertyAccessMode := paRTTI
-  else
-    Raise EInfraBindingError.CreateFmt(
-      cErrorBindingProprtyNotExists, [pPropertyPath]);
+  VerifySupport(pPropertyPath);
+  // captura mensagens do controle
+  FDefaultWindowProc := FControl.WindowProc;
+  FControl.WindowProc := WindowProc;
+end;
+
+destructor TBindableControl.Destroy;
+begin
+  FControl.WindowProc := FDefaultWindowProc;
+  inherited;
 end;
 
 function TBindableControl.SupportPropertyByRTTI(
-  const PropertyPath: String): Boolean;
+  const pPropertyPath: String): Boolean;
 begin
-  FPropInfo := GetPropInfo(FControl, FPropertyPath);
+  FPropInfo := GetPropInfo(FControl, pPropertyPath);
   Result := Assigned(FPropInfo);
 end;
 
 procedure TBindableControl.WindowProc(var Message: TMessage);
 begin
-  FOldWndProc(Message);
+  FDefaultWindowProc(Message);
+  if Message.Msg <> FTriggeringMessage then
+  begin
+    FTriggeringMessage := Message.Msg;
+    Dispatch(Message);
+  end;
 end;
 
 function TBindableControl.SupportCustomProperty(
@@ -123,16 +146,30 @@ end;
 { TBindableEdit }
 
 function TBindableEdit.SupportPropertyByRTTI(
-  const PropertyPath: String): Boolean;
+  const pPropertyPath: String): Boolean;
+var
+  vSupport: boolean;
 begin
-  Result := AnsiSameText(PropertyPath, 'Text');
+  vSupport := False;
+  if AnsiSameText(pPropertyPath, 'Text') then
+  begin
+    vSupport := True;
+    Supports2Way := True;
+  // end else if AnsiSameText(pPropertyPath, 'AnotherProperty') then
+  end;
+  Result := vSupport
+    and inherited SupportPropertyByRTTI(pPropertyPath);
 end;
 
 procedure TBindableEdit.WindowProc(var Message: TMessage);
 begin
-  inherited;
-  if Message.Msg = WM_SETTEXT then
+  inherited WindowProc(Message);
+  // *** teria de testar o updatetriggermode aqui tambem
+  if AnsiSameText(FPropertyPath, 'Text')
+    and (Message.Msg = WM_KILLFOCUS) then
     Publisher.Publish(TBindableValueChanged.Create(Self) as IBindableValueChanged);
+  Dispatch(Message);
+  // end else if....
 end;
 
 end.

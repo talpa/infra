@@ -9,10 +9,14 @@ type
   TBindable = class(TElement, IBindable)
   private
     FInfraType: IInfraType;
+    FSupports2Way: Boolean;
   protected
+    function GetSupports2Way: Boolean; virtual;
+    procedure SetSupports2Way(Value: Boolean); virtual;
     function GetValue: IInfraType; virtual;
     procedure SetValue(const Value: IInfraType); virtual;
     property Value: IInfraType read GetValue write SetValue;
+    property Supports2Way: Boolean read GetSupports2Way write SetSupports2Way;
   end;
 
   TBindableInfraType = class(TBindable, IBindableInfraType)
@@ -28,9 +32,19 @@ uses
 
 { TBindable }
 
+function TBindable.GetSupports2Way: Boolean;
+begin
+  Result := FSupports2Way;
+end;
+
 function TBindable.GetValue: IInfraType;
 begin
   Result := FInfraType;
+end;
+
+procedure TBindable.SetSupports2Way(Value: Boolean);
+begin
+  FSupports2Way := Value;
 end;
 
 procedure TBindable.SetValue(const Value: IInfraType);
