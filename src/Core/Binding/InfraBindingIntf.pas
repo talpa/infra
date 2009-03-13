@@ -17,8 +17,11 @@ type
   IBindable = interface(IElement)
     ['{9ABF8CA0-E75A-48A6-9C20-4E3FDB781A2F}']
     function GetValue: IInfraType;
+    function GetSupports2Way: Boolean;
     procedure SetValue(const Value: IInfraType);
+    procedure SetSupports2Way(Value: Boolean);
     property Value: IInfraType read GetValue write SetValue;
+    property Supports2Way: Boolean read GetSupports2Way write SetSupports2Way;
   end;
 
   IBindableInfraType = interface(IBindable)
@@ -36,14 +39,12 @@ type
     function GetRight: IBindable;
     function GetValueConverter: ITypeConverter;
     procedure SetMode(Value: TBindingMode);
-    procedure SetLeft(const Value: IBindable);
-    procedure SetRight(const Value: IBindable);
     procedure SetValueConverter(const Value: ITypeConverter);
     procedure UpdateLeft;
     function TwoWay: IBinding;
     property Mode: TBindingMode read GetMode write SetMode;
-    property Left: IBindable read GetLeft write SetLeft;
-    property Right: IBindable read GetRight write SetRight;
+    property Left: IBindable read GetLeft;
+    property Right: IBindable read GetRight;
     property ValueConverter: ITypeConverter read GetValueConverter write SetValueConverter;
   end;
 
