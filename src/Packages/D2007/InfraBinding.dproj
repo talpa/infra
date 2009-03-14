@@ -44,7 +44,9 @@
     <DelphiCompile Include="InfraBinding.dpk">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
-    <DCCReference Include="..\..\Core\Binding\InfraBinding.pas" />
+    <DCCReference Include="$(SystemRoot)\system32\rtl.dcp" />
+    <DCCReference Include="$(SystemRoot)\system32\vcl.dcp" />
+    <DCCReference Include="$(SystemRoot)\system32\xmlrtl.dcp" />
     <DCCReference Include="..\..\Core\Binding\InfraBindingConsts.pas" />
     <DCCReference Include="..\..\Core\Binding\InfraBindingControl.pas" />
     <DCCReference Include="..\..\Core\Binding\InfraBindingIntf.pas" />
@@ -53,8 +55,5 @@
     <DCCReference Include="..\..\Core\Binding\InfraBindingType.pas" />
     <DCCReference Include="..\..\Core\Binding\List_Binding.pas" />
     <DCCReference Include="..\..\Core\Binding\List_MappingControl.pas" />
-    <DCCReference Include="..\..\Core\Binding\rtl.dcp" />
-    <DCCReference Include="..\..\Core\Binding\vcl.dcp" />
-    <DCCReference Include="..\..\Core\Binding\xmlrtl.dcp" />
   </ItemGroup>
 </Project>

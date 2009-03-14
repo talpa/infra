@@ -33,6 +33,7 @@ type
     function SupportCustomProperty(const PropertyPath: String): Boolean; virtual;
     function GetCustomValue: IInfraType; virtual; abstract;
     procedure CustomSetValue(const Value: IInfraType); virtual; abstract;
+    function GetSupports2Way: Boolean; override;    
   public
     class function GetBindable(pControl: TControl;
       const pPropertyPath: string): IBindable; virtual; abstract;
@@ -44,8 +45,8 @@ type
 
   TBindableEdit = class(TBindableControl)
   protected
-    function SupportPropertyByRTTI(const pPropertyPath: String): Boolean; override;
     procedure WindowProc(var Message: TMessage); override;
+    function GetSupports2Way: Boolean; override;
   end;
 
 implementation
@@ -111,6 +112,11 @@ begin
   Result := False;
 end;
 
+function TBindableControl.GetSupports2Way: Boolean;
+begin
+  Result := False;
+end;
+
 function TBindableControl.GetValue: IInfraType;
 begin
   case FPropertyAccessMode of
@@ -145,31 +151,20 @@ end;
 
 { TBindableEdit }
 
-function TBindableEdit.SupportPropertyByRTTI(
-  const pPropertyPath: String): Boolean;
-var
-  vSupport: boolean;
+function TBindableEdit.GetSupports2Way: Boolean;
 begin
-  vSupport := False;
-  if AnsiSameText(pPropertyPath, 'Text') then
-  begin
-    vSupport := True;
-    Supports2Way := True;
-  // end else if AnsiSameText(pPropertyPath, 'AnotherProperty') then
-  end;
-  Result := vSupport
-    and inherited SupportPropertyByRTTI(pPropertyPath);
+  inherited;
+  if AnsiSameText(FPropertyPath, 'Text') then
+    Result := True;  
 end;
 
 procedure TBindableEdit.WindowProc(var Message: TMessage);
 begin
   inherited WindowProc(Message);
   // *** teria de testar o updatetriggermode aqui tambem
-  if AnsiSameText(FPropertyPath, 'Text')
-    and (Message.Msg = WM_KILLFOCUS) then
-    Publisher.Publish(TBindableValueChanged.Create(Self) as IBindableValueChanged);
-  Dispatch(Message);
-  // end else if....
+  if AnsiSameText(FPropertyPath, 'Text') and (Message.Msg = WM_KILLFOCUS) then
+    Changed;     
+
 end;
 
 end.

@@ -16,6 +16,7 @@ type
     FLeft, FRight: IBindable;
     FValueConverter: ITypeConverter;
     FMode: TBindingMode;
+    procedure UpdateRight;
   protected
     function GetLeft: IBindable;
     function GetMode: TBindingMode;
@@ -122,6 +123,11 @@ begin
 end;
 
 procedure TBinding.UpdateLeft;
+begin
+
+end;
+
+procedure TBinding.UpdateRight;
 begin
 
 end;

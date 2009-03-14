@@ -19,9 +19,8 @@ type
     function GetValue: IInfraType;
     function GetSupports2Way: Boolean;
     procedure SetValue(const Value: IInfraType);
-    procedure SetSupports2Way(Value: Boolean);
     property Value: IInfraType read GetValue write SetValue;
-    property Supports2Way: Boolean read GetSupports2Way write SetSupports2Way;
+    property Supports2Way: Boolean read GetSupports2Way;
   end;
 
   IBindableInfraType = interface(IBindable)
