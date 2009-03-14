@@ -7,21 +7,23 @@ uses
 
 type
   TBindable = class(TElement, IBindable)
-  private
-    FInfraType: IInfraType;
   protected
     procedure Changed;
     function GetSupports2Way: Boolean; virtual; abstract;
-    function GetValue: IInfraType; virtual;
-    procedure SetValue(const Value: IInfraType); virtual;
-    property Value: IInfraType read GetValue write SetValue;
-    property Supports2Way: Boolean read GetSupports2Way;
+    function GetValue: IInfraType; virtual; abstract;
+    procedure SetValue(const Value: IInfraType); virtual; abstract;    
   end;
 
   TBindableInfraType = class(TBindable, IBindableInfraType)
+  private
+    FInfraType: IInfraType;
+  protected
+    function GetSupports2Way: Boolean; override;  
+    function GetValue: IInfraType; override;
+    procedure SetValue(const Value: IInfraType); override;
   public
     class function GetBindable(pValue: IInfraType;
-      const pPropertyPath: string): IBindable; virtual;
+      const pPropertyPath: string): IBindable;
   end;
 
 implementation
@@ -34,16 +36,6 @@ uses
 procedure TBindable.Changed;
 begin
   Publisher.Publish(TBindableValueChanged.Create(Self));
-end;
-
-function TBindable.GetValue: IInfraType;
-begin
-  Result := FInfraType;
-end;
-
-procedure TBindable.SetValue(const Value: IInfraType);
-begin
-  FInfraType := Value;
 end;
 
 { TBindableInfraType }
@@ -61,6 +53,21 @@ begin
     Result := TBindableInfraType.Create;
     Result.Value := vProperty as IInfraType;
   end;
+end;
+
+function TBindableInfraType.GetSupports2Way: Boolean;
+begin
+  Result := True;
+end;
+
+function TBindableInfraType.GetValue: IInfraType;
+begin
+  Result := FInfraType;
+end;
+
+procedure TBindableInfraType.SetValue(const Value: IInfraType);
+begin
+  FInfraType.Assign(Value);
 end;
 
 end.

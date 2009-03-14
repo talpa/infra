@@ -153,7 +153,7 @@ end;
 
 function TBindableEdit.GetSupports2Way: Boolean;
 begin
-  inherited;
+  inherited GetSupports2Way;
   if AnsiSameText(FPropertyPath, 'Text') then
     Result := True;  
 end;

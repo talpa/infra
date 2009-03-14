@@ -17,6 +17,7 @@ type
     FValueConverter: ITypeConverter;
     FMode: TBindingMode;
     procedure UpdateRight;
+    procedure BindableChanged(const Event: IInfraEvent);
   protected
     function GetLeft: IBindable;
     function GetMode: TBindingMode;
@@ -68,9 +69,34 @@ uses
   List_Binding,
   InfraBindingControl,
   InfraBindingType,
-  InfraBindingConsts;
+  InfraBindingConsts,
+  SysUtils;
+
+type
+  TInformMethod = procedure(const Event: IInfraEvent) of object;
+
+  TMethodSubscribe = class(TInterfacedObject, ISubscriber)
+  private
+    FInformMethod: TInformMethod;
+    procedure Inform(const Event: IInfraEvent);
+  public
+    constructor Create(InforMethod: TInformMethod);
+  end;
 
 { TBinding }
+
+procedure TBinding.BindableChanged(const Event: IInfraEvent);
+var
+  BindableChanged: IBindableValueChanged;
+begin
+  if Supports(Event, IBindableValueChanged, BindableChanged) then
+  begin
+    if (BindableChanged.Source as IBindable) = FLeft then
+      UpdateRight
+    else if (BindableChanged.Source as IBindable) = FRight then
+      UpdateLeft;
+  end;
+end;
 
 constructor TBinding.Create(const Left, Right: IBindable);
 begin
@@ -81,6 +107,8 @@ begin
   FLeft := Left;
   FRight := Right;
   SetMode(bmLeftToRight);
+
+  EventService.Subscribe(IBindableValueChanged, TMethodSubscribe.Create(BindableChanged), nil);
 end;
 
 function TBinding.GetLeft: IBindable;
@@ -124,12 +152,12 @@ end;
 
 procedure TBinding.UpdateLeft;
 begin
-
+  FLeft.Value := FRight.Value;
 end;
 
 procedure TBinding.UpdateRight;
 begin
-
+  FRight.Value := FLeft.Value;
 end;
 
 { TBindManager }
@@ -213,6 +241,18 @@ end;
 procedure TBindableValueChanged.SetSource(const Value: IElement);
 begin
   FSource := Value as IBindable;
+end;
+
+{ TMethodSubscribe }
+
+constructor TMethodSubscribe.Create(InforMethod: TInformMethod);
+begin
+  FInformMethod := InforMethod;
+end;
+
+procedure TMethodSubscribe.Inform(const Event: IInfraEvent);
+begin
+  FInformMethod(Event);
 end;
 
 end.
