@@ -33,7 +33,6 @@ type
     function SupportCustomProperty(const PropertyPath: String): Boolean; virtual;
     function GetCustomValue: IInfraType; virtual; abstract;
     procedure CustomSetValue(const Value: IInfraType); virtual; abstract;
-    function GetSupports2Way: Boolean; override;    
   public
     class function GetBindable(pControl: TControl;
       const pPropertyPath: string): IBindable; virtual; abstract;
@@ -46,7 +45,7 @@ type
   TBindableEdit = class(TBindableControl)
   protected
     procedure WindowProc(var Message: TMessage); override;
-    function GetSupports2Way: Boolean; override;
+    function Support2Way: Boolean; override;
   end;
 
 implementation
@@ -112,11 +111,6 @@ begin
   Result := False;
 end;
 
-function TBindableControl.GetSupports2Way: Boolean;
-begin
-  Result := False;
-end;
-
 function TBindableControl.GetValue: IInfraType;
 begin
   case FPropertyAccessMode of
@@ -151,9 +145,9 @@ end;
 
 { TBindableEdit }
 
-function TBindableEdit.GetSupports2Way: Boolean;
+function TBindableEdit.Support2Way: Boolean;
 begin
-  Result := inherited GetSupports2Way or AnsiSameText(FPropertyPath, 'Text');
+  Result := AnsiSameText(FPropertyPath, 'Text');
 end;
 
 procedure TBindableEdit.WindowProc(var Message: TMessage);
@@ -165,3 +159,4 @@ begin
 end;
 
 end.
+

@@ -17,10 +17,9 @@ type
   IBindable = interface(IElement)
     ['{9ABF8CA0-E75A-48A6-9C20-4E3FDB781A2F}']
     function GetValue: IInfraType;
-    function GetSupports2Way: Boolean;
+    function Support2Way: Boolean;
     procedure SetValue(const Value: IInfraType);
     property Value: IInfraType read GetValue write SetValue;
-    property Supports2Way: Boolean read GetSupports2Way;
   end;
 
   IBindableInfraType = interface(IBindable)
@@ -47,7 +46,7 @@ type
     property ValueConverter: ITypeConverter read GetValueConverter write SetValueConverter;
   end;
 
-  IBindableValueChanged = interface(IInfraEvent)
+  INotifyValueChanged  = interface(IInfraEvent)
     ['{D7A4897D-A856-4A1A-BB0E-9E54AECB4BDA}']
   end;
 
@@ -113,4 +112,3 @@ begin
 end;
 
 end.
-

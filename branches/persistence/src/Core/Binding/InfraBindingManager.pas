@@ -55,7 +55,7 @@ type
     constructor Create; override;
   end;
 
-  TBindableValueChanged = class(TInfraEvent, IBindableValueChanged)
+  TNotifyValueChanged  = class(TInfraEvent, INotifyValueChanged )
   private
     FSource: IBindable;
     function GetSource: IElement;
@@ -84,7 +84,7 @@ begin
   FLeft := Left;
   FRight := Right;
   SetMode(bmLeftToRight);
-  EventService.Subscribe(IBindableValueChanged, Self as ISubscriber,
+  EventService.Subscribe(INotifyValueChanged , Self as ISubscriber,
     PropertyChanged, EmptyStr, PropertyChangedFilter);
 end;
 
@@ -127,7 +127,7 @@ end;
 procedure TBinding.SetMode(Value: TBindingMode);
 begin
   if (Value = bmTwoWay)
-    and not FRight.Supports2Way then
+    and not FRight.Support2Way then
     Raise EInfraBindingError.Create(cErrorBindable2WayNotSupported);
   FMode := Value;
 end;
@@ -218,20 +218,20 @@ begin
   FDataContext := Value;
 end;
 
-{ TBindableValueChanged }
+{ TNotifyValueChanged  }
 
-constructor TBindableValueChanged.Create(const Source: IBindable);
+constructor TNotifyValueChanged .Create(const Source: IBindable);
 begin
   inherited Create;
   FSource := Source;
 end;
 
-function TBindableValueChanged.GetSource: IElement;
+function TNotifyValueChanged .GetSource: IElement;
 begin
   Result := FSource;
 end;
 
-procedure TBindableValueChanged.SetSource(const Value: IElement);
+procedure TNotifyValueChanged .SetSource(const Value: IElement);
 begin
   FSource := Value as IBindable;
 end;
