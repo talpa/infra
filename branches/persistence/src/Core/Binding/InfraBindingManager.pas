@@ -165,32 +165,32 @@ function TBindManager.Add(
   pLeftControl: TControl; const pLeftProperty: string;
   pRightControl: TControl; const pRightProperty: string;
   const pConverter: ITypeConverter = nil): IBinding;
-var
-  vLeftClass, vRightClass: TBindableControlClass;
-  vLeft, vRight: IBindable;
+//var
+//  vLeftClass, vRightClass: TBindableControlClass;
+//  vLeft, vRight: IBindable;
 begin
-  with BindingService.MappingControls do
-  begin
-    vLeftClass := TBindableControlClass(Items[pLeftControl.ClassType]);
-    vRightClass := TBindableControlClass(Items[pRightControl.ClassType]);
-  end;
-  vLeft := vLeftClass.Create(pLeftControl, pLeftProperty);
-  vRight := vRightClass.Create(pRightControl, pRightProperty);
-  Result := Add(vLeft, vRight, pConverter);
+//  with BindingService.MappingControls do
+//  begin
+//    vLeftClass := TBindableControlClass(Items[pLeftControl.ClassType]);
+//    vRightClass := TBindableControlClass(Items[pRightControl.ClassType]);
+//  end;
+//  vLeft := vLeftClass.Create(pLeftControl, pLeftProperty);
+//  vRight := vRightClass.Create(pRightControl, pRightProperty);
+//  Result := Add(vLeft, vRight, pConverter);
 end;
 
 function TBindManager.Add(const pLeftProperty: string;
   pRightControl: TControl; const pRightProperty: string = '';
   const pConverter: ITypeConverter = nil): IBinding;
-var
-  vRightClass: TBindableControlClass;
-  vLeft, vRight: IBindable;
+//var
+//  vRightClass: TBindableControlClass;
+//  vLeft, vRight: IBindable;
 begin
-  vLeft := TBindableInfraType.GetBindable(FDataContext, pLeftProperty);
-  with BindingService.MappingControls do
-    vRightClass := TBindableControlClass(Items[pRightControl.ClassType]);
-  vRight := vRightClass.Create(pRightControl, pRightProperty);
-  Result := Add(vLeft, vRight, pConverter);
+//  vLeft := TBindableInfraType.GetBindable(FDataContext, pLeftProperty);
+//  with BindingService.MappingControls do
+//    vRightClass := TBindableControlClass(Items[pRightControl.ClassType]);
+//  vRight := vRightClass.Create(pRightControl, pRightProperty);
+//  Result := Add(vLeft, vRight, pConverter);
 end;
 
 function TBindManager.Add(const pLeft, pRight: IBindable;

@@ -26,7 +26,7 @@ type
     ['{CBE66F0E-CEF6-4B18-A254-A1F28B804B1B}']
   end;
 
-  IBindableControl = interface(IBindable)
+  IBindableControlProperty = interface(IBindable)
     ['{CDDB1FF4-D5DC-4BFC-9D6A-A20578D54724}']
   end;
 
