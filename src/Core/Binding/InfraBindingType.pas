@@ -9,7 +9,7 @@ type
   TBindable = class(TElement, IBindable)
   protected
     procedure Changed;
-    function GetSupports2Way: Boolean; virtual; abstract;
+    function Support2Way: Boolean; virtual;
     function GetValue: IInfraType; virtual; abstract;
     procedure SetValue(const Value: IInfraType); virtual; abstract;    
   end;
@@ -18,7 +18,7 @@ type
   private
     FInfraType: IInfraType;
   protected
-    function GetSupports2Way: Boolean; override;  
+    function Support2Way: Boolean; override;  
     function GetValue: IInfraType; override;
     procedure SetValue(const Value: IInfraType); override;
   public
@@ -35,7 +35,12 @@ uses
 
 procedure TBindable.Changed;
 begin
-  Publisher.Publish(TBindableValueChanged.Create(Self));
+  Publisher.Publish(TNotifyValueChanged .Create(Self) as INotifyValueChanged );
+end;
+
+function TBindable.Support2Way: Boolean;
+begin
+  Result := True;
 end;
 
 { TBindableInfraType }
@@ -46,18 +51,15 @@ var
   vObject: IInfraObject;
   vProperty: IProperty;
 begin
+  // *** E se o Value for uma lista, ou outro tipo de infratype? vai se criar um
+  // *** bindable para cada tipo?
   if Supports(pValue, IInfraObject, vObject) then
   begin
     vProperty := vObject.GetProperty(pPropertyPath);
-    // *** gerar exceção quando a propriedade nao estiver lá?
+    // *** teria de gerar exceção quando o infraobject nao possuir a propriedade?
     Result := TBindableInfraType.Create;
     Result.Value := vProperty as IInfraType;
   end;
-end;
-
-function TBindableInfraType.GetSupports2Way: Boolean;
-begin
-  Result := True;
 end;
 
 function TBindableInfraType.GetValue: IInfraType;
@@ -70,4 +72,11 @@ begin
   FInfraType.Assign(Value);
 end;
 
+function TBindableInfraType.Support2Way: Boolean;
+begin
+  Result := True;
+end;
+
 end.
+
+
