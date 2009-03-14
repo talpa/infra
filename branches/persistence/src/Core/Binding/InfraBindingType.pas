@@ -9,14 +9,13 @@ type
   TBindable = class(TElement, IBindable)
   private
     FInfraType: IInfraType;
-    FSupports2Way: Boolean;
   protected
-    function GetSupports2Way: Boolean; virtual;
-    procedure SetSupports2Way(Value: Boolean); virtual;
+    procedure Changed;
+    function GetSupports2Way: Boolean; virtual; abstract;
     function GetValue: IInfraType; virtual;
     procedure SetValue(const Value: IInfraType); virtual;
     property Value: IInfraType read GetValue write SetValue;
-    property Supports2Way: Boolean read GetSupports2Way write SetSupports2Way;
+    property Supports2Way: Boolean read GetSupports2Way;
   end;
 
   TBindableInfraType = class(TBindable, IBindableInfraType)
@@ -28,23 +27,18 @@ type
 implementation
 
 uses
-  SysUtils;
+  SysUtils, InfraBindingManager;
 
 { TBindable }
 
-function TBindable.GetSupports2Way: Boolean;
+procedure TBindable.Changed;
 begin
-  Result := FSupports2Way;
+  Publisher.Publish(TBindableValueChanged.Create(Self));
 end;
 
 function TBindable.GetValue: IInfraType;
 begin
   Result := FInfraType;
-end;
-
-procedure TBindable.SetSupports2Way(Value: Boolean);
-begin
-  FSupports2Way := Value;
 end;
 
 procedure TBindable.SetValue(const Value: IInfraType);

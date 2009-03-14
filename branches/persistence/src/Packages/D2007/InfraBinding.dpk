@@ -33,7 +33,6 @@ requires
 
 contains
   InfraBindingIntf in '..\..\Core\Binding\InfraBindingIntf.pas',
-  InfraBinding in '..\..\Core\Binding\InfraBinding.pas',
   InfraBindingConsts in '..\..\Core\Binding\InfraBindingConsts.pas',
   InfraBindingControl in '..\..\Core\Binding\InfraBindingControl.pas',
   InfraBindingManager in '..\..\Core\Binding\InfraBindingManager.pas',
