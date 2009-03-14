@@ -153,9 +153,7 @@ end;
 
 function TBindableEdit.GetSupports2Way: Boolean;
 begin
-  inherited GetSupports2Way;
-  if AnsiSameText(FPropertyPath, 'Text') then
-    Result := True;  
+  Result := inherited GetSupports2Way or AnsiSameText(FPropertyPath, 'Text');
 end;
 
 procedure TBindableEdit.WindowProc(var Message: TMessage);
@@ -163,8 +161,7 @@ begin
   inherited WindowProc(Message);
   // *** teria de testar o updatetriggermode aqui tambem
   if AnsiSameText(FPropertyPath, 'Text') and (Message.Msg = WM_KILLFOCUS) then
-    Changed;     
-
+    Changed;
 end;
 
 end.
