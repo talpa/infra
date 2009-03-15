@@ -62,14 +62,7 @@ type
     constructor Create; override;
   end;
 
-  TNotifyValueChanged = class(TInfraEvent, INotifyValueChanged)
-  private
-    FSource: IBindable;
-    function GetSource: IElement;
-    procedure SetSource(const Value: IElement);
-  public
-    constructor Create(const Source: IBindable); reintroduce;
-  end;
+  TNotifyValueChanged = class(TInfraEvent, INotifyValueChanged);
 
 implementation
 
@@ -107,8 +100,11 @@ begin
 end;
 
 function TBinding.PropertyChangedFilter(const Event: IInfraEvent): Boolean;
+var
+  vSource: IBindable;
 begin
-  Result := (Event.Source = FLeft) or (Event.Source = FRight);
+  vSource := Event.Source As IBindable;
+  Result := (vSource = FLeft) or (vSource = FRight);
 end;
 
 function TBinding.GetLeft: IBindable;
@@ -152,12 +148,12 @@ end;
 
 procedure TBinding.UpdateLeft;
 begin
-  FLeft.Value.Assign(FRight.Value);
+  FLeft.Value := FRight.Value;
 end;
 
 procedure TBinding.UpdateRight;
 begin
-  FRight.Value.Assign(FLeft.Value);
+  FRight.Value := FLeft.Value;
 end;
 
 function TBinding.GetActive: Boolean;
@@ -247,24 +243,6 @@ begin
       vIterator.Next;
     end;
   end;
-end;
-
-{ TNotifyValueChanged  }
-
-constructor TNotifyValueChanged.Create(const Source: IBindable);
-begin
-  inherited Create;
-  FSource := Source;
-end;
-
-function TNotifyValueChanged.GetSource: IElement;
-begin
-  Result := FSource;
-end;
-
-procedure TNotifyValueChanged.SetSource(const Value: IElement);
-begin
-  FSource := Value as IBindable;
 end;
 
 end.

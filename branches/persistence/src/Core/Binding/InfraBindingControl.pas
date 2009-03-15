@@ -23,6 +23,8 @@ type
     FOldWndProc: TWndMethod;
   protected
     procedure WndProc(var Message: TMessage); virtual;
+    function GetControl: TControl;
+    property Control: TControl read GetControl;
   public
     class function CreateIfSupports(pControl: TControl;
       const pPropertyPath: String): IBindableVCLProperty; virtual; abstract;
@@ -78,6 +80,13 @@ type
       const pPropertyPath: String): IBindableVCLProperty; override;
   end;
 
+  TBindableChecked = class(TBindableRTTIBasedTwoWay)
+  protected
+    procedure WndProc(var Message: TMessage); override;
+  public
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: String): IBindableVCLProperty; override;
+  end;
 
 procedure RegisterBindableClass(pBindableClass: TBindableVCLPropertyClass);
 function GetBindableVCL(pControl: TControl;
@@ -137,6 +146,11 @@ begin
   inherited;
 end;
 
+function TBindableVCLProperty.GetControl: TControl;
+begin
+  Result := FControl;
+end;
+
 procedure TBindableVCLProperty.WndProc(var Message: TMessage);
 begin
   FOldWndProc(Message);
@@ -168,6 +182,11 @@ begin
   case FPropInfo^.PropType^.Kind of
     tkLString, tkString:
       Result := TInfraString.NewFrom(GetStrProp(FControl, FPropInfo));
+    tkEnumeration:
+      if GetTypeData(FPropInfo^.PropType^)^.BaseType^ = System.TypeInfo(Boolean) then
+        Result := TInfraBoolean.NewFrom(Boolean(GetOrdProp(FControl, FPropInfo)))
+      else
+        Result := TInfraInteger.NewFrom(GetOrdProp(FControl, FPropInfo));
   end;
 end;
 
@@ -176,6 +195,13 @@ begin
   case FPropInfo^.PropType^.Kind of
     tkLString, tkString:
       SetStrProp(FControl, FPropInfo, (Value as IInfraString).AsString);
+    tkEnumeration:
+      if Supports(Value, IInfraBoolean) then
+        SetOrdProp(FControl, FPropInfo,
+          Abs(Trunc(Integer((Value as IInfraBoolean).AsBoolean))))
+      else
+        SetOrdProp(FControl, FPropInfo,
+          Trunc((Value as IInfraInteger).AsInteger));
   end;
 end;
 
@@ -185,6 +211,7 @@ function TBindableRTTIBasedTwoWay.Support2Way: Boolean;
 begin
   Result := True;
 end;
+
 { TBindableText }
 
 class function TBindableText.CreateIfSupports(pControl: TControl;
@@ -199,7 +226,7 @@ end;
 procedure TBindableText.WndProc(var Message: TMessage);
 begin
   inherited WndProc(Message);
-  if Message.Msg = WM_KILLFOCUS then
+  if Message.Msg in [WM_KILLFOCUS, WM_SETTEXT] then
     Changed;
 end;
 
@@ -250,12 +277,31 @@ begin
     Changed;
 end;
 
+{ TBindableChecked }
+
+class function TBindableChecked.CreateIfSupports(pControl: TControl;
+  const pPropertyPath: String): IBindableVCLProperty;
+begin
+  if AnsiSameText(pPropertyPath, 'Checked') then
+    Result := inherited CreateIfSupports(pControl, pPropertyPath)
+  else
+    Result := nil;
+end;
+
+procedure TBindableChecked.WndProc(var Message: TMessage);
+begin
+  inherited WndProc(Message);
+  if Message.Msg = BM_SETCHECK then
+    Changed;
+end;
+
 procedure RegisterBindables;
 begin
   RegisterBindableClass(TBindableText);
   RegisterBindableClass(TBindableVisible);
   RegisterBindableClass(TBindableEnabled);
   RegisterBindableClass(TBindableCaption);
+  RegisterBindableClass(TBindableChecked);
 end;
 
 initialization

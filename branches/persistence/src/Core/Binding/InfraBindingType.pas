@@ -29,13 +29,14 @@ type
 implementation
 
 uses
-  SysUtils, InfraBindingManager;
+  Forms, SysUtils, InfraBindingManager;
 
 { TBindable }
 
 procedure TBindable.Changed;
 begin
-  Publisher.Publish(TNotifyValueChanged .Create(Self) as INotifyValueChanged);
+  if not Application.Terminated then
+    Publisher.Publish(TNotifyValueChanged.Create(Self) as INotifyValueChanged);
 end;
 
 function TBindable.Support2Way: Boolean;
