@@ -8,6 +8,7 @@ resourcestring
   cErrorBindable2WayNotSupported = 'Bindable don''t supports TwoWay';
   cErrorLeftBindableNotDefined = 'Left Bindable undefined';
   cErrorRightBindableNotDefined = 'Right Bindable undefined';
+  cErrorBindableNotDefined = 'Bindable not registred. Control: %s, Property: %s';
 
 implementation
 

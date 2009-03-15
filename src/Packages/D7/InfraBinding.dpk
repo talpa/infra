@@ -11,12 +11,12 @@ package InfraBinding;
 {$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION ON}
+{$OPTIMIZATION OFF}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
 {$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES OFF}
+{$STACKFRAMES ON}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
@@ -33,13 +33,12 @@ requires
   InfraTypes;
 
 contains
+  InfraBindingIntf in '..\..\Core\Binding\InfraBindingIntf.pas',
+  InfraBindingService in '..\..\Core\Binding\InfraBindingService.pas',
   InfraBindingConsts in '..\..\Core\Binding\InfraBindingConsts.pas',
   InfraBindingControl in '..\..\Core\Binding\InfraBindingControl.pas',
-  InfraBindingIntf in '..\..\Core\Binding\InfraBindingIntf.pas',
   List_Binding in '..\..\Core\Binding\List_Binding.pas',
   InfraBindingManager in '..\..\Core\Binding\InfraBindingManager.pas',
-  InfraBindingType in '..\..\Core\Binding\InfraBindingType.pas',
-  InfraBindingService in '..\..\Core\Binding\InfraBindingService.pas',
-  List_MappingControl in '..\..\Core\Binding\List_MappingControl.pas';
+  InfraBindingType in '..\..\Core\Binding\InfraBindingType.pas';
 
 end.

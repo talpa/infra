@@ -5,9 +5,7 @@ interface
 uses
   {Infra}
   InfraCommon,
-  InfraCommonIntf,
-  InfraOPFIntf,
-  InfraOPFConfiguration;
+  InfraOPFIntf;
 
 type
   /// Descrição da classe
@@ -17,6 +15,10 @@ type
   end;
 
 implementation
+
+uses
+  InfraCommonIntf,
+  InfraOPFConfiguration;
 
 { TInfraPersistenceService }
 

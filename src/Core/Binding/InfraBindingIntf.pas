@@ -4,6 +4,7 @@ interface
 
 uses
   Controls,
+  Classes,
   {Infra}
   InfraCommonIntf,
   InfraValueTypeIntf;
@@ -15,7 +16,7 @@ type
   TUpdateTrigger = (utLostFocus, utPropertyChanged, utExplicit);
 
   IBindable = interface(IElement)
-    ['{9ABF8CA0-E75A-48A6-9C20-4E3FDB781A2F}']
+    ['{E4FF9385-092B-422B-8BCB-0A28CB611C82}']
     function GetValue: IInfraType;
     function Support2Way: Boolean;
     procedure SetValue(const Value: IInfraType);
@@ -23,15 +24,17 @@ type
   end;
 
   IBindableInfraType = interface(IBindable)
-    ['{CBE66F0E-CEF6-4B18-A254-A1F28B804B1B}']
+    ['{91B97C6D-6F56-462E-941B-C7E236E71F26}']
   end;
 
-  IBindableControlProperty = interface(IBindable)
-    ['{CDDB1FF4-D5DC-4BFC-9D6A-A20578D54724}']
+  IBindableVCLProperty = interface(IBindable)
+    ['{36236C4B-607B-4287-8D0E-A617832F17CC}']
   end;
 
   IBinding = interface(IBaseElement)
-    ['{CD591A5F-2A29-4605-A398-707F5839F4EB}']
+    ['{A5945A5F-F235-4BA5-857D-F1BF67660FE3}']
+    function GetActive: Boolean;
+    procedure SetActive(Value: Boolean);
     function GetMode: TBindingMode;
     function GetLeft: IBindable;
     function GetRight: IBindable;
@@ -44,14 +47,17 @@ type
     property Left: IBindable read GetLeft;
     property Right: IBindable read GetRight;
     property ValueConverter: ITypeConverter read GetValueConverter write SetValueConverter;
+    property Active: boolean read GetActive write SetActive;
   end;
 
-  INotifyValueChanged  = interface(IInfraEvent)
-    ['{D7A4897D-A856-4A1A-BB0E-9E54AECB4BDA}']
+  INotifyValueChanged = interface(IInfraEvent)
+    ['{28CC7946-79CD-4029-9A4E-3A6947330BEC}']
   end;
 
   IBindManager = interface(IBaseElement)
-    ['{19C48BD7-62C9-4C55-9A86-1702B7BA5E61}']
+    ['{177A1F92-3FF9-4D48-B40F-93CAE8FABE45}']
+    function GetActive: Boolean;
+    procedure SetActive(Value: Boolean);
     function GetDataContext: IInfraType;
     procedure SetDataContext(const Value: IInfraType);
     function Add(const pLeft, pRight: IBindable;
@@ -65,41 +71,23 @@ type
       const pConverter: ITypeConverter = nil): IBinding; overload;
     procedure ClearBindings;
     property DataContext: IInfraType read GetDataContext write SetDataContext;
+    property Active: boolean read GetActive write SetActive;
   end;
   
   IBindingList = interface
-    ['{F48F2F24-9324-42B3-AC64-93C15CFA5C4C}']
+    ['{20CF48B1-FAF9-4366-8C70-76D65D071407}']
     function Add(const Item: IBinding): Integer;
     function GetCount: Integer;
     function GetItem(Index: Integer): IBinding;
+    function NewIterator: IInfraIterator;
     procedure Clear;
     property Items[Index: Integer]: IBinding read GetItem; default;
     property Count: Integer read GetCount;
   end;
 
-  IMappingControlList = interface
-    ['{A927D310-BBFD-4FD2-98BC-807317A83463}']
-    function GetItem(Index: TClass): TClass;
-    procedure SetItem(Index: TClass ; Value: TClass);
-    function GetCount: Integer;
-    function Add(Index: TClass; Value: TClass): TClass;
-    procedure Delete(Index: TClass);
-    procedure DeletePosition(Index: integer);
-    procedure Clear;
-    function PositionOf(Index: TClass; Value: TClass): integer;
-    function ValueOfPosition(Index: Integer): TClass;
-    function IndexOfPosition(Index: Integer): TClass;
-    property Count: Integer read GetCount;
-    property Items[Index: TClass]: TClass read GetItem
-      write SetItem; default;
-  end;
-
   IInfraBindingService = interface(IInterface)
-    ['{AE2A98DE-01B4-49BB-9225-F349C68D2DCD}']
+    ['{306425B2-4590-49C8-A4CE-62F5293F1820}']
     function GetNewBindManager: IBindManager;
-    procedure RegisterControl(pClass, pBindableClass: TClass);
-    function GetMappingControlList: IMappingControlList;
-    property MappingControls: IMappingControlList read GetMappingControlList;
   end;
 
 function BindingService: IInfraBindingService;

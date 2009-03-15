@@ -34,7 +34,7 @@ public
   procedure Insert(Index: Integer; const Item: _ITEM_); virtual;
   property Count: Integer read GetCount;
   property Items[Index: Integer]: _ITEM_ read GetItem write SetItem; default;
-  constructor Create;
+  constructor Create; override;
   destructor Destroy; override;
 {$DEFINE SECOND_PASS}
 {$ELSE}
@@ -47,12 +47,12 @@ end;
 
 procedure _OBJECTLIST_.SetItem(Index: Integer; const Value: _ITEM_);
 begin
-  FItems[Index] := Value;
+  FItems[Index] := TObject(Value);
 end;
 
 function _OBJECTLIST_.Add(const Item: _ITEM_): Integer;
 begin
-  Result := FItems.Add(Item);
+  Result := FItems.Add(TObject(Item));
 end;
 
 function _OBJECTLIST_.First: _ITEM_;
@@ -67,7 +67,7 @@ end;
 
 function _OBJECTLIST_.IndexOf(const Item: _ITEM_): Integer;
 begin
-  Result := FItems.IndexOf(Item);
+  Result := FItems.IndexOf(TObject(Item));
 end;
 
 function _OBJECTLIST_.Last: _ITEM_;
@@ -77,7 +77,7 @@ end;
 
 function _OBJECTLIST_.Remove(const Item: _ITEM_): Integer;
 begin
-  Result := FItems.Remove(Item);
+  Result := FItems.Remove(TObject(Item));
 end;
 
 procedure _OBJECTLIST_.Clear;
@@ -97,7 +97,7 @@ end;
 
 procedure _OBJECTLIST_.Insert(Index: Integer; const Item: _ITEM_);
 begin
-  FItems.Insert(Index, Item);
+  FItems.Insert(Index, TObject(Item));
 end;
 
 constructor _OBJECTLIST_.Create;
