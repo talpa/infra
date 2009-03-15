@@ -16,6 +16,8 @@ type
     Button3: TButton;
     Memo2: TMemo;
     Label1: TLabel;
+    Edit2: TEdit;
+    procedure Button1Click(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
@@ -35,6 +37,11 @@ uses
 
 {$R *.dfm}
 
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  Edit1.Text := 'Funcionou';
+end;
+
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   bm := BindingService.GetNewBindManager;
@@ -43,9 +50,9 @@ end;
 procedure TForm1.FormActivate(Sender: TObject);
 begin
   bm.Add(Edit1, 'Text', Label1, 'Caption');
-//  bm.Add(Edit1, 'Text', Label1, 'Color');
+  bm.Add(Checkbox1, 'Checked', Panel1, 'Visible');
+//  bm.Add(Edit2, 'Text', Edit2, 'Color');
 //  bm.Add(Checkbox1, 'Checked', Checkbox1, 'Caption');
-//  bm.Add(Checkbox1, 'Checked', Panel1, 'Visible');
   bm.Active := True;
 end;
 

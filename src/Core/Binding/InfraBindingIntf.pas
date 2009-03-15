@@ -29,6 +29,8 @@ type
 
   IBindableVCLProperty = interface(IBindable)
     ['{36236C4B-607B-4287-8D0E-A617832F17CC}']
+    function GetControl: TControl;
+    property Control: TControl read GetControl;
   end;
 
   IBinding = interface(IBaseElement)
