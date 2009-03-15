@@ -5,20 +5,13 @@ interface
 uses
   Controls,
   InfraCommon,
-  List_MappingControl,
-  InfraBindingControl,
   InfraBindingIntf;
 
 type
   /// Serviço de Binding
   TInfraBindingService = class(TBaseElement, IInfraBindingService)
-  private
-    FMappingControls: IMappingControlList;
-    function GetMappingControlList: IMappingControlList;
   protected
     function GetNewBindManager: IBindManager;
-    procedure RegisterControl(pClass, pBindableClass: TClass);
-    property MappingControls: IMappingControlList read GetMappingControlList;
   end;
 
 implementation
@@ -28,13 +21,6 @@ uses
   InfraBindingManager;
 
 { TInfraBindingService }
-
-function TInfraBindingService.GetMappingControlList: IMappingControlList;
-begin
-  if not Assigned(FMappingControls) then
-    FMappingControls := TMappingControlList.Create;
-  Result := FMappingControls;
-end;
 
 {**
   Cria um novo objeto BindManager
@@ -47,11 +33,6 @@ end;
 function TInfraBindingService.GetNewBindManager: IBindManager;
 begin
   Result := TBindManager.Create;
-end;
-
-procedure TInfraBindingService.RegisterControl(pClass, pBindableClass: TClass);
-begin
-  MappingControls.Add(pClass, pBindableClass)
 end;
 
 // Não entendi, mas se pôr direto no Initialization acontece Access Violations.

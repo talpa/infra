@@ -14,192 +14,255 @@ uses
 type
   TPropertyAccessMode = (paRTTI, paCustom);
 
-  TBindableControlProperty = class(TBindable, IBindableControlProperty)
+  TBindableVCLPropertyClass = class of TBindableVCLProperty;
+
+  // classe base para bindables de propriedades da vcl
+  TBindableVCLProperty = class(TBindable, IBindableVCLProperty)
   private
     FControl: TControl;
     FOldWndProc: TWndMethod;
   protected
     procedure WndProc(var Message: TMessage); virtual;
   public
-    class function CreateIfSupports(Control: TControl; const PropertyPath: String): TBindableControlProperty; virtual; abstract;
-    constructor Create(Control: TControl); reintroduce;
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: String): IBindableVCLProperty; virtual; abstract;
+    constructor Create(pControl: TControl); reintroduce;
     destructor Destroy; override;
   end;
 
-  TRttiBasedBindableControlProperty = class(TBindableControlProperty)
+  // classe base para bindables de propriedades da vcl
+  TBindableRTTIBased = class(TBindableVCLProperty)
   private
     FPropInfo: PPropInfo;
   protected
     function GetValue: IInfraType; override;
     procedure SetValue(const Value: IInfraType); override;
-    function Support2Way: Boolean; override;
   public
-    class function CreateIfSupports(Control: TControl;
-      const PropertyPath: string): TBindableControlProperty; override;
-    constructor Create(Control: TControl; PropInfo: PPropInfo); reintroduce;
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: string): IBindableVCLProperty; override;
+    constructor Create(pControl: TControl; pPropInfo: PPropInfo); reintroduce;
   end;
 
-  TTwoWayRttiBasedBindableControlProperty = class(TBindableControlProperty)
+  TBindableRTTIBasedTwoWay = class(TBindableRTTIBased)
   protected
     function Support2Way: Boolean; override;
   end;
 
-  TBindableEditText = class(TTwoWayRttiBasedBindableControlProperty)
-  protected
-    procedure WndProc(var Message: TMessage); override;
+  TBindableCaption = class(TBindableRTTIBased)
   public
-    class function CreateIfSupports(Control: TControl;
-      const PropertyPath: String): TBindableControlProperty; override;
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: String): IBindableVCLProperty; override;
   end;
 
-  TBindableControlVisible = class(TTwoWayRttiBasedBindableControlProperty)
+  TBindableText = class(TBindableRTTIBasedTwoWay)
   protected
     procedure WndProc(var Message: TMessage); override;
   public
-    class function CreateIfSupports(Control: TControl;
-      const PropertyPath: String): TBindableControlProperty; override;
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: String): IBindableVCLProperty; override;
   end;
 
-  TBindableControlEnabled = class(TTwoWayRttiBasedBindableControlProperty)
+  TBindableVisible = class(TBindableRTTIBasedTwoWay)
   protected
     procedure WndProc(var Message: TMessage); override;
   public
-    class function CreateIfSupports(Control: TControl;
-      const PropertyPath: String): TBindableControlProperty; override;
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: String): IBindableVCLProperty; override;
   end;
+
+  TBindableEnabled = class(TBindableRTTIBasedTwoWay)
+  protected
+    procedure WndProc(var Message: TMessage); override;
+  public
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: String): IBindableVCLProperty; override;
+  end;
+
+
+procedure RegisterBindableClass(pBindableClass: TBindableVCLPropertyClass);
+function GetBindableVCL(pControl: TControl;
+  const pPropertyPath: String): IBindable;
 
 implementation
 
 uses
+  Classes,
   SysUtils,
+  StdCtrls,
   InfraValueType,
-  InfraBindingConsts,
   InfraCommonIntf,
+  InfraBindingConsts,
   InfraBindingManager,
-  StdCtrls;
+  InfraBindingService;
 
-
-{ TRttiBasedBindableControlProperty }
-
-constructor TRttiBasedBindableControlProperty.Create(Control: TControl;
-  PropInfo: PPropInfo);
-begin
-  inherited Create(Control);
-  FPropInfo := PropInfo;
-end;
-
-class function TRttiBasedBindableControlProperty.CreateIfSupports(
-  Control: TControl; const PropertyPath: String): TBindableControlProperty;
 var
-  PropInfo: PPropInfo;
+  _BindableClasses: TList;
+
+procedure RegisterBindableClass(pBindableClass: TBindableVCLPropertyClass);
 begin
-  PropInfo := GetPropInfo(Control, PropertyPath);
-  if Assigned(PropInfo) then
-    Result := Self.Create(Control, PropInfo)
-  else
-    Result := Nil;
+  if not Assigned(_BindableClasses) then
+    _BindableClasses := TList.Create;
+  _BindableClasses.Add(pBindableClass);
 end;
 
-function TRttiBasedBindableControlProperty.GetValue: IInfraType;
+function GetBindableVCL(pControl: TControl;
+  const pPropertyPath: String): IBindable;
+var
+  vI: Integer;
 begin
-  case FPropInfo^.PropType^.Kind of
-    tkString: Result := TInfraString.NewFrom(GetStrProp(FControl, FPropInfo));    
-  end;
+  for vI := 0 to _BindableClasses.Count-1 do
+    begin
+      Result := TBindableVCLPropertyClass(_BindableClasses[vI]).CreateIfSupports(pControl, pPropertyPath) as IBindable;
+      if Assigned(Result) then
+        Break;
+    end;
+  if not Assigned(Result) then
+    Raise EInfraBindingError.CreateFmt(cErrorBindableNotDefined,
+      [pControl.ClassName, pPropertyPath]);
 end;
 
-procedure TRttiBasedBindableControlProperty.SetValue(const Value: IInfraType);
-begin
-  case FPropInfo^.PropType^.Kind of
-    tkString: SetStrProp(FControl, FPropInfo, (Value as IInfraString).AsString);    
-  end;
-end;
+{ TBindableVCLProperty }
 
-function TRttiBasedBindableControlProperty.Support2Way: Boolean;
-begin
-  Result := False;
-end;
-
-{ TBindableEditText }
-
-class function TBindableEditText.CreateIfSupports(Control: TControl;
-  const PropertyPath: String): TBindableControlProperty;
-begin
-  if (Control is TEdit) and AnsiSameText(PropertyPath, 'Text') then
-    Result := inherited CreateIfSupports(Control, PropertyPath)
-  else
-    Result := Nil;
-end;
-
-procedure TBindableEditText.WndProc(var Message: TMessage);
-begin
-  inherited;
-  if Message.Msg = WM_KILLFOCUS then
-    Changed;
-end;
-
-{ TBindableControlProperty }
-
-constructor TBindableControlProperty.Create(Control: TControl);
+constructor TBindableVCLProperty.Create(pControl: TControl);
 begin
   inherited Create;
-  FControl := Control;
+  FControl := pControl;
   FOldWndProc := FControl.WindowProc;
-  FControl.WindowProc := WndProc;  
+  FControl.WindowProc := WndProc;
 end;
 
-destructor TBindableControlProperty.Destroy;
+destructor TBindableVCLProperty.Destroy;
 begin
   FControl.WindowProc := FOldWndProc;
   inherited;
 end;
 
-procedure TBindableControlProperty.WndProc(var Message: TMessage);
+procedure TBindableVCLProperty.WndProc(var Message: TMessage);
 begin
   FOldWndProc(Message);
 end;
 
-{ TTwoWayRttiBasedBindableControlProperty }
+{ TBindableRTTIBased }
 
-function TTwoWayRttiBasedBindableControlProperty.Support2Way: Boolean;
+class function TBindableRTTIBased.CreateIfSupports(
+  pControl: TControl; const pPropertyPath: String): IBindableVCLProperty;
+var
+  vPropInfo: PPropInfo;
+begin
+  vPropInfo := GetPropInfo(pControl, pPropertyPath);
+  if Assigned(vPropInfo) then
+    Result := Self.Create(pControl, vPropInfo)
+  else
+    Result := nil;
+end;
+
+constructor TBindableRTTIBased.Create(pControl: TControl;
+  pPropInfo: PPropInfo);
+begin
+  inherited Create(pControl);
+  FPropInfo := pPropInfo;
+end;
+
+function TBindableRTTIBased.GetValue: IInfraType;
+begin
+  case FPropInfo^.PropType^.Kind of
+    tkLString, tkString:
+      Result := TInfraString.NewFrom(GetStrProp(FControl, FPropInfo));
+  end;
+end;
+
+procedure TBindableRTTIBased.SetValue(const Value: IInfraType);
+begin
+  case FPropInfo^.PropType^.Kind of
+    tkLString, tkString:
+      SetStrProp(FControl, FPropInfo, (Value as IInfraString).AsString);
+  end;
+end;
+
+{ TBindableRTTIBasedTwoWay }
+
+function TBindableRTTIBasedTwoWay.Support2Way: Boolean;
 begin
   Result := True;
 end;
+{ TBindableText }
 
-{ TBindableControlVisible }
-
-class function TBindableControlVisible.CreateIfSupports(Control: TControl;
-  const PropertyPath: String): TBindableControlProperty;
+class function TBindableText.CreateIfSupports(pControl: TControl;
+  const pPropertyPath: String): IBindableVCLProperty;
 begin
-  if AnsiSameText(PropertyPath, 'Visible') then
-    Result := inherited CreateIfSupports(Control, PropertyPath)
+  if (pControl is TCustomEdit) and AnsiSameText(pPropertyPath, 'Text') then
+    Result := inherited CreateIfSupports(pControl, pPropertyPath)
   else
-    Result := Nil;
+    Result := nil;
 end;
 
-procedure TBindableControlVisible.WndProc(var Message: TMessage);
+procedure TBindableText.WndProc(var Message: TMessage);
 begin
-  inherited;
+  inherited WndProc(Message);
+  if Message.Msg = WM_KILLFOCUS then
+    Changed;
+end;
+
+{ TBindableCaption }
+
+class function TBindableCaption.CreateIfSupports(pControl: TControl;
+  const pPropertyPath: String): IBindableVCLProperty;
+begin
+  if AnsiSameText(pPropertyPath, 'Caption') then
+    Result := inherited CreateIfSupports(pControl, pPropertyPath)
+  else
+    Result := nil;
+end;
+
+{ TBindableVisible }
+
+class function TBindableVisible.CreateIfSupports(pControl: TControl;
+  const pPropertyPath: String): IBindableVCLProperty;
+begin
+  if AnsiSameText(pPropertyPath, 'Visible') then
+    Result := inherited CreateIfSupports(pControl, pPropertyPath)
+  else
+    Result := nil;
+end;
+
+procedure TBindableVisible.WndProc(var Message: TMessage);
+begin
+  inherited WndProc(Message);
   if Message.Msg = CM_VISIBLECHANGED then
     Changed;
 end;
 
-{ TBindableControlEnabled }
+{ TBindableEnabled }
 
-class function TBindableControlEnabled.CreateIfSupports(Control: TControl;
-  const PropertyPath: String): TBindableControlProperty;
+class function TBindableEnabled.CreateIfSupports(pControl: TControl;
+  const pPropertyPath: String): IBindableVCLProperty;
 begin
-  if AnsiSameText(PropertyPath, 'Enabled') then
-    Result := inherited CreateIfSupports(Control, PropertyPath)
+  if AnsiSameText(pPropertyPath, 'Enabled') then
+    Result := inherited CreateIfSupports(pControl, pPropertyPath)
   else
-    Result := Nil;
+    Result := nil;
 end;
 
-procedure TBindableControlEnabled.WndProc(var Message: TMessage);
+procedure TBindableEnabled.WndProc(var Message: TMessage);
 begin
-  inherited;
+  inherited WndProc(Message);
   if Message.Msg = CM_ENABLEDCHANGED then
     Changed;
 end;
 
-end.
+procedure RegisterBindables;
+begin
+  RegisterBindableClass(TBindableText);
+  RegisterBindableClass(TBindableVisible);
+  RegisterBindableClass(TBindableEnabled);
+  RegisterBindableClass(TBindableCaption);
+end;
 
+initialization
+  RegisterBindables;
+
+finalization
+  if Assigned(_BindableClasses) then
+    FreeAndNil(_BindableClasses);
+
+end.

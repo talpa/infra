@@ -13,6 +13,7 @@ uses
 type
   TBinding = class(TElement, IBinding)
   private
+    FActive: Boolean;
     FLeft, FRight: IBindable;
     FValueConverter: ITypeConverter;
     FMode: TBindingMode;
@@ -28,15 +29,20 @@ type
     procedure SetValueConverter(const Value: ITypeConverter);
     procedure UpdateLeft;
     function TwoWay: IBinding;
+    function GetActive: Boolean;
+    procedure SetActive(Value: Boolean);
   public
     constructor Create(const Left, Right: IBindable); reintroduce;
   end;
 
   TBindManager = class(TElement, IBindManager)
   private
-    FListBind: IBindingList;
+    FActive: Boolean;
+    FBindingList: IBindingList;
     FDataContext: IInfraType;
   protected
+    function GetActive: Boolean;
+    procedure SetActive(Value: Boolean);
     function GetDataContext: IInfraType;
     procedure SetDataContext(const Value: IInfraType);
     function Add(const pLeft, pRight: IBindable;
@@ -51,11 +57,12 @@ type
       const pConverter: ITypeConverter = nil): IBinding; overload;
     procedure ClearBindings;
     property DataContext: IInfraType read GetDataContext write SetDataContext;
+    property Active: boolean read GetActive write SetActive;
   public
     constructor Create; override;
   end;
 
-  TNotifyValueChanged  = class(TInfraEvent, INotifyValueChanged )
+  TNotifyValueChanged = class(TInfraEvent, INotifyValueChanged)
   private
     FSource: IBindable;
     function GetSource: IElement;
@@ -84,7 +91,7 @@ begin
   FLeft := Left;
   FRight := Right;
   SetMode(bmLeftToRight);
-  EventService.Subscribe(INotifyValueChanged , Self as ISubscriber,
+  EventService.Subscribe(INotifyValueChanged, Self as ISubscriber,
     PropertyChanged, EmptyStr, PropertyChangedFilter);
 end;
 
@@ -153,44 +160,45 @@ begin
   FRight.Value.Assign(FLeft.Value);
 end;
 
+function TBinding.GetActive: Boolean;
+begin
+  Result := FActive;
+end;
+
+procedure TBinding.SetActive(Value: Boolean);
+begin
+  UpdateRight;
+end;
+
 { TBindManager }
 
 constructor TBindManager.Create;
 begin
   inherited Create;
-  FListBind := TBindingList.Create;
+  FBindingList := TBindingList.Create;
 end;
 
 function TBindManager.Add(
   pLeftControl: TControl; const pLeftProperty: string;
   pRightControl: TControl; const pRightProperty: string;
   const pConverter: ITypeConverter = nil): IBinding;
-//var
-//  vLeftClass, vRightClass: TBindableControlClass;
-//  vLeft, vRight: IBindable;
+var
+  vLeft, vRight: IBindable;
 begin
-//  with BindingService.MappingControls do
-//  begin
-//    vLeftClass := TBindableControlClass(Items[pLeftControl.ClassType]);
-//    vRightClass := TBindableControlClass(Items[pRightControl.ClassType]);
-//  end;
-//  vLeft := vLeftClass.Create(pLeftControl, pLeftProperty);
-//  vRight := vRightClass.Create(pRightControl, pRightProperty);
-//  Result := Add(vLeft, vRight, pConverter);
+  vLeft := GetBindableVCL(pLeftControl, pLeftProperty);
+  vRight := GetBindableVCL(pRightControl, pRightProperty);
+  Result := Add(vLeft, vRight, pConverter);
 end;
 
 function TBindManager.Add(const pLeftProperty: string;
   pRightControl: TControl; const pRightProperty: string = '';
   const pConverter: ITypeConverter = nil): IBinding;
-//var
-//  vRightClass: TBindableControlClass;
-//  vLeft, vRight: IBindable;
+var
+  vLeft, vRight: IBindable;
 begin
-//  vLeft := TBindableInfraType.GetBindable(FDataContext, pLeftProperty);
-//  with BindingService.MappingControls do
-//    vRightClass := TBindableControlClass(Items[pRightControl.ClassType]);
-//  vRight := vRightClass.Create(pRightControl, pRightProperty);
-//  Result := Add(vLeft, vRight, pConverter);
+  vLeft := TBindableInfraType.GetBindable(FDataContext, pLeftProperty);
+  vRight := GetBindableVCL(pRightControl, pRightProperty);
+  Result := Add(vLeft, vRight, pConverter);
 end;
 
 function TBindManager.Add(const pLeft, pRight: IBindable;
@@ -200,12 +208,12 @@ var
 begin
   vBinding := TBinding.Create(pLeft, pRight);
   vBinding.ValueConverter := pConverter;
-  FListBind.Add(vBinding)
+  FBindingList.Add(vBinding)
 end;
 
 procedure TBindManager.ClearBindings;
 begin
-  FListBind.Clear;
+  FBindingList.Clear;
 end;
 
 function TBindManager.GetDataContext: IInfraType;
@@ -218,20 +226,43 @@ begin
   FDataContext := Value;
 end;
 
+function TBindManager.GetActive: Boolean;
+begin
+  Result := FActive;
+end;
+
+procedure TBindManager.SetActive(Value: Boolean);
+var
+  vIterator: IInfraIterator;
+begin
+  vIterator := nil;
+  if FActive <> Value then
+    FActive := Value;
+  if FActive then
+  begin
+    vIterator := FBindingList.NewIterator;
+    while not vIterator.IsDone do
+    begin
+      (vIterator.CurrentItem as IBinding).Active := True;
+      vIterator.Next;
+    end;
+  end;
+end;
+
 { TNotifyValueChanged  }
 
-constructor TNotifyValueChanged .Create(const Source: IBindable);
+constructor TNotifyValueChanged.Create(const Source: IBindable);
 begin
   inherited Create;
   FSource := Source;
 end;
 
-function TNotifyValueChanged .GetSource: IElement;
+function TNotifyValueChanged.GetSource: IElement;
 begin
   Result := FSource;
 end;
 
-procedure TNotifyValueChanged .SetSource(const Value: IElement);
+procedure TNotifyValueChanged.SetSource(const Value: IElement);
 begin
   FSource := Value as IBindable;
 end;

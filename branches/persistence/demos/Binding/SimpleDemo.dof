@@ -15,7 +15,7 @@ K=0
 L=1
 M=0
 N=1
-O=1
+O=0
 P=1
 Q=0
 R=0
@@ -83,21 +83,21 @@ UnsafeCast=0
 MapFile=0
 OutputObjs=0
 ConsoleApp=1
-DebugInfo=1
+DebugInfo=0
 RemoteSymbols=0
 MinStackSize=16384
 MaxStackSize=1048576
 ImageBase=4194304
-ExeDescription=InfraAspect - Framework de Programacao Orientada a Aspectos
+ExeDescription=
 [Directories]
 OutputDir=
-UnitOutputDir=..\..\build
-PackageDLLOutputDir=..\..\build
-PackageDCPOutputDir=..\..\build
-SearchPath=..\..\build
-Packages=
+UnitOutputDir=bin
+PackageDLLOutputDir=bin
+PackageDCPOutputDir=bin
+SearchPath=bin;..\..\Src\Build
+Packages=vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;visualclx;visualdbclx;vclshlctrls;dclOfficeXP;RemObjects_WebBroker_D7;RemObjects_Indy_D7;RemObjects_RODX_D7;RemObjects_BPDX_D7;Hydra_Core_D7;Hydra_RO_D7;TeeUI77;Tee77;TeeDB77;TeeLanguage77;TeePro77;TeeGL77;RxCtl7;RxBDE7;RxDB7;TeeTree2D7Tee7;FR7;FRBDE7;fs7;frx7;frxcs7;fsDB7;frxDB7;fsBDE7;frxBDE7;fsADO7;frxADO7;fsIBX7;frxIBX7;frxDBX7;frxe7;vclactnband;WPTools5_D7;CoolTrayIcon_D6plus;dxdbtrD6;dxmdsd6;dxtrmdD6;EM15_D5_Pack;NextInspectorD7;fqb70;TMSD7;tmsexd7
 Conditionals=
-DebugSourceDirs=..\..\build
+DebugSourceDirs=bin;..\..\Src\Build
 UsePackages=0
 [Parameters]
 RunParams=
@@ -110,7 +110,7 @@ ActiveLang=
 ProjectLang=
 RootDir=
 [Version Info]
-IncludeVerInfo=1
+IncludeVerInfo=0
 AutoIncBuild=0
 MajorVer=1
 MinorVer=0
@@ -134,33 +134,41 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
+[Excluded Packages]
+C:\Util\Comps\bin\MP.bpl=MicroProcess Componentes
+C:\Util\Comps\bin\Eclipse.bpl=Eclipse Componentes
+C:\Util\Comps\bin\dttreeviewd7d.bpl=Dynamic DBTreeView design time package
+C:\Util\Comps\bin\VirtualTreesD7.bpl=Virtual Treeview runtime package
+C:\Util\Comps\bin\VirtualTreesD7D.bpl=Virtual Treeview design time package
+C:\Projetos\Stocker\src\Components\graph3\sgr.bpl=(untitled)
+C:\Projetos\DynApp\_Outros\Validation\ValidationProviderD10.bpl=Validation Provider
 [HistoryLists\hlDebugSourcePath]
 Count=3
 Item0=bin;..\..\Src\Build
-Item1=..\bin;..\..\Build
-Item2=..\..\build
+Item1=..\..\build
+Item2=..\bin;..\..\Build
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
 Count=5
 Item0=bin;..\..\Src\Build
-Item1=..\bin;..\..\Build
-Item2=..\..\build
+Item1=..\..\build
+Item2=..\bin;..\..\Build
 Item3=C:\Projetos\InfraBranch\src\Build
 Item4=E:\componentes\Infra\src\Build
 [HistoryLists\hlUnitOutputDirectory]
 Count=3
 Item0=bin
-Item1=..\bin
-Item2=..\..\build
+Item1=..\..\build
+Item2=..\bin
 [HistoryLists\hlBPLOutput]
 Count=3
 Item0=bin
-Item1=..\bin
-Item2=..\..\build
+Item1=..\..\build
+Item2=..\bin
 [HistoryLists\hlDCPOutput]
 Count=3
 Item0=bin
-Item1=..\bin
-Item2=..\..\build
+Item1=..\..\build
+Item2=..\bin

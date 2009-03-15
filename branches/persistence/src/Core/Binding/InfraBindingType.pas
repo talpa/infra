@@ -35,12 +35,12 @@ uses
 
 procedure TBindable.Changed;
 begin
-  Publisher.Publish(TNotifyValueChanged .Create(Self) as INotifyValueChanged );
+  Publisher.Publish(TNotifyValueChanged .Create(Self) as INotifyValueChanged);
 end;
 
 function TBindable.Support2Way: Boolean;
 begin
-  Result := True;
+  Result := False;
 end;
 
 { TBindableInfraType }
@@ -78,5 +78,3 @@ begin
 end;
 
 end.
-
-
