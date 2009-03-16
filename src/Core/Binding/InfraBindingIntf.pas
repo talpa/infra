@@ -41,14 +41,17 @@ type
     function GetLeft: IBindable;
     function GetRight: IBindable;
     function GetValueConverter: ITypeConverter;
+    function GetConverterParameter: IInfraType;
     procedure SetMode(Value: TBindingMode);
     procedure SetValueConverter(const Value: ITypeConverter);
+    procedure SetConverterParameter(const Value: IInfraType);
     procedure UpdateLeft;
     function TwoWay: IBinding;
     property Mode: TBindingMode read GetMode write SetMode;
     property Left: IBindable read GetLeft;
     property Right: IBindable read GetRight;
     property ValueConverter: ITypeConverter read GetValueConverter write SetValueConverter;
+    property ConverterParameter: IInfraType read GetConverterParameter write SetConverterParameter;
     property Active: boolean read GetActive write SetActive;
   end;
 
