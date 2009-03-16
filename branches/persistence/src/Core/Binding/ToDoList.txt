@@ -1,0 +1,7 @@
+- Converter hoje é singleton como resolver o problema do format se nao podemos 
+  passá-lo durante a conversão?
+- O framework nao está verificando se o valor realmente mudou antes de chamar o changed nos bindables;
+- Criar esquema de BindCommands;
+- Tratar objetos Complexos como Grid, Combobox, ListBox, etc...;
+- Ver a questão do DataContext como um DataProvider para poder 
+  ler XML, JSON, InfraType, etc...

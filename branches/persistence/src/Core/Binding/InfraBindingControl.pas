@@ -91,8 +91,6 @@ type
   TBindableColor = class(TBindableRTTIBasedTwoWay)
   protected
     procedure WndProc(var Message: TMessage); override;
-    function GetValue: IInfraType; override;
-    procedure SetValue(const Value: IInfraType); override;
   public
     class function CreateIfSupports(pControl: TControl;
       const pPropertyPath: string): IBindableVCLProperty; override;
@@ -198,6 +196,8 @@ begin
         Result := TInfraBoolean.NewFrom(Boolean(GetOrdProp(FControl, FPropInfo)))
       else
         Result := TInfraInteger.NewFrom(GetOrdProp(FControl, FPropInfo));
+    tkInteger, tkChar, tkWChar:
+      Result := TInfraInteger.NewFrom(GetOrdProp(FControl, FPropInfo));
   end;
 end;
 
@@ -213,6 +213,9 @@ begin
       else
         SetOrdProp(FControl, FPropInfo,
           Trunc((Value as IInfraInteger).AsInteger));
+    tkInteger, tkChar, tkWChar:
+      SetOrdProp(FControl, FPropInfo,
+        Trunc((Value as IInfraInteger).AsInteger));
   end;
 end;
 
@@ -315,22 +318,6 @@ begin
     Result := inherited CreateIfSupports(pControl, pPropertyPath)
   else
     Result := nil;
-end;
-
-function TBindableColor.GetValue: IInfraType;
-begin
-  case FPropInfo^.PropType^.Kind of
-    tkInteger:
-      Result := TInfraString.NewFrom(ColorToString(GetOrdProp(FControl, FPropInfo)));
-  end;
-end;
-
-procedure TBindableColor.SetValue(const Value: IInfraType);
-begin
-  case FPropInfo^.PropType^.Kind of
-    tkInteger:
-      SetOrdProp(FControl, FPropInfo,StringToColor((Value as IInfraString).asString));
-  end;
 end;
 
 procedure TBindableColor.WndProc(var Message: TMessage);

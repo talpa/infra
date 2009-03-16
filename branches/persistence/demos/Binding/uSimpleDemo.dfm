@@ -1,8 +1,8 @@
 object Form1: TForm1
-  Left = 186
-  Top = 126
+  Left = 405
+  Top = 169
   Width = 551
-  Height = 280
+  Height = 308
   Caption = 'Form1'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -33,18 +33,20 @@ object Form1: TForm1
     Text = 'Edit1'
   end
   object CheckBox1: TCheckBox
-    Left = 456
-    Top = 112
+    Left = 136
+    Top = 136
     Width = 81
     Height = 17
     Caption = 'CheckBox1'
+    Checked = True
     Ctl3D = False
     ParentCtl3D = False
+    State = cbChecked
     TabOrder = 1
   end
   object Panel1: TPanel
     Left = 8
-    Top = 136
+    Top = 163
     Width = 529
     Height = 105
     Caption = 'Panel1'
@@ -74,8 +76,9 @@ object Form1: TForm1
       Top = 40
       Width = 193
       Height = 25
-      Caption = 'Button2'
+      Caption = 'Desmarca CheckBox'
       TabOrder = 2
+      OnClick = Button2Click
     end
     object Button3: TButton
       Left = 8
@@ -95,22 +98,35 @@ object Form1: TForm1
     Lines.Strings = (
       'Exemplo simples de binding entre controles:'
       '1) Edit1.Text -> Label1.Caption'
-      '2) Edit2.Text -> Edit2.Color [NAO FUNCIONANDO AINDA]'
+      '2) Edit2.Text -> Edit2.Color'
       
-        '3) Checkbox1.Checked -> Checkbox1.Caption (ConverterSimNao) [NAO' +
-        ' FUNCIONANDO AINDA]'
-      '4) Checkbox1.Checked -> Panel1.Visible')
+        '3) Checkbox1.Checked -> Checkbox1.Caption. Usando TBooleanToText' +
+        ' sem format)'
+      
+        '4) Checkbox2.Checked -> Checkbox2.Caption. Usando TBooleanToText' +
+        ' com Format [Invisivel;Visivel]'
+      '5) Checkbox1.Checked -> Panel1.Visible')
     ParentCtl3D = False
     TabOrder = 3
   end
   object Edit2: TEdit
-    Left = 272
-    Top = 112
+    Left = 8
+    Top = 136
     Width = 121
     Height = 19
     Ctl3D = False
     ParentCtl3D = False
     TabOrder = 4
-    Text = 'clbtnface'
+    Text = 'clSkyBlue'
+  end
+  object CheckBox2: TCheckBox
+    Left = 232
+    Top = 136
+    Width = 81
+    Height = 17
+    Caption = 'CheckBox2'
+    Ctl3D = False
+    ParentCtl3D = False
+    TabOrder = 5
   end
 end
