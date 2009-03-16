@@ -11,6 +11,21 @@ uses
   InfraValueTypeIntf;
 
 type
+  {
+    TBinding
+    - Esta classe define as regras de como a informação será refletida. Pense
+      nesta classe como a ponte entre a origem do dado e o seu apresentador.
+      ligação entre dois objetos (bindable)
+    - Ela é responsável tambem por receber a notificação de mudança de um dos
+      lados afim de atualizar o outro.
+    - Guarga o tipo de conversor a ser usado para transferência da informação
+      entre os objetos (bindable).
+    - Quando seta-se Active := True o objeto bindable Right (apresentador) é
+      atualizado com o valor do objeto bindable Left (origem da informação).
+    - Left é o objeto que nós queremos exibir;
+    - Right é o objeto que irá apresentar e/ou modificar o dado de alguma
+      maneira;
+  }
   TBinding = class(TElement, IBinding)
   private
     FActive: Boolean;
@@ -35,6 +50,16 @@ type
     constructor Create(const Left, Right: IBindable); reintroduce;
   end;
 
+  {
+    TBindManager
+    - Esta classe é um container de objetos binding.
+    - Quando seta-se Active para true todos os objetos Binding são ativados.
+    - O relacionamento (binding) pode acontecer entre:
+      ControleVCL1.AlgumaPropriedade <-> ControleVCL2.AlgumaPropriedade
+      InfraObject1.AlgumaAtributo <-> ControleVCL.AlgumaPropriedade
+    - DataContext é utilizado para definir o InfraObject (Left) que contem os
+      dados a serem apresentados. Quando ligando InfraObject <-> ControleVCL.
+  }
   TBindManager = class(TElement, IBindManager)
   private
     FActive: Boolean;
@@ -62,6 +87,7 @@ type
     constructor Create; override;
   end;
 
+  { Evento de notificação de mudança de valor no Bindable }
   TNotifyValueChanged = class(TInfraEvent, INotifyValueChanged);
 
 implementation
@@ -147,13 +173,23 @@ begin
 end;
 
 procedure TBinding.UpdateLeft;
+var
+  vRightValue: IInfraType;
 begin
-  FLeft.Value := FRight.Value;
+  vRightValue := FRight.Value;
+  if Assigned(FValueConverter) then
+    vRightValue := FValueConverter.ConvertToLeft(vRightValue);
+  FLeft.Value := vRightValue;
 end;
 
 procedure TBinding.UpdateRight;
+var
+  vLeftValue: IInfraType;
 begin
-  FRight.Value := FLeft.Value;
+  vLeftValue := FLeft.Value;
+  if Assigned(FValueConverter) then
+    vLeftValue := FValueConverter.ConvertToRight(vLeftValue);
+  FRight.Value := vLeftValue;
 end;
 
 function TBinding.GetActive: Boolean;
