@@ -40,8 +40,10 @@ type
     function GetMode: TBindingMode;
     function GetRight: IBindable;
     function GetValueConverter: ITypeConverter;
+    function GetConverterParameter: IInfraType;
     procedure SetMode(Value: TBindingMode);
     procedure SetValueConverter(const Value: ITypeConverter);
+    procedure SetConverterParameter(const Value: IInfraType);
     procedure UpdateLeft;
     function TwoWay: IBinding;
     function GetActive: Boolean;
@@ -200,6 +202,16 @@ end;
 procedure TBinding.SetActive(Value: Boolean);
 begin
   UpdateRight;
+end;
+
+function TBinding.GetConverterParameter: IInfraType;
+begin
+
+end;
+
+procedure TBinding.SetConverterParameter(const Value: IInfraType);
+begin
+
 end;
 
 { TBindManager }
