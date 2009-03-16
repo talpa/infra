@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 191
-  Top = 114
+  Left = 186
+  Top = 126
   Width = 551
   Height = 280
   Caption = 'Form1'
@@ -111,6 +111,6 @@ object Form1: TForm1
     Ctl3D = False
     ParentCtl3D = False
     TabOrder = 4
-    Text = 'Edit2'
+    Text = 'clbtnface'
   end
 end

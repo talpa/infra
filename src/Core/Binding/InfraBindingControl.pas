@@ -27,7 +27,7 @@ type
     property Control: TControl read GetControl;
   public
     class function CreateIfSupports(pControl: TControl;
-      const pPropertyPath: String): IBindableVCLProperty; virtual; abstract;
+      const pPropertyPath: string): IBindableVCLProperty; virtual; abstract;
     constructor Create(pControl: TControl); reintroduce;
     destructor Destroy; override;
   end;
@@ -53,7 +53,7 @@ type
   TBindableCaption = class(TBindableRTTIBased)
   public
     class function CreateIfSupports(pControl: TControl;
-      const pPropertyPath: String): IBindableVCLProperty; override;
+      const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
   TBindableText = class(TBindableRTTIBasedTwoWay)
@@ -61,7 +61,7 @@ type
     procedure WndProc(var Message: TMessage); override;
   public
     class function CreateIfSupports(pControl: TControl;
-      const pPropertyPath: String): IBindableVCLProperty; override;
+      const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
   TBindableVisible = class(TBindableRTTIBasedTwoWay)
@@ -69,7 +69,7 @@ type
     procedure WndProc(var Message: TMessage); override;
   public
     class function CreateIfSupports(pControl: TControl;
-      const pPropertyPath: String): IBindableVCLProperty; override;
+      const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
   TBindableEnabled = class(TBindableRTTIBasedTwoWay)
@@ -77,7 +77,7 @@ type
     procedure WndProc(var Message: TMessage); override;
   public
     class function CreateIfSupports(pControl: TControl;
-      const pPropertyPath: String): IBindableVCLProperty; override;
+      const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
   TBindableChecked = class(TBindableRTTIBasedTwoWay)
@@ -85,12 +85,22 @@ type
     procedure WndProc(var Message: TMessage); override;
   public
     class function CreateIfSupports(pControl: TControl;
-      const pPropertyPath: String): IBindableVCLProperty; override;
+      const pPropertyPath: string): IBindableVCLProperty; override;
+  end;
+
+  TBindableColor = class(TBindableRTTIBasedTwoWay)
+  protected
+    procedure WndProc(var Message: TMessage); override;
+    function GetValue: IInfraType; override;
+    procedure SetValue(const Value: IInfraType); override;
+  public
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
 procedure RegisterBindableClass(pBindableClass: TBindableVCLPropertyClass);
 function GetBindableVCL(pControl: TControl;
-  const pPropertyPath: String): IBindable;
+  const pPropertyPath: string): IBindable;
 
 implementation
 
@@ -98,6 +108,7 @@ uses
   Classes,
   SysUtils,
   StdCtrls,
+  Graphics,
   InfraValueType,
   InfraCommonIntf,
   InfraBindingConsts,
@@ -115,18 +126,18 @@ begin
 end;
 
 function GetBindableVCL(pControl: TControl;
-  const pPropertyPath: String): IBindable;
+  const pPropertyPath: string): IBindable;
 var
   vI: Integer;
 begin
-  for vI := 0 to _BindableClasses.Count-1 do
-    begin
-      Result := TBindableVCLPropertyClass(_BindableClasses[vI]).CreateIfSupports(pControl, pPropertyPath) as IBindable;
-      if Assigned(Result) then
-        Break;
-    end;
+  for vI := 0 to _BindableClasses.Count - 1 do
+  begin
+    Result := TBindableVCLPropertyClass(_BindableClasses[vI]).CreateIfSupports(pControl, pPropertyPath) as IBindable;
+    if Assigned(Result) then
+      Break;
+  end;
   if not Assigned(Result) then
-    Raise EInfraBindingError.CreateFmt(cErrorBindableNotDefined,
+    raise EInfraBindingError.CreateFmt(cErrorBindableNotDefined,
       [pControl.ClassName, pPropertyPath]);
 end;
 
@@ -159,7 +170,7 @@ end;
 { TBindableRTTIBased }
 
 class function TBindableRTTIBased.CreateIfSupports(
-  pControl: TControl; const pPropertyPath: String): IBindableVCLProperty;
+  pControl: TControl; const pPropertyPath: string): IBindableVCLProperty;
 var
   vPropInfo: PPropInfo;
 begin
@@ -215,7 +226,7 @@ end;
 { TBindableText }
 
 class function TBindableText.CreateIfSupports(pControl: TControl;
-  const pPropertyPath: String): IBindableVCLProperty;
+  const pPropertyPath: string): IBindableVCLProperty;
 begin
   if (pControl is TCustomEdit) and AnsiSameText(pPropertyPath, 'Text') then
     Result := inherited CreateIfSupports(pControl, pPropertyPath)
@@ -233,7 +244,7 @@ end;
 { TBindableCaption }
 
 class function TBindableCaption.CreateIfSupports(pControl: TControl;
-  const pPropertyPath: String): IBindableVCLProperty;
+  const pPropertyPath: string): IBindableVCLProperty;
 begin
   if AnsiSameText(pPropertyPath, 'Caption') then
     Result := inherited CreateIfSupports(pControl, pPropertyPath)
@@ -244,7 +255,7 @@ end;
 { TBindableVisible }
 
 class function TBindableVisible.CreateIfSupports(pControl: TControl;
-  const pPropertyPath: String): IBindableVCLProperty;
+  const pPropertyPath: string): IBindableVCLProperty;
 begin
   if AnsiSameText(pPropertyPath, 'Visible') then
     Result := inherited CreateIfSupports(pControl, pPropertyPath)
@@ -262,7 +273,7 @@ end;
 { TBindableEnabled }
 
 class function TBindableEnabled.CreateIfSupports(pControl: TControl;
-  const pPropertyPath: String): IBindableVCLProperty;
+  const pPropertyPath: string): IBindableVCLProperty;
 begin
   if AnsiSameText(pPropertyPath, 'Enabled') then
     Result := inherited CreateIfSupports(pControl, pPropertyPath)
@@ -280,7 +291,7 @@ end;
 { TBindableChecked }
 
 class function TBindableChecked.CreateIfSupports(pControl: TControl;
-  const pPropertyPath: String): IBindableVCLProperty;
+  const pPropertyPath: string): IBindableVCLProperty;
 begin
   if AnsiSameText(pPropertyPath, 'Checked') then
     Result := inherited CreateIfSupports(pControl, pPropertyPath)
@@ -295,6 +306,40 @@ begin
     Changed;
 end;
 
+{ TBindableColor }
+
+class function TBindableColor.CreateIfSupports(pControl: TControl;
+  const pPropertyPath: string): IBindableVCLProperty;
+begin
+  if AnsiSameText(pPropertyPath, 'Color') then
+    Result := inherited CreateIfSupports(pControl, pPropertyPath)
+  else
+    Result := nil;
+end;
+
+function TBindableColor.GetValue: IInfraType;
+begin
+  case FPropInfo^.PropType^.Kind of
+    tkInteger:
+      Result := TInfraString.NewFrom(ColorToString(GetOrdProp(FControl, FPropInfo)));
+  end;
+end;
+
+procedure TBindableColor.SetValue(const Value: IInfraType);
+begin
+  case FPropInfo^.PropType^.Kind of
+    tkInteger:
+      SetOrdProp(FControl, FPropInfo,StringToColor((Value as IInfraString).asString));
+  end;
+end;
+
+procedure TBindableColor.WndProc(var Message: TMessage);
+begin
+  inherited WndProc(Message);
+  if Message.Msg = CM_COLORCHANGED then
+    Changed;
+end;
+
 procedure RegisterBindables;
 begin
   RegisterBindableClass(TBindableText);
@@ -302,6 +347,7 @@ begin
   RegisterBindableClass(TBindableEnabled);
   RegisterBindableClass(TBindableCaption);
   RegisterBindableClass(TBindableChecked);
+  RegisterBindableClass(TBindableColor);
 end;
 
 initialization
@@ -312,3 +358,4 @@ finalization
     FreeAndNil(_BindableClasses);
 
 end.
+

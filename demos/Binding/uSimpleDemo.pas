@@ -51,7 +51,7 @@ procedure TForm1.FormActivate(Sender: TObject);
 begin
   bm.Add(Edit1, 'Text', Label1, 'Caption');
   bm.Add(Checkbox1, 'Checked', Panel1, 'Visible');
-//  bm.Add(Edit2, 'Text', Edit2, 'Color');
+  bm.Add(Edit2, 'Text', Edit2, 'Color');
 //  bm.Add(Checkbox1, 'Checked', Checkbox1, 'Caption');
   bm.Active := True;
 end;
