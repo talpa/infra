@@ -92,6 +92,11 @@ type
     function GetNewBindManager: IBindManager;
   end;
 
+  IInfraValueConverter=interface(IBaseElement)
+  ['{0E7CEE73-3C3A-4434-A841-E88E2CD313BC}']
+  end;
+
+
 function BindingService: IInfraBindingService;
 
 implementation
