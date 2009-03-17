@@ -10,111 +10,141 @@ uses
   InfraSingleton,
   InfraValueTypeIntf;
 
-type
+type                                      
   TTypeConverter = class(TInfraSingleton, ITypeConverter)
-  private
-    FFormat: IInfraType;
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType): IInfraType; virtual; abstract;
+      const Parameter: IInfraType = nil): IInfraType; virtual; abstract;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType): IInfraType; virtual; abstract;
-    function ConvertToRight(const Value: IInfraType): IInfraType;
-    function ConvertToLeft(const Value: IInfraType): IInfraType;
-  public
-    constructor Create(const Format: IInfraType = nil); reintroduce;
+      const Parameter: IInfraType = nil): IInfraType; virtual; abstract;
+    function ConvertToRight(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType;
+    function ConvertToLeft(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType;
   end;
 
   TNullConverter = class(TTypeConverter, INullConverter)
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
   TDateTimeToText = class(TTypeConverter, IDateTimeToText)
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
   TBooleanToText = class(TTypeConverter, IBooleanToText)
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
   TIntegerToText = class(TTypeConverter, IIntegerToText)
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
   TDoubleToText = class(TTypeConverter, IDoubleToText)
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
+  end;
+
+  TTextToInteger = class(TIntegerToText)
+  protected
+    function LeftToRight(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+    function RightToLeft(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+  end;
+
+  TTextToDateTime = class(TDateTimeToText)
+  protected
+    function LeftToRight(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+    function RightToLeft(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+  end;
+
+  TTextToBoolean = class(TBooleanToText)
+  protected
+    function LeftToRight(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+    function RightToLeft(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+  end;
+
+  TTextToDouble = class(TDoubleToText)
+  protected
+    function LeftToRight(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+    function RightToLeft(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
   TStringToVariant = class(TTypeConverter, IStringToVariant)
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
   TDoubleToVariant = class(TTypeConverter, IDoubleToVariant)
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
   TIntegerToVariant = class(TTypeConverter, IIntegerToVariant)
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
   TBooleanToVariant = class(TTypeConverter, IBooleanToVariant)
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
   TDateTimeToVariant = class(TTypeConverter, IDateTimeToVariant)
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
-function GetConverterToVariant(pProperty: IInfraType): ITypeConverter;
-function GetVariantValue(pProperty: IInfraType): IInfraVariant;
-procedure SetVariantValue(pProperty: IInfraType; pValue: Variant);
+function GetConverterToVariant(const pProperty: IInfraType): ITypeConverter;
+function GetVariantValue(const pProperty: IInfraType): IInfraVariant;
+procedure SetVariantValue(const pProperty: IInfraType; pValue: Variant);
 
 implementation
 
 uses
   Variants, SysUtils, InfraValueType;
 
-function GetConverterToVariant(pProperty: IInfraType): ITypeConverter;
+function GetConverterToVariant(const pProperty: IInfraType): ITypeConverter;
 begin
   if Supports(pProperty, IInfraString) then
     Result := TStringToVariant.Create
@@ -132,7 +162,7 @@ begin
     Result := TIntegerToVariant.Create;
 end;
 
-function GetVariantValue(pProperty: IInfraType): IInfraVariant;
+function GetVariantValue(const pProperty: IInfraType): IInfraVariant;
 begin
   if Supports(pProperty, IInfraVariant) then
     Result := pProperty as IInfraVariant
@@ -140,7 +170,7 @@ begin
     Result := GetConverterToVariant(pProperty).ConvertToRight(pProperty) as IInfraVariant;
 end;
 
-procedure SetVariantValue(pProperty: IInfraType; pValue: Variant);
+procedure SetVariantValue(const pProperty: IInfraType; pValue: Variant);
 var
   lInfraType: IInfraType;
 begin
@@ -148,174 +178,168 @@ begin
     (pProperty as IInfraVariant).AsVariant := pValue
   else
   begin
-    lInfraType := GetConverterToVariant(pProperty).ConvertToLeft(TInfraVariant.NewFrom(pValue));
+    lInfraType := GetConverterToVariant(pProperty).ConvertToLeft(
+      TInfraVariant.NewFrom(pValue));
     pProperty.Assign(lInfraType);
   end;
 end;
 
 { TTypeConverter }
 
-function TTypeConverter.ConvertToRight(const Value: IInfraType): IInfraType;
+function TTypeConverter.ConvertToRight(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 begin
-  Result := LeftToRight(Value, FFormat);
+  Result := LeftToRight(Value, Parameter);
 end;
 
-function TTypeConverter.ConvertToLeft(const Value: IInfraType): IInfraType;
+function TTypeConverter.ConvertToLeft(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 begin
-  Result := RightToLeft(Value, FFormat);
-end;
-
-constructor TTypeConverter.Create(const Format: IInfraType);
-begin
-  inherited Create;
-  FFormat := Format;
+  Result := RightToLeft(Value, Parameter);
 end;
 
 { TNullConverter }
 
-function TNullConverter.LeftToRight(const Value,
-  Format: IInfraType): IInfraType;
+function TNullConverter.LeftToRight(
+  const Value, Parameter: IInfraType): IInfraType;
 begin
   Result := Value;
 end;
 
-function TNullConverter.RightToLeft(const Value,
-  Format: IInfraType): IInfraType;
+function TNullConverter.RightToLeft(
+  const Value, Parameter: IInfraType): IInfraType;
 begin
   Result := Value;
 end;
 
 { TDateTimeToText }
 
-function TDateTimeToText.LeftToRight(const Value: IInfraType; const
-  Format: IInfraType = nil): IInfraType;
+function TDateTimeToText.LeftToRight(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
+var
+  vFormat: string;
+  vResult: IInfraString;
 begin
-  Result := TInfraString.Create;
+  if Assigned(Parameter) and Supports(Parameter, IInfraString) then
+    vFormat := (Parameter as IInfraString).AsString
+  else
+    vFormat := 'dd/mm/yyyy hh:mm:ss';
+  vResult := TInfraString.NewFrom('');
   try
     if Supports(Value, IInfraDateTime) then
-      (Result as IInfraString).AsString :=
-        FormatDateTime((Format as IInfraString).AsString,
+      vResult.AsString := FormatDateTime(vFormat,
         (Value as IInfraDateTime).AsDateTime)
     else if Supports(Value, IInfraDate) then
-      (Result as IInfraString).AsString :=
-        FormatDateTime((Format as IInfraString).AsString,
+      vResult.AsString := FormatDateTime(vFormat,
         (Value as IInfraDate).AsDate)
     else if Supports(Value, IInfraTime) then
-      (Result as IInfraString).AsString :=
-        FormatDateTime((Format as IInfraString).AsString,
+      vResult.AsString := FormatDateTime(vFormat,
         (Value as IInfraTime).AsTime)
-    else
-      (Result as IInfraString).AsString := '';
   except
-    (Result as IInfraString).AsString := '';
   end;
+  Result := vResult;
 end;
 
-function TDateTimeToText.RightToLeft(const Value: IInfraType; const
-  Format: IInfraType = nil): IInfraType;
+function TDateTimeToText.RightToLeft(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 begin
-  Result := TInfraDateTime.Create;
+  Result := TInfraDateTime.NewFrom(0);
   try
     (Result as IInfraDateTime).AsDateTime :=
       StrToDateTime((Value as IInfraString).AsString);
   except
-    (Result as IInfraDateTime).AsDateTime := 0;
   end;
 end;
 
 { TBooleanToText }
 
-function TBooleanToText.LeftToRight(const Value: IInfraType; const
-  Format: IInfraType = nil): IInfraType;
+function TBooleanToText.LeftToRight(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
-  Token: string;
+  vToken: string;
+  vResult: IInfraString;
 begin
-  Result := TInfraString.Create;
+  if Assigned(Parameter) and Supports(Parameter, IInfraString) then
+    vToken := (Parameter as IInfraString).AsString
+  else
+    vToken := 'False;True';
+  vResult := TInfraString.NewFrom('');
   try
-    if Assigned(Format) then
-      Token := (Format as IInfraString).AsString
-    else
-      Token := 'False;True';
     if not (Value as IInfraBoolean).AsBoolean then
-      Token := Copy(Token, 1, Pos(';', Token)-1)
+      vToken := Copy(vToken, 1, Pos(';', vToken)-1)
     else
-      Token := Copy(Token, Pos(';', Token)+1, Length(Token));
-    (Result as IInfraString).AsString := Token;
+      vToken := Copy(vToken, Pos(';', vToken)+1, Length(vToken));
+    vResult.AsString := vToken;
   except
-    (Result as IInfraString).AsString := '';
   end;
+  Result := vResult;
 end;
 
-function TBooleanToText.RightToLeft(const Value: IInfraType; const
-  Format: IInfraType = nil): IInfraType;
+function TBooleanToText.RightToLeft(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
-  Token: string;
+  vToken: string;
 begin
-  Result := TInfraBoolean.Create;
-  if Assigned(Format) then
-    Token := (Format as IInfraString).AsString
-  else
-    Token := 'False;True';
-  Token := Copy(Token, 1, Pos(';', Token)-1);
+  Result := TInfraBoolean.NewFrom(False);
+  if Assigned(Parameter) and Supports(Parameter, IInfraString) then
+  begin
+    vToken := (Parameter as IInfraString).AsString;
+    vToken := Copy(vToken, 1, Pos(';', vToken)-1);
+  end else
+    vToken := 'False';
   try
     (Result as IInfraBoolean).AsBoolean :=
-      AnsiSameText((Value as IInfraString).AsString, Token);
+      AnsiSameText((Value as IInfraString).AsString, vToken);
   except
-    (Result as IInfraBoolean).AsBoolean := False;
   end;
 end;
 
 { TIntegerToText }
 
-function TIntegerToText.LeftToRight(const Value: IInfraType; const
-  Format: IInfraType = nil): IInfraType;
+function TIntegerToText.LeftToRight(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 begin
-  Result := TInfraString.Create;
+  Result := TInfraString.NewFrom('');
   try
     (Result as IInfraString).AsString :=
       IntToStr((Value as IInfraInteger).AsInteger);
   except
-    (Result as IInfraString).AsString := '';
   end;
 end;
 
-function TIntegerToText.RightToLeft(const Value: IInfraType; const
-  Format: IInfraType = nil): IInfraType;
+function TIntegerToText.RightToLeft(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 begin
-  Result := TInfraInteger.Create;
+  Result := TInfraInteger.NewFrom(0);
   try
     (Result as IInfraInteger).AsInteger :=
       StrToInt((Value as IInfraString).AsString);
   except
-    (Result as IInfraInteger).AsInteger := 0;
   end;
 end;
 
 { TDoubleToText }
 
-function TDoubleToText.LeftToRight(const Value: IInfraType; const
-  Format: IInfraType = nil): IInfraType;
+function TDoubleToText.LeftToRight(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 begin
   Result := TInfraString.Create;
-  if Assigned(Format) then
+  if Assigned(Parameter) and Supports(Parameter, IInfraString) then
     (Result as IInfraString).AsString := FormatFloat(
-      (Format as IInfraString).AsString,
+      (Parameter as IInfraString).AsString,
       (Value as IInfraDouble).AsDouble)
   else
-    (Result as IInfraString).AsString :=
-      FloatToStr((Value as IInfraDouble).AsDouble);
+    (Result as IInfraString).AsString := FloatToStr((Value as IInfraDouble).AsDouble);
 end;
 
-function TDoubleToText.RightToLeft(const Value: IInfraType; const
-  Format: IInfraType = nil): IInfraType;
+function TDoubleToText.RightToLeft(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
   ValueToConvert: string;
 begin
-  Result := TInfraDouble.Create;
+  Result := TInfraDouble.NewFrom(0.0);
   ValueToConvert := (Value as IInfraString).AsString;
-  if ValueToConvert = '' then
-    (Result as IInfraDouble).AsDouble := 0.0
-  else
+  if ValueToConvert <> EmptyStr then
   begin
     ValueToConvert := StringReplace(ValueToConvert, ThousandSeparator, '', []);
     (Result as IInfraDouble).AsDouble := StrToFloat(ValueToConvert);
@@ -325,7 +349,7 @@ end;
 { TStringToVariant }
 
 function TStringToVariant.LeftToRight(const Value: IInfraType;
-  const Format: IInfraType = nil): IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
   v: Variant;
 begin
@@ -334,7 +358,7 @@ begin
 end;
 
 function TStringToVariant.RightToLeft(const Value: IInfraType;
-  const Format: IInfraType = nil): IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
   s: string;
 begin
@@ -345,7 +369,7 @@ end;
 { TDoubleToVariant }
 
 function TDoubleToVariant.LeftToRight(const Value: IInfraType;
-  const Format: IInfraType = nil): IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
   v: Variant;
 begin
@@ -354,7 +378,7 @@ begin
 end;
 
 function TDoubleToVariant.RightToLeft(const Value: IInfraType;
-  const Format: IInfraType = nil): IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
   d: Double;
 begin
@@ -365,7 +389,7 @@ end;
 { TIntegerToVariant }
 
 function TIntegerToVariant.LeftToRight(const Value: IInfraType;
-  const Format: IInfraType = nil): IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
   v: Variant;
 begin
@@ -374,7 +398,7 @@ begin
 end;
 
 function TIntegerToVariant.RightToLeft(const Value: IInfraType;
-  const Format: IInfraType = nil): IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
   i: integer;
 begin
@@ -385,7 +409,7 @@ end;
 { TBooleanToVariant }
 
 function TBooleanToVariant.LeftToRight(const Value: IInfraType;
-  const Format: IInfraType = nil): IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
   v: Variant;
 begin
@@ -394,7 +418,7 @@ begin
 end;
 
 function TBooleanToVariant.RightToLeft(const Value: IInfraType;
-  const Format: IInfraType = nil): IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
   b: Boolean;
 begin
@@ -405,7 +429,7 @@ end;
 { TDateTimeToVariant }
 
 function TDateTimeToVariant.LeftToRight(const Value: IInfraType;
-  const Format: IInfraType = nil): IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
   v: Variant;
 begin
@@ -414,12 +438,68 @@ begin
 end;
 
 function TDateTimeToVariant.RightToLeft(const Value: IInfraType;
-  const Format: IInfraType = nil): IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
 var
   d: TDateTime;
 begin
   d := VarToDateTime((Value as IInfraVariant).AsVariant);
   Result := TInfraDateTime.NewFrom(d);
+end;
+
+{ TTextToDateTime }
+
+function TTextToDateTime.LeftToRight(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
+begin
+  Result := inherited RightToLeft(Value, Parameter);
+end;
+
+function TTextToDateTime.RightToLeft(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
+begin
+  Result := inherited LeftToRight(Value, Parameter);
+end;
+
+{ TTextToBoolean }
+
+function TTextToBoolean.LeftToRight(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
+begin
+  Result := inherited RightToLeft(Value, Parameter);
+end;
+
+function TTextToBoolean.RightToLeft(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
+begin
+  Result := inherited LeftToRight(Value, Parameter);
+end;
+
+{ TTextToInteger }
+
+function TTextToInteger.LeftToRight(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
+begin
+  Result := inherited RightToLeft(Value, Parameter);
+end;
+
+function TTextToInteger.RightToLeft(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
+begin
+  Result := inherited LeftToRight(Value, Parameter);
+end;
+
+{ TTextToDouble }
+
+function TTextToDouble.LeftToRight(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
+begin
+  Result := inherited RightToLeft(Value, Parameter);
+end;
+
+function TTextToDouble.RightToLeft(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
+begin
+  Result := inherited LeftToRight(Value, Parameter);
 end;
 
 end.

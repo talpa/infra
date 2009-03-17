@@ -172,8 +172,10 @@ type
 
   ITypeConverter = interface(IElement)
     ['{D2D5AB4E-18FA-4300-945B-E2658FF537E2}']
-    function ConvertToRight(const Value: IInfraType): IInfraType;
-    function ConvertToLeft(const Value: IInfraType): IInfraType;
+    function ConvertToRight(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType;
+    function ConvertToLeft(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType;
   end;
 
   INullConverter = interface(ITypeConverter)

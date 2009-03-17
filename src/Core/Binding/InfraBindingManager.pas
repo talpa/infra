@@ -30,7 +30,8 @@ type
   private
     FActive: Boolean;
     FLeft, FRight: IBindable;
-    FValueConverter: ITypeConverter;
+    FConverter: ITypeConverter;
+    FConverterParameter: IInfraType;
     FMode: TBindingMode;
     procedure UpdateRight;
     procedure PropertyChanged(const Event: IInfraEvent);
@@ -39,10 +40,10 @@ type
     function GetLeft: IBindable;
     function GetMode: TBindingMode;
     function GetRight: IBindable;
-    function GetValueConverter: ITypeConverter;
+    function GetConverter: ITypeConverter;
     function GetConverterParameter: IInfraType;
     procedure SetMode(Value: TBindingMode);
-    procedure SetValueConverter(const Value: ITypeConverter);
+    procedure SetConverter(const Value: ITypeConverter);
     procedure SetConverterParameter(const Value: IInfraType);
     procedure UpdateLeft;
     function TwoWay: IBinding;
@@ -150,9 +151,9 @@ begin
   Result := FRight;
 end;
 
-function TBinding.GetValueConverter: ITypeConverter;
+function TBinding.GetConverter: ITypeConverter;
 begin
-  Result := FValueConverter;
+  Result := FConverter;
 end;
 
 procedure TBinding.SetMode(Value: TBindingMode);
@@ -163,9 +164,9 @@ begin
   FMode := Value;
 end;
 
-procedure TBinding.SetValueConverter(const Value: ITypeConverter);
+procedure TBinding.SetConverter(const Value: ITypeConverter);
 begin
-  FValueConverter := Value;
+  FConverter := Value;
 end;
 
 function TBinding.TwoWay: IBinding;
@@ -179,8 +180,8 @@ var
   vRightValue: IInfraType;
 begin
   vRightValue := FRight.Value;
-  if Assigned(FValueConverter) then
-    vRightValue := FValueConverter.ConvertToLeft(vRightValue);
+  if Assigned(FConverter) then
+    vRightValue := FConverter.ConvertToLeft(vRightValue, FConverterParameter);
   FLeft.Value := vRightValue;
 end;
 
@@ -189,8 +190,8 @@ var
   vLeftValue: IInfraType;
 begin
   vLeftValue := FLeft.Value;
-  if Assigned(FValueConverter) then
-    vLeftValue := FValueConverter.ConvertToRight(vLeftValue);
+  if Assigned(FConverter) then
+    vLeftValue := FConverter.ConvertToRight(vLeftValue, FConverterParameter);
   FRight.Value := vLeftValue;
 end;
 
@@ -206,12 +207,12 @@ end;
 
 function TBinding.GetConverterParameter: IInfraType;
 begin
-
+  Result := FConverterParameter;
 end;
 
 procedure TBinding.SetConverterParameter(const Value: IInfraType);
 begin
-
+  FConverterParameter := Value;
 end;
 
 { TBindManager }
@@ -247,12 +248,10 @@ end;
 
 function TBindManager.Add(const pLeft, pRight: IBindable;
   const pConverter: ITypeConverter = nil): IBinding;
-var
-  vBinding: IBinding;
 begin
-  vBinding := TBinding.Create(pLeft, pRight);
-  vBinding.ValueConverter := pConverter;
-  FBindingList.Add(vBinding)
+  Result := TBinding.Create(pLeft, pRight);
+  Result.Converter := pConverter;
+  FBindingList.Add(Result);
 end;
 
 procedure TBindManager.ClearBindings;
