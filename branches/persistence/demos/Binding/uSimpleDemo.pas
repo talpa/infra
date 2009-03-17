@@ -61,13 +61,20 @@ begin
 end;
 
 procedure TForm1.FormActivate(Sender: TObject);
+var
+  b: IBinding;
 begin
   bm.Add(Edit1, 'Text', Label1, 'Caption');
+
   bm.Add(Checkbox1, 'Checked', Panel1, 'Visible');
+
   bm.Add(Edit2, 'Text', Edit2, 'Color', TTextToColorConverter.Create);
+
   bm.Add(Checkbox1, 'Checked', Checkbox1, 'Caption', TBooleanToText.Create);
-  bm.Add(Checkbox2, 'Checked', Checkbox2, 'Caption',
-    TBooleanToText.Create(TInfraString.NewFrom('Invisivel;Visivel')));
+
+  b := bm.Add(Checkbox2, 'Checked', Checkbox2, 'Caption', TBooleanToText.Create);
+  b.ConverterParameter := TInfraString.NewFrom('Invisivel;Visivel');
+
   bm.Active := True;
 end;
 

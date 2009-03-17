@@ -40,18 +40,19 @@ type
     function GetMode: TBindingMode;
     function GetLeft: IBindable;
     function GetRight: IBindable;
-    function GetValueConverter: ITypeConverter;
+    function GetConverter: ITypeConverter;
     function GetConverterParameter: IInfraType;
     procedure SetMode(Value: TBindingMode);
-    procedure SetValueConverter(const Value: ITypeConverter);
+    procedure SetConverter(const Value: ITypeConverter);
     procedure SetConverterParameter(const Value: IInfraType);
     procedure UpdateLeft;
     function TwoWay: IBinding;
     property Mode: TBindingMode read GetMode write SetMode;
     property Left: IBindable read GetLeft;
     property Right: IBindable read GetRight;
-    property ValueConverter: ITypeConverter read GetValueConverter write SetValueConverter;
-    property ConverterParameter: IInfraType read GetConverterParameter write SetConverterParameter;
+    property Converter: ITypeConverter read GetConverter write SetConverter;
+    property ConverterParameter: IInfraType read GetConverterParameter
+      write SetConverterParameter;
     property Active: boolean read GetActive write SetActive;
   end;
 
@@ -94,11 +95,6 @@ type
     ['{306425B2-4590-49C8-A4CE-62F5293F1820}']
     function GetNewBindManager: IBindManager;
   end;
-
-  IInfraValueConverter=interface(IBaseElement)
-  ['{0E7CEE73-3C3A-4434-A841-E88E2CD313BC}']
-  end;
-
 
 function BindingService: IInfraBindingService;
 
