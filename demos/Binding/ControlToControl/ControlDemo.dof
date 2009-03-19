@@ -108,7 +108,7 @@ DebugCWD=
 [Language]
 ActiveLang=
 ProjectLang=
-RootDir=
+RootDir=C:\Projetos\InfraBranch\demos\Binding\
 [Version Info]
 IncludeVerInfo=0
 AutoIncBuild=0

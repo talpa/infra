@@ -70,7 +70,7 @@ end;
 
 procedure TBindableInfraType.SetValue(const Value: IInfraType);
 begin
-  FInfraType.Assign(Value);
+  FInfraType := Value;
 end;
 
 function TBindableInfraType.Support2Way: Boolean;
