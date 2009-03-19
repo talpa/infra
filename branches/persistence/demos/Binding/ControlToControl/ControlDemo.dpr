@@ -1,9 +1,9 @@
-program SimpleDemo;
+program ControlDemo;
 
 uses
   ApplicationContext,
   Forms,
-  uSimpleDemo in 'uSimpleDemo.pas' {Form1};
+  uControlDemo in 'uControlDemo.pas' {Form1};
 
 {$R *.res}
 

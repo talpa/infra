@@ -64,6 +64,14 @@ type
       const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
+  TBindableTextLines = class(TBindableRTTIBasedTwoWay)
+  protected
+    procedure WndProc(var Message: TMessage); override;
+  public
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: string): IBindableVCLProperty; override;
+  end;
+
   TBindableVisible = class(TBindableRTTIBasedTwoWay)
   protected
     procedure WndProc(var Message: TMessage); override;
@@ -198,6 +206,9 @@ begin
         Result := TInfraInteger.NewFrom(GetOrdProp(FControl, FPropInfo));
     tkInteger, tkChar, tkWChar:
       Result := TInfraInteger.NewFrom(GetOrdProp(FControl, FPropInfo));
+    tkClass:
+      if GetObjectProp(FControl, FPropInfo) is TStrings then
+        Result := TInfraString.NewFrom((GetObjectProp(FControl, FPropInfo) as TStrings).Text);
   end;
 end;
 
@@ -216,6 +227,9 @@ begin
     tkInteger, tkChar, tkWChar:
       SetOrdProp(FControl, FPropInfo,
         Trunc((Value as IInfraInteger).AsInteger));
+    tkClass:
+      if GetObjectProp(FControl, FPropInfo) is TStrings then
+        (GetObjectProp(FControl, FPropInfo) as TStrings).Text := (Value as IInfraString).AsString;
   end;
 end;
 
@@ -238,6 +252,24 @@ begin
 end;
 
 procedure TBindableText.WndProc(var Message: TMessage);
+begin
+  inherited WndProc(Message);
+  if Message.Msg in [WM_KILLFOCUS, WM_SETTEXT] then
+    Changed;
+end;
+
+{ TBindableTextLines }
+
+class function TBindableTextLines.CreateIfSupports(pControl: TControl;
+  const pPropertyPath: string): IBindableVCLProperty;
+begin
+  if (pControl is TCustomMemo) and AnsiSameText(pPropertyPath, 'Lines') then
+    Result := inherited CreateIfSupports(pControl, pPropertyPath)
+  else
+    Result := nil;
+end;
+
+procedure TBindableTextLines.WndProc(var Message: TMessage);
 begin
   inherited WndProc(Message);
   if Message.Msg in [WM_KILLFOCUS, WM_SETTEXT] then
@@ -330,6 +362,7 @@ end;
 procedure RegisterBindables;
 begin
   RegisterBindableClass(TBindableText);
+  RegisterBindableClass(TBindableTextLines);
   RegisterBindableClass(TBindableVisible);
   RegisterBindableClass(TBindableEnabled);
   RegisterBindableClass(TBindableCaption);

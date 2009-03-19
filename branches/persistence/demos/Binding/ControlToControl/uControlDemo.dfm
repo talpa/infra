@@ -76,7 +76,7 @@ object Form1: TForm1
       Top = 40
       Width = 193
       Height = 25
-      Caption = 'Desmarca CheckBox'
+      Caption = 'Desmarca CheckBox1'
       TabOrder = 2
       OnClick = Button2Click
     end
@@ -85,8 +85,9 @@ object Form1: TForm1
       Top = 72
       Width = 193
       Height = 25
-      Caption = 'Button3'
+      Caption = 'Togle CheckBox2'
       TabOrder = 3
+      OnClick = Button3Click
     end
   end
   object Memo2: TMemo

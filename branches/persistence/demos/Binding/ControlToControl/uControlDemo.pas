@@ -1,4 +1,4 @@
-unit uSimpleDemo;
+unit uControlDemo;
 
 interface
 
@@ -20,6 +20,7 @@ type
     CheckBox2: TCheckBox;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
@@ -53,6 +54,11 @@ end;
 procedure TForm1.Button2Click(Sender: TObject);
 begin
   CheckBox1.Checked := False;
+end;
+
+procedure TForm1.Button3Click(Sender: TObject);
+begin
+  CheckBox2.Checked := not CheckBox2.Checked;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
