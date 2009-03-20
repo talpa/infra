@@ -247,7 +247,6 @@ end;
 procedure TPerson.InfraInitInstance;
 begin
   inherited;
-
   FID := AddProperty('ID') as IInfraInteger;
   FName := AddProperty('Name') as IInfraString;
   FEmail := AddProperty('Email') as IInfraString;

@@ -131,7 +131,8 @@ type
     function GetName: string;
     function GetOwner: IElement;
     procedure SetOwner(const Value: IElement);
-    property Name: string read GetName;
+    procedure SetName(const Value: string);
+    property Name: string read GetName write SetName;
     property Owner: IElement read GetOwner write SetOwner;
   end;
 

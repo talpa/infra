@@ -66,13 +66,11 @@ begin
 
   { bind Person properties to Controls }
   bm.Add('Name', Edit3, 'Text');
-  bm.Add('Country', Edit1, 'Text');
   bm.Add('Name', Label3, 'Caption');
+  bm.Add('Country', Edit1, 'Text');
   bm.Add('Country', Label4, 'Caption');
   bm.Add('Active', CheckBox1, 'Checked');
-  
   bm.Add('Active', Label5, 'Caption', TBooleanToText.Create);
-  bm.Add('Active', CheckBox1, 'Caption', TBooleanToText.Create);
 
   bm.Active := True;
 end;
