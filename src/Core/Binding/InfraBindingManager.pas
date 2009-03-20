@@ -180,9 +180,12 @@ var
   vRightValue: IInfraType;
 begin
   vRightValue := FRight.Value;
-  if Assigned(FConverter) then
-    vRightValue := FConverter.ConvertToLeft(vRightValue, FConverterParameter);
-  FLeft.Value := vRightValue;
+  if FMode = bmTwoWay then
+  begin
+    if Assigned(FConverter) then
+      vRightValue := FConverter.ConvertToLeft(vRightValue, FConverterParameter);
+    FLeft.Value := vRightValue;
+  end;
 end;
 
 procedure TBinding.UpdateRight;
