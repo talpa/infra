@@ -22,6 +22,7 @@ type
     FIsDerived: Boolean;
     FIsNull: Boolean;
     FOwner: IElement;
+    FName: string;
   protected
     {! Metodo usado para calculos internos }
     procedure Calculate; virtual;
@@ -40,11 +41,12 @@ type
     procedure SetIsDerived(const Value: Boolean);
     procedure SetIsNull(Value: Boolean);
     procedure SetOwner(const Value: IElement); virtual;
+    procedure SetName(const Value: string); virtual;
     procedure UpdateCache;
     procedure ValidateCache;
     property IsDerived: boolean read GetIsDerived write SetIsDerived;
     property IsNull: Boolean read GetIsNull write SetIsNull;
-    property Name: string read GetName;
+    property Name: string read GetName write SetName;
     property Owner: IElement read GetOwner write SetOwner;
   public
     procedure InfraInitInstance; override;
@@ -318,6 +320,7 @@ procedure TInfraType.InfraInitInstance;
 begin
   inherited;
   FIsNull := True;
+  FName := '';
 end;
 
 procedure TInfraType.Clear;
@@ -342,10 +345,7 @@ end;
 
 function TInfraType.GetName: string;
 begin
-  if Assigned(TypeInfo) then
-    Result := TypeInfo.Name
-  else
-    Result := '';
+  Result := FName;
 end;
 
 function TInfraType.GetOwner: IElement;
@@ -375,6 +375,11 @@ end;
 procedure TInfraType.SetOwner(const Value: IElement);
 begin
   SetReference(IInterface(FOwner), Value);
+end;
+
+procedure TInfraType.SetName(const Value: string);
+begin
+  FName := Value;
 end;
 
 procedure TInfraType.UpdateCache;
@@ -963,7 +968,10 @@ begin
     begin
       Result := TypeService.CreateInstance(PropertyType) as IProperty;
       if Assigned(Result) then
+      begin
         Result.Owner := Self as IElement;
+        Result.Name := PropertyName;
+      end;
     end else
       raise Exception.Create('Cannot Instanciate '+PropertyName+
         '. ClassInfo not registred!');
