@@ -7,11 +7,6 @@ uses
 
 type
   TForm1 = class(TForm)
-    Panel1: TPanel;
-    Memo1: TMemo;
-    Button1: TButton;
-    Button2: TButton;
-    Button3: TButton;
     Memo2: TMemo;
     Edit3: TEdit;
     Label2: TLabel;
@@ -21,7 +16,9 @@ type
     Label4: TLabel;
     CheckBox1: TCheckBox;
     Label5: TLabel;
-    Label6: TLabel;
+    Button1: TButton;
+    Button2: TButton;
+    Button3: TButton;
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -92,7 +89,7 @@ end;
 
 procedure TForm1.Button3Click(Sender: TObject);
 begin
-  Person.Active.AsBoolean := True;
+  Person.Active.AsBoolean := not Person.Active.AsBoolean;
 end;
 
 end.
