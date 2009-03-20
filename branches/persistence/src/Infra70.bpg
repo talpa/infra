@@ -9,9 +9,10 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = InfraCore70.bpl InfraTypes70.bpl InfraBinding.bpl ControlDemo.exe \
-  InfraOPF70.bpl InfraAOP70.bpl InfraGUI70.bpl InfraReflectTests.exe \
-  InfraOPFTests.exe InfraAnnotationTests.exe InfraAspectTests.exe
+PROJECTS = InfraCore70.bpl InfraTypes70.bpl InfraBinding.bpl TypeDemo.exe \
+  ControlDemo.exe InfraOPF70.bpl InfraAOP70.bpl InfraGUI70.bpl \
+  InfraReflectTests.exe InfraOPFTests.exe InfraAnnotationTests.exe \
+  InfraAspectTests.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -47,6 +48,9 @@ InfraBinding.bpl: Packages\D7\InfraBinding.dpk
   $(DCC)
 
 ControlDemo.exe: ..\demos\Binding\ControlToControl\ControlDemo.dpr
+  $(DCC)
+
+TypeDemo.exe: ..\demos\Binding\TypeToControl\TypeDemo.dpr
   $(DCC)
 
 
