@@ -12,6 +12,7 @@ type
   /// Descrição da classe
   TSQLCommand = class(TBaseElement, ISQLCommand)
   private
+    FClassTypeInfo: IClassInfo;
     FName: string;
     FParams: ISQLCommandParams;
     FPersistenceEngine: IPersistenceEngine;
@@ -19,9 +20,12 @@ type
     function GetName: string;
     function GetParams: ISQLCommandParams;
     procedure SetName(const Value: string);
+    function GetClassTypeInfo: IClassInfo;
+    procedure SetClassTypeInfo(const Value: IClassInfo);
     /// PersistenceEngine ao qual o SQLCommand está vinculado
     property PersistenceEngine: IPersistenceEngine read FPersistenceEngine;
     property Params: ISQLCommandParams read GetParams;
+    property ClassTypeInfo : IClassInfo read GetClassTypeInfo write SetClassTypeInfo;
   public
     constructor Create(const pPersistenceEngine: IPersistenceEngine); reintroduce;
   end;
@@ -29,17 +33,13 @@ type
   /// Descrição da classe
   TSQLCommandQuery = class(TSQLCommand, ISQLCommandQuery)
   private
-    FClassID: TGUID;
     FListID: TGUID;
     function CreateList: IInfraList;
   protected
     function GetResult: IInfraType;
     function GetList: IInfraList;
     function GetListID: TGUID;
-    function GetClassID: TGUID;
     procedure SetListID(const Value: TGUID);
-    procedure SetClassID(const Value: TGUID);
-    property ClassID: TGUID read GetClassID write SetClassID;
     property ListID: TGUID read GetListID write SetListID;
   end;
 
@@ -89,14 +89,6 @@ begin
 end;
 
 { TSQLCommandQuery }
-{*
-
-  @return ResultDescription
-}
-function TSQLCommandQuery.GetClassID: TGUID;
-begin
-  Result := FClassID;
-end;
 
 {*
 
@@ -144,18 +136,26 @@ end;
 
   @param Value   ParameterDescription
 }
-procedure TSQLCommandQuery.SetClassID(const Value: TGUID);
+procedure TSQLCommandQuery.SetListID(const Value: TGUID);
 begin
-  FClassID := Value;
+  FListID := Value;
 end;
 
 {*
 
+  @return ResultDescription
+}
+function TSQLCommand.GetClassTypeInfo: IClassInfo;
+begin
+  Result := FClassTypeInfo
+end;
+{*
+
   @param Value   ParameterDescription
 }
-procedure TSQLCommandQuery.SetListID(const Value: TGUID);
+procedure TSQLCommand.SetClassTypeInfo(const Value: IClassInfo);
 begin
-  FListID := Value;
+  FClassTypeInfo := Value;
 end;
 
 end.

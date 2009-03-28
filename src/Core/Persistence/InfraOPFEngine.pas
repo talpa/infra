@@ -25,9 +25,11 @@ type
     procedure SetParameters(const pStatement: IZPreparedStatement; const pParams: ISqlCommandParams);
     function GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery; const pResultSet: IZResultSet): IInfraObject;
     procedure DoLoad(const pStatement: IZPreparedStatement; const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
-    function ReadTemplate(const pSqlCommandName: string): string;
+    function ReadTemplate(const pSqlCommand: ISQLCommand): string;
     function InternallExecute(const pSqlCommand: ISqlCommand;
       const pConnection: IZConnection): Integer;
+    function GetSQLFromCache(const pSqlCommand : ISQLCommand) : String;
+    procedure AddSQLToCache(const pSqlCommand : ISQLCommand; pValue : String);
     procedure CheckInTransaction;
     function InTransaction: Boolean;
     function GetCurrentConnectionItem: IConnectionItem;
@@ -52,7 +54,8 @@ uses
   Classes,
   InfraCommonIntf,
   InfraOPFParsers,
-  InfraOPFConsts;
+  InfraOPFConsts,
+  List_SQLCache;
 
 { TPersistenceEngine }
 
@@ -106,7 +109,7 @@ var
   vStatement: IZPreparedStatement;
 begin
   // Carrega a SQL e extrai os parâmetros
-  vSQL := ReadTemplate(pSqlCommand.Name);
+  vSQL := ReadTemplate(pSqlCommand);
   vSQL := FParser.Parse(vSQL);
   // *** 1) Acho que os parâmetros macros de FParse devem ser substituidos aqui
   //   antes de chamar o PrepareStatementWithParams
@@ -207,7 +210,7 @@ begin
   if not Assigned(pList) then
     raise EInfraArgumentError.Create(cErrorPersistEngineWithoutList);
   // Acho q o Sql deveria já estar no SqlCommand neste momento
-  vSQL := ReadTemplate(pSqlCommand.Name);
+  vSQL := ReadTemplate(pSqlCommand);
   // *** 1) se a SQL está vazia aqui deveria gerar exceção ou deveria ser dentro
   // do vReader.Read????
   vSQL := FParser.Parse(vSQL);
@@ -245,7 +248,7 @@ begin
   //  if IsEqualGUID(pSqlCommand.GetClassID, InfraConsts.NullGUID) then
   //    Raise EPersistenceEngineError.Create(
   //      cErrorPersistEngineObjectIDUndefined);
-  Result := TypeService.CreateInstance(pSqlCommand.GetClassID) as IInfraObject;
+  Result := TypeService.CreateInstance(pSqlCommand.ClassTypeInfo) as IInfraObject;
   if Assigned(Result) then
   begin
     vMetadata := pResultSet.GetMetadata;
@@ -267,12 +270,17 @@ begin
   end;
 end;
 
-function TPersistenceEngine.ReadTemplate(const pSqlCommandName: string): string;
+function TPersistenceEngine.ReadTemplate(const pSqlCommand: ISQLCommand): string;
 var
   vReader: ITemplateReader;
 begin
+  Result := GetSQLFromCache(pSqlCommand);
+  if Result = EmptyStr then
+  begin
   vReader := GetReader;
-  Result := vReader.Read(pSqlCommandName);
+    Result := vReader.Read(pSqlCommand.Name);
+    AddSQLToCache(pSqlCommand, Result);
+  end;
 end;
 
 {**
@@ -355,7 +363,25 @@ begin
   GetCurrentConnectionItem.Connection.Rollback;
 end;
 
+procedure TPersistenceEngine.AddSQLToCache(const pSqlCommand: ISQLCommand; pValue: String);
+var
+  vSqlCache : ISQLCacheList;
+begin
+  if Supports(pSqlCommand.ClassTypeInfo, ISQLCacheList, vSqlCache) then
+    vSqlCache.Items[pSqlCommand.Name] := pValue;
+end;
+
+function TPersistenceEngine.GetSQLFromCache(const pSqlCommand: ISQLCommand): String;
+var
+  vSqlCache : ISQLCacheList;
+begin
+  Result := EmptyStr;
+  if not Supports(pSqlCommand.ClassTypeInfo, ISqlCacheList, vSqlCache) then
+  begin
+    vSqlCache := TInfraSQLCache.Create;
+    pSqlCommand.ClassTypeInfo.Inject(ISqlCacheList, vSqlCache);
+  end else
+    Result := vSqlCache.Items[pSqlCommand.Name]
+end;
+
 end.
-
-
-
