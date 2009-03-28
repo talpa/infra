@@ -25,6 +25,7 @@ type
     procedure TestSaveInsertWithObject;
     procedure TestDeleteWithObject;
     procedure TestLoadWithObjectInTransaction;
+    procedure TestCacheSQLS;
   end;
 
 implementation
@@ -56,11 +57,12 @@ resourcestring
 const
   cSQLDeleteFromAccount = 'DELETE FROM ACCOUNT';
   cLoadAccountByIDTemplateName = 'LoadAccountById';
+  cLoadAccountByNameTemplateName = 'LoadAccountByName';
   cDeleteAccountByIDTemplateName = 'DeleteAccountByID';
 
 const
   cEpsilon = 0.00001; /// Maior diferença entre dois números e ainda serem considerados iguais
-  cNumVezesRepetirTeste = 10; /// Número de vezes que os testes serão repetidos
+  cNumVezesRepetirTeste = 1; /// Número de vezes que os testes serão repetidos
 
 { TPersistenceTests }
 
@@ -254,6 +256,70 @@ begin
     raise;
   end;
   // *** verificar estado do objeto
+end;
+
+procedure TPersistenceTests.TestCacheSQLS;
+var
+  vObj: IAccount;
+  vSQLCommand: ISQLCommandQuery;
+  vSQLCache: ISQLCacheList;
+  vName: String;
+  vSession: ISession;
+  vStringList: TStringList;
+begin
+  PrepararBancoParaCarga;
+  vStringList := TStringList.Create;
+  try
+    vSession := FSessionFactory.OpenSession;
+    vObj := TAccount.Create;
+    vObj.Id.AsInteger := 1;
+
+    // limpa o cach caso exista (só para efeito de teste)
+    if Supports(vObj.TypeInfo, ISQLCacheList, vSQLCache) then
+      vSQLCache.Clear;
+    CheckEquals(0, vSQLCache.Count);
+
+    // chamando um template pela primeira vez
+    vSQLCommand := vSession.CreateNamedQuery(cLoadAccountByIDTemplateName, vObj);
+    vSQLCommand.Params['id'] := TInfraInteger.NewFrom(1);
+    vObj := vSQLCommand.GetResult as IAccount;
+
+    vStringList.LoadFromFile(ExtractFilePath(ParamStr(0))+'Data\LoadAccountbyId.sql');
+    CheckEquals(1, vSQLCache.Count);
+    CheckEquals(cLoadAccountByIDTemplateName, vSQLCache.IndexOfPosition(0));
+    CheckEquals(vStringList.Text, vSQLCache.ValueOfPosition(0));
+
+    // chamando o mesmo template uma segunda vez. o cache deveria continuar com
+    // apenas 1 template carregado
+    vSQLCommand := vSession.CreateNamedQuery(cLoadAccountByIDTemplateName, vObj);
+    vSQLCommand.Params['id'] := TInfraInteger.NewFrom(1);
+    vObj := vSQLCommand.GetResult as IAccount;
+
+    vStringList.LoadFromFile(ExtractFilePath(ParamStr(0))+'Data\LoadAccountbyId.sql');
+    CheckEquals(1, vSQLCache.Count);
+    CheckEquals(cLoadAccountByIDTemplateName, vSQLCache.IndexOfPosition(0));
+    CheckEquals(vStringList.Text, vSQLCache.ValueOfPosition(0));
+
+    // chamando um template diferente de carga. o cache agora deve ter 2
+    // templates
+    vSQLCommand := vSession.CreateNamedQuery(cLoadAccountByNameTemplateName, vObj);
+    vSQLCommand.Params['name'] := TInfraString.NewFrom('BB 1361');
+    vObj := vSQLCommand.GetResult as IAccount;
+
+    CheckEquals(2, vSQLCache.Count);
+
+    vStringList.LoadFromFile(ExtractFilePath(ParamStr(0))+'Data\LoadAccountbyId.sql');
+    CheckEquals(cLoadAccountByIDTemplateName, vSQLCache.IndexOfPosition(0));
+    CheckEquals(vStringList.Text, vSQLCache.ValueOfPosition(0));
+
+    vStringList.LoadFromFile(ExtractFilePath(ParamStr(0))+'Data\LoadAccountbyName.sql');
+    CheckEquals(cLoadAccountByNameTemplateName, vSQLCache.IndexOfPosition(1));
+    CheckEquals(vStringList.Text, vSQLCache.ValueOfPosition(1));
+
+
+  finally
+    vStringList.Free;
+  end;
 end;
 
 initialization

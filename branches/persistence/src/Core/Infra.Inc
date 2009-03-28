@@ -9,7 +9,7 @@
   code. FastMM can be found in:
   http://sourceforge.net/projects/fastmm/
  #################}
-{.$DEFINE USE_FASTMM}
+{$DEFINE USE_FASTMM}
 
 {#################
   This diretive define if you would like control reference counting of infra

@@ -70,12 +70,17 @@ end;
 }
 function TSession.CreateNamedQuery(const pCommandName: string;
   const pClassID: TGUID): ISQLCommandQuery;
+var
+  vTypeInfo: IClassInfo;
 begin
   Result := TSQLCommandQuery.Create(FPersistenceEngine);
   Result.Name := pCommandName;
   Result.ListID := IInfraList;
-  if not IsEqualGUID(pClassID, NullGUID) then
-    Result.ClassID := pClassID;
+  vTypeInfo := TypeService.GetType(pClassID, True);
+  if IsEqualGUID(pClassID, NullGUID) then
+     Raise EPersistenceEngineError.Create( cErrorPersistEngineObjectIDUndefined)
+  else
+     Result.ClassTypeInfo := vTypeInfo;
 end;
 
 {*
@@ -137,6 +142,7 @@ begin
   begin
     Name := pCommandName;
     Params.CreateParamsFrom(pObj);
+    ClassTypeInfo := pObj.TypeInfo;
   end;
   FPendingCommands.Add(Result);
 end;

@@ -101,6 +101,9 @@ type
     function GetName: string;
     procedure SetName(const Value: string);
     function GetParams :ISQLCommandParams;
+    function GetClassTypeInfo: IClassInfo;
+    procedure SetClassTypeInfo(const Value: IClassInfo);
+    property ClassTypeInfo: IClassInfo read GetClassTypeInfo write SetClassTypeInfo;
     property Name: string read GetName write SetName;
     property Params: ISQLCommandParams read GetParams;   
   end; 
@@ -109,11 +112,8 @@ type
     ['{437E64D0-7DD8-4D87-9B9F-DBEFAB200863}']
     function GetResult: IInfraType;
     function GetList: IInfraList;
-    function GetListID: TGUID;
-    function GetClassID:TGUID;
     procedure SetListID(const Value: TGUID);
-    procedure SetClassID(const Value: TGUID);
-    property ClassID: TGUID read GetClassID write SetClassID;
+    function GetListID: TGUID;
     property ListID: TGUID read GetListID write SetListID;
   end;
 
@@ -132,6 +132,21 @@ type
     function IndexOfPosition(Index: Integer): string;
     property Count: Integer read GetCount;
     property Params[Index: string]: IInfraType read GetItem write SetItem; default;
+  end;
+
+  ISQLCacheList = interface
+  ['{A05EA7DB-8BDF-4E02-97FE-FC1FAC4F06A3}']
+    function GetItem(Index: String) : String;
+    procedure SetItem(Index : String; Value : String);
+    function GetCount : Integer;
+    procedure Delete(Index : String);
+    procedure DeletePosition(Index : Integer);
+    procedure Clear;
+    function PositionOf(Index : String; Value : String) : Integer;
+    function ValueOfPosition(Index : Integer) : String;
+    function IndexOfPosition(Index : Integer) : String;
+    property Count : Integer read GetCount;
+    property Items[Index: String]: String read GetItem write SetItem; default;
   end;
 
   ISQLCommandList = interface

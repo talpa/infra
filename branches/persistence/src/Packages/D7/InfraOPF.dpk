@@ -51,6 +51,7 @@ contains
   InfraOPFSqlCommands in '..\..\Core\Persistence\InfraOPFSqlCommands.pas',
   InfraOPFSession in '..\..\Core\Persistence\InfraOPFSession.pas',
   InfraOPFEngine in '..\..\Core\Persistence\InfraOPFEngine.pas',
-  InfraOPFSessionFactory in '..\..\Core\Persistence\InfraOPFSessionFactory.pas';
+  InfraOPFSessionFactory in '..\..\Core\Persistence\InfraOPFSessionFactory.pas',
+  List_SQLCache in '..\..\Core\Persistence\List_SQLCache.pas';
 
 end.

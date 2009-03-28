@@ -1,16 +1,20 @@
 // Uncomment the following directive to create a console application
 // or leave commented to create a GUI application... 
 // {$APPTYPE CONSOLE}
-
 program InfraOPFTests;
 
+{$I Test.Inc}
+
 uses
-  {$IFDEF USE_FASTMM}FastMM4,
-  {$ENDIF}TestFramework {$IFDEF LINUX},
+  {$IFDEF USE_FASTMM}FastMM4,{$ENDIF}
+  TestFramework
+  {$IFDEF LINUX},
   QForms,
-  QGUITestRunner {$ELSE},
+  QGUITestRunner
+  {$ELSE},
   Forms,
-  GUITestRunner {$ENDIF},
+  GUITestRunner
+  {$ENDIF},
   TextTestRunner,
   ApplicationContext,
   InfraMocks in 'InfraMocks.pas',
