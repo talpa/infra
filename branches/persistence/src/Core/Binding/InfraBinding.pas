@@ -1,13 +1,21 @@
-unit InfraBindingService;
+unit InfraBinding;
 
 interface
 
 uses
-  Controls,
-  InfraCommon,
-  InfraBindingIntf;
+  InfraBindingIntf,
+  InfraValueTypeIntf,
+  InfraCommon;
 
 type
+  TBindable = class(TElement, IBindable)
+  protected
+    procedure Changed;
+    function Support2Way: Boolean; virtual;
+    function GetValue: IInfraType; virtual; abstract;
+    procedure SetValue(const Value: IInfraType); virtual; abstract;    
+  end;
+
   /// Serviço de Binding
   TInfraBindingService = class(TBaseElement, IInfraBindingService)
   protected
@@ -17,8 +25,22 @@ type
 implementation
 
 uses
+  Forms,
   InfraCommonIntf,
   InfraBindingManager;
+
+{ TBindable }
+
+procedure TBindable.Changed;
+begin
+  if not Application.Terminated then
+    Publisher.Publish(TNotifyValueChanged.Create(Self) as INotifyValueChanged);
+end;
+
+function TBindable.Support2Way: Boolean;
+begin
+  Result := False;
+end;
 
 { TInfraBindingService }
 
@@ -47,5 +69,5 @@ end;
 
 initialization
   InjectBindingService;
-  
+
 end.

@@ -5,10 +5,9 @@ interface
 uses
   Controls,
   TypInfo,
-  InfraCommon,
   Messages,
   InfraBindingIntf,
-  InfraBindingType,
+  InfraBinding,
   InfraValueTypeIntf;
 
 type
@@ -104,6 +103,15 @@ type
       const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
+  // classe base para bindables de propriedades da vcl
+  TBindableCustomListItems = class(TBindableRTTIBased)
+  protected
+    procedure WndProc(var Message: TMessage); override;
+  public
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: string): IBindableVCLProperty; override;
+  end;
+
 procedure RegisterBindableClass(pBindableClass: TBindableVCLPropertyClass);
 function GetBindableVCL(pControl: TControl;
   const pPropertyPath: string): IBindable;
@@ -114,12 +122,8 @@ uses
   Classes,
   SysUtils,
   StdCtrls,
-  Graphics,
   InfraValueType,
-  InfraCommonIntf,
-  InfraBindingConsts,
-  InfraBindingManager,
-  InfraBindingService;
+  InfraBindingConsts;
 
 var
   _BindableClasses: TList;
@@ -359,6 +363,24 @@ begin
     Changed;
 end;
 
+{ TBindableCustomListItems }
+
+class function TBindableCustomListItems.CreateIfSupports(
+  pControl: TControl; const pPropertyPath: string): IBindableVCLProperty;
+begin
+  if (pControl is TCustomListBox) and AnsiSameText(pPropertyPath, 'Items') then
+    Result := inherited CreateIfSupports(pControl, pPropertyPath)
+  else
+    Result := nil;
+end;
+
+procedure TBindableCustomListItems.WndProc(var Message: TMessage);
+begin
+  inherited WndProc(Message);
+  if Message.Msg = LB_ADDSTRING then
+    Changed;
+end;
+
 procedure RegisterBindables;
 begin
   RegisterBindableClass(TBindableText);
@@ -368,6 +390,7 @@ begin
   RegisterBindableClass(TBindableCaption);
   RegisterBindableClass(TBindableChecked);
   RegisterBindableClass(TBindableColor);
+  RegisterBindableClass(TBindableCustomListItems);
 end;
 
 initialization

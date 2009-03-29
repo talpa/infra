@@ -10,30 +10,97 @@ uses
 
 type
 
-  TTextToColorConverter = class(TTypeConverter)
+  TTextToColor = class(TTypeConverter)
   protected
     function LeftToRight(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
     function RightToLeft(const Value: IInfraType;
-      const Format: IInfraType = nil): IInfraType; override;
+      const Parameter: IInfraType = nil): IInfraType; override;
+  end;
+
+  TColorToText = class(TTextToColor)
+  protected
+    function LeftToRight(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+    function RightToLeft(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+  end;
+
+  TItemIndexToText = class(TTypeConverter)
+  protected
+    function LeftToRight(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+    function RightToLeft(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+  end;
+
+  TTextToItemIndex = class(TTypeConverter)
+  protected
+    function LeftToRight(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+    function RightToLeft(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
 implementation
 
 
-{ TTextToColorConverter }
+{ TTextToColor }
 
-function TTextToColorConverter.LeftToRight(const Value,
-  Format: IInfraType): IInfraType;
+function TTextToColor.LeftToRight(const Value,
+  Parameter: IInfraType): IInfraType;
 begin
   Result := TInfraInteger.NewFrom(StringToColor(
     (Value as IInfraString).AsString));
 end;
 
-function TTextToColorConverter.RightToLeft(const Value,
-  Format: IInfraType): IInfraType;
+function TTextToColor.RightToLeft(const Value,
+  Parameter: IInfraType): IInfraType;
 begin
   Result := TInfraString.NewFrom(ColorToString(
     (Value as IInfraInteger).AsInteger));
 end;
+
+{ TColorToText }
+
+function TColorToText.LeftToRight(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
+begin
+  Result := inherited RightToLeft(Value, Parameter);
+end;
+
+function TColorToText.RightToLeft(const Value: IInfraType;
+  const Parameter: IInfraType = nil): IInfraType;
+begin
+  Result := inherited LeftToRight(Value, Parameter);
+end;
+
+{ TItemIndexToText }
+
+function TItemIndexToText.LeftToRight(const Value,
+  Parameter: IInfraType): IInfraType;
+begin
+
+end;
+
+function TItemIndexToText.RightToLeft(const Value,
+  Parameter: IInfraType): IInfraType;
+begin
+
+end;
+
+{ TTextToItemIndex }
+
+function TTextToItemIndex.LeftToRight(const Value,
+  Parameter: IInfraType): IInfraType;
+begin
+
+end;
+
+function TTextToItemIndex.RightToLeft(const Value,
+  Parameter: IInfraType): IInfraType;
+begin
+
+end;
+
 end.

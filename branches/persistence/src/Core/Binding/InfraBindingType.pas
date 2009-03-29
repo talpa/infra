@@ -3,22 +3,17 @@ unit InfraBindingType;
 interface
 
 uses
-  InfraCommon, InfraBindingIntf, InfraValueTypeIntf, InfraCommonIntf;
+  InfraBindingIntf,
+  InfraValueTypeIntf,
+  InfraCommonIntf,
+  InfraBinding;
 
 type
-  TBindable = class(TElement, IBindable)
-  protected
-    procedure Changed;
-    function Support2Way: Boolean; virtual;
-    function GetValue: IInfraType; virtual; abstract;
-    procedure SetValue(const Value: IInfraType); virtual; abstract;    
-  end;
-
   TBindableInfraType = class(TBindable, IBindableInfraType)
   private
     FInfraType: IInfraType;
   protected
-    function Support2Way: Boolean; override;  
+    function Support2Way: Boolean; override;
     function GetValue: IInfraType; override;
     procedure SetValue(const Value: IInfraType); override;
     procedure ValueChanged(const Event: IInfraEvent);
@@ -32,20 +27,7 @@ type
 implementation
 
 uses
-  Forms, SysUtils, InfraBindingManager, InfraValueType;
-
-{ TBindable }
-
-procedure TBindable.Changed;
-begin
-  if not Application.Terminated then
-    Publisher.Publish(TNotifyValueChanged.Create(Self) as INotifyValueChanged);
-end;
-
-function TBindable.Support2Way: Boolean;
-begin
-  Result := False;
-end;
+  SysUtils;
 
 { TBindableInfraType }
 

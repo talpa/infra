@@ -66,7 +66,7 @@ type
   TBindManager = class(TElement, IBindManager)
   private
     FActive: Boolean;
-    FBindingList: IBindingList;
+    FBindingList: IBindings;
     FDataContext: IInfraType;
   protected
     function GetActive: Boolean;

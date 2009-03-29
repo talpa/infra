@@ -56,6 +56,17 @@ type
     property Active: boolean read GetActive write SetActive;
   end;
 
+  IBindings = interface
+    ['{20CF48B1-FAF9-4366-8C70-76D65D071407}']
+    function Add(const Item: IBinding): Integer;
+    function GetCount: Integer;
+    function GetItem(Index: Integer): IBinding;
+    function NewIterator: IInfraIterator;
+    procedure Clear;
+    property Items[Index: Integer]: IBinding read GetItem; default;
+    property Count: Integer read GetCount;
+  end;
+
   INotifyValueChanged = interface(IInfraEvent)
     ['{28CC7946-79CD-4029-9A4E-3A6947330BEC}']
   end;
@@ -80,18 +91,7 @@ type
     property Active: boolean read GetActive write SetActive;
   end;
   
-  IBindingList = interface
-    ['{20CF48B1-FAF9-4366-8C70-76D65D071407}']
-    function Add(const Item: IBinding): Integer;
-    function GetCount: Integer;
-    function GetItem(Index: Integer): IBinding;
-    function NewIterator: IInfraIterator;
-    procedure Clear;
-    property Items[Index: Integer]: IBinding read GetItem; default;
-    property Count: Integer read GetCount;
-  end;
-
-  IInfraBindingService = interface(IInterface)
+  IInfraBindingService = interface(IBaseElement)
     ['{306425B2-4590-49C8-A4CE-62F5293F1820}']
     function GetNewBindManager: IBindManager;
   end;
@@ -100,9 +100,14 @@ function BindingService: IInfraBindingService;
 
 implementation
 
+uses
+  // DO NOT REMOVE!!!! Necessary to Register Binding on ApplicationContext
+  InfraBinding;
+
 function BindingService: IInfraBindingService;
 begin
   Result := ApplicationContext as IInfraBindingService;
 end;
 
 end.
+
