@@ -1,4 +1,4 @@
-package InfraBinding;
+package InfraBind;
 
 {$R *.res}
 {$ALIGN 8}
@@ -34,12 +34,12 @@ requires
 
 contains
   InfraBindingIntf in '..\..\Core\Binding\InfraBindingIntf.pas',
-  InfraBindingService in '..\..\Core\Binding\InfraBindingService.pas',
   InfraBindingConsts in '..\..\Core\Binding\InfraBindingConsts.pas',
   InfraBindingControl in '..\..\Core\Binding\InfraBindingControl.pas',
   List_Binding in '..\..\Core\Binding\List_Binding.pas',
   InfraBindingManager in '..\..\Core\Binding\InfraBindingManager.pas',
   InfraBindingType in '..\..\Core\Binding\InfraBindingType.pas',
-  InfraBindingConverter in '..\..\Core\Binding\InfraBindingConverter.pas';
+  InfraBindingConverter in '..\..\Core\Binding\InfraBindingConverter.pas',
+  InfraBinding in '..\..\Core\Binding\InfraBinding.pas';
 
 end.

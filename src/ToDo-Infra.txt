@@ -1,2 +1,6 @@
 Reflection
-- Create unittest for IInjectedList.RemoveByGUID(const Item: TGUID);
+---------------------------------------------
+- Criar objetos por reflexão podendo receber parâmetros;
+
+Persistence
+---------------------------------------------

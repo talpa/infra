@@ -13,7 +13,7 @@ uses
 
 type
   _ITERABLELIST_BASE_ = TElement;
-  _ITERABLELIST_INTF_ = IBindingList;
+  _ITERABLELIST_INTF_ = IBindings;
   _ITEM_INTF_ = IBinding;
   _ITERATOR_INTF_ = IInfraIterator;
   {$I ..\Templates\InfraTempl_IntfList.inc}
@@ -36,4 +36,5 @@ begin
 end;
 
 end.
+ 
  
