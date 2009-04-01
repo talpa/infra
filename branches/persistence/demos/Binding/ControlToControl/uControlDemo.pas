@@ -111,8 +111,8 @@ begin
   bm.Add(Checkbox3, 'Checked', Panel1, 'Visible');
 
   bm.Add(ListBox1, 'Items', ListBox2, 'Items');
-  bm.Add(ListBox3, 'Items', ListBox4, 'Items');
 
+  bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
   bm.Active := True;
 end;
 

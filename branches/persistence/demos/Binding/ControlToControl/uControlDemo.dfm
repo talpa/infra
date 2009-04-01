@@ -15,7 +15,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   DesignSize = (
     725
-    367)
+    374)
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
@@ -364,7 +364,7 @@ object Form1: TForm1
         Left = 2
         Top = 121
         Width = 242
-        Height = 21
+        Height = 19
         Ctl3D = False
         ParentCtl3D = False
         TabOrder = 2

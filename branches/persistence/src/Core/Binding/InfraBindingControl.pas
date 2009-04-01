@@ -112,6 +112,14 @@ type
       const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
+  TBindableItemindex  = class(TBindableRTTIBased)
+  protected
+    procedure WndProc(var Message: TMessage); override;
+  public
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: string): IBindableVCLProperty; override;
+  end;
+
 procedure RegisterBindableClass(pBindableClass: TBindableVCLPropertyClass);
 function GetBindableVCL(pControl: TControl;
   const pPropertyPath: string): IBindable;
@@ -381,6 +389,25 @@ begin
     Changed;
 end;
 
+{ TBindableItemindex }
+
+class function TBindableItemindex.CreateIfSupports(pControl: TControl;
+  const pPropertyPath: string): IBindableVCLProperty;
+begin
+  if (pControl is TCustomListBox) and AnsiSameText(pPropertyPath, 'ItemIndex') then
+    Result := inherited CreateIfSupports(pControl, pPropertyPath)
+  else
+    Result := nil;
+end;
+
+procedure TBindableItemindex.WndProc(var Message: TMessage);
+begin
+   inherited WndProc(Message);
+  if Message.Msg = LB_SETCURSEL then
+    Changed;
+
+end;
+
 procedure RegisterBindables;
 begin
   RegisterBindableClass(TBindableText);
@@ -391,6 +418,7 @@ begin
   RegisterBindableClass(TBindableChecked);
   RegisterBindableClass(TBindableColor);
   RegisterBindableClass(TBindableCustomListItems);
+  RegisterBindableClass(TBindableItemindex);
 end;
 
 initialization
