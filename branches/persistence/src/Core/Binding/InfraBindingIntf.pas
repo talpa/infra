@@ -14,6 +14,7 @@ type
 
   TBindingMode = (bmLeftToRight, bmTwoWay);
   TUpdateTrigger = (utLostFocus, utPropertyChanged, utExplicit);
+  TListOperation = (loDelete, loExchange, loAdd, loClear, loFill);
 
   IBindable = interface(IElement)
     ['{E4FF9385-092B-422B-8BCB-0A28CB611C82}']
@@ -94,6 +95,20 @@ type
   IInfraBindingService = interface(IBaseElement)
     ['{306425B2-4590-49C8-A4CE-62F5293F1820}']
     function GetNewBindManager: IBindManager;
+  end;
+
+  IBindingListType = interface(IInfraType)
+    ['{3A0D4699-0074-470A-956E-A3A00B716BC1}']
+    function GetValue: IInfraType;
+    procedure SetValue(pValue: IInfraType);
+    function GetOperation: TListOperation;
+    procedure SetOperation(pValue: TListOperation);
+    function GetSelected: IInfraType;
+    procedure SetSelected(pValue: IInfraType);
+    function GetIndexSource: Integer;
+    procedure SetIndexSource(pValue: Integer);
+    function GetIndexDestination: Integer;
+    procedure SetIndexDestination(pValue: Integer);
   end;
 
 function BindingService: IInfraBindingService;

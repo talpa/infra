@@ -19,6 +19,7 @@ type
     Button1: TButton;
     Button2: TButton;
     Button3: TButton;
+    ListBox1: TListBox;
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -26,7 +27,7 @@ type
     procedure Button3Click(Sender: TObject);
   private
     { Private declarations }
-    bm: IBindManager;
+    PersonBindManager, CompanyBindManager: IBindManager;
   public
     { Public declarations }
   end;
@@ -47,12 +48,14 @@ uses ModelIntf, Model,
 
 var
   Person: IPerson;
+  Company: ICompany;
 
 { TForm1 }
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  bm := BindingService.GetNewBindManager;
+  PersonBindManager := BindingService.GetNewBindManager;
+  CompanyBindManager := BindingService.GetNewBindManager;
 end;
 
 procedure TForm1.FormActivate(Sender: TObject);
@@ -61,18 +64,25 @@ begin
   Person := TPerson.Create;
   Person.LoadSampleData;
 
+  Company := TCompany.Create;
+  Company.LoadSampleData;
+
   { set DataContext of BindingManager}
-  bm.DataContext := Person;
+  PersonBindManager.DataContext := Person;
+  CompanyBindManager.DataContext := Company;
 
   { bind Person properties to Controls }
-  bm.Add('Name', Edit3, 'Text').TwoWay;
-  bm.Add('Name', Label3, 'Caption');
-  bm.Add('Country', Edit1, 'Text');
-  bm.Add('Country', Label4, 'Caption');
-  bm.Add('Active', CheckBox1, 'Checked').TwoWay;
-  bm.Add('Active', Label5, 'Caption', TBooleanToText.Create);
+  {PersonBindManager.Add('Name', Edit3, 'Text').TwoWay;
+  PersonBindManager.Add('Name', Label3, 'Caption');
+  PersonBindManager.Add('Country', Edit1, 'Text');
+  PersonBindManager.Add('Country', Label4, 'Caption');
+  PersonBindManager.Add('Active', CheckBox1, 'Checked').TwoWay;
+  PersonBindManager.Add('Active', Label5, 'Caption', TBooleanToText.Create);}
 
-  bm.Active := True;
+  CompanyBindManager.Add('Employees', ListBox1, 'Items');
+
+  PersonBindManager.Active := True;
+  CompanyBindManager.Active := True;
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
