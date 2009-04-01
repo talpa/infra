@@ -53,7 +53,7 @@ object Form1: TForm1
   object Memo2: TMemo
     Left = 8
     Top = 8
-    Width = 529
+    Width = 321
     Height = 112
     Ctl3D = False
     Lines.Strings = (
@@ -122,5 +122,15 @@ object Form1: TForm1
     Caption = 'Togle Person.Active by Code'
     TabOrder = 6
     OnClick = Button3Click
+  end
+  object ListBox1: TListBox
+    Left = 336
+    Top = 8
+    Width = 201
+    Height = 113
+    Ctl3D = False
+    ItemHeight = 13
+    ParentCtl3D = False
+    TabOrder = 7
   end
 end

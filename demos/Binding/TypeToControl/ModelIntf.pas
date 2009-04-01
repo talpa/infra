@@ -28,6 +28,16 @@ type
     property Population: IInfraInteger read GetPopulation write SetPopulation;
   end;
 
+  ICompany = interface(IInfraObject)
+    ['{03A807ED-586A-4E67-99B5-FD098B4C0D90}']
+    function GetName: IInfraString;
+    procedure SetName(const Value: IInfraString);
+    function GetEmployees: IInfraList;
+    procedure LoadSampleData;
+    property Name: IInfraString read GetName write SetName;
+    property Employees: IInfraList read GetEmployees;
+  end;
+
   IPerson = interface(IInfraObject)
     ['{9281A67B-128F-4AC3-9B95-A2C5F61D47BD}']
     function GetActive: IInfraBoolean;

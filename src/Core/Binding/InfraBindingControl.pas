@@ -103,8 +103,23 @@ type
       const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
+  TBindableVCLListBased = class(TBindableVCLProperty)
+  protected
+    function GetValue: IInfraType; override;
+    procedure SetValue(const Value: IInfraType); override;
+  public
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: string): IBindableVCLProperty; override;
+    constructor Create(pControl: TControl); reintroduce;
+  end;
+
+  TBindableVCLListBasedTwoWay = class(TBindableVCLListBased)
+  protected
+    function Support2Way: Boolean; override;
+  end;
+
   // classe base para bindables de propriedades da vcl
-  TBindableCustomListItems = class(TBindableRTTIBased)
+  TBindableCustomListItems = class(TBindableVCLListBased)
   protected
     procedure WndProc(var Message: TMessage); override;
   public
@@ -112,7 +127,7 @@ type
       const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
-  TBindableItemindex  = class(TBindableRTTIBased)
+  TBindableItemIndex  = class(TBindableVCLListBased)
   protected
     procedure WndProc(var Message: TMessage); override;
   public
@@ -369,6 +384,40 @@ begin
   inherited WndProc(Message);
   if Message.Msg = CM_COLORCHANGED then
     Changed;
+end;
+
+{ TBindableVCLListBased }
+
+class function TBindableVCLListBased.CreateIfSupports(pControl: TControl;
+  const pPropertyPath: string): IBindableVCLProperty;
+var
+  vPropInfo: PPropInfo;
+begin
+  vPropInfo := GetPropInfo(pControl, pPropertyPath);
+  if Assigned(vPropInfo) then
+    Result := Self.Create(pControl)
+  else
+    Result := nil;
+end;
+
+constructor TBindableVCLListBased.Create(pControl: TControl);
+begin
+  inherited;
+end;
+
+function TBindableVCLListBased.GetValue: IInfraType;
+begin
+end;
+
+procedure TBindableVCLListBased.SetValue(const Value: IInfraType);
+begin
+end;
+
+{ TBindableVCLListBasedTwoWay }
+
+function TBindableVCLListBasedTwoWay.Support2Way: Boolean;
+begin
+  Result := True;
 end;
 
 { TBindableCustomListItems }

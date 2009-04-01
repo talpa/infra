@@ -89,9 +89,24 @@ type
     property City: ICity read GetCity write SetCity;
   end;
 
+  TCompany = class(TInfraObject, ICompany)
+  private
+    FName: IInfraString;
+    FEmployees: IInfraList;
+    function GetName: IInfraString;
+    procedure SetName(const Value: IInfraString);
+    function GetEmployees: IInfraList;
+  public
+    procedure InfraInitInstance; override;
+    procedure LoadSampleData;
+    property Name: IInfraString read GetName write SetName;
+    property Employees: IInfraList read GetEmployees;
+  end;  
+
 procedure RegisterUser;
 procedure RegisterPerson;
 procedure RegisterCity;
+procedure RegisterCompany;
 
 implementation
 
@@ -167,6 +182,25 @@ begin
         @TCity.GetName, @TCity.SetName);
       AddPropertyInfo('Population', GetType(IInfraInteger),
         @TCity.GetPopulation, @TCity.SetPopulation);
+    end;
+  end;
+end;
+
+procedure RegisterCompany;
+var
+  lCompany: IClassInfo;
+begin
+  with TypeService do
+  begin
+    lCompany := AddType(ICompany, 'Company', TCompany, IInfraObject, GetType(IInfraObject));
+
+    with lCompany do
+    begin
+      AddConstructorInfo('Create', nil, @TCompany.Create);
+      AddPropertyInfo('Name', GetType(IInfraString),
+        @TCompany.GetName, @TCompany.SetName);
+      AddPropertyInfo('Employees', GetType(IInfraList),
+        @TCompany.GetEmployees);
     end;
   end;
 end;
@@ -387,9 +421,46 @@ begin
   FState := Value;
 end;
 
+{ TCompany }
+
+procedure TCompany.InfraInitInstance;
+begin
+  inherited;
+  FName := AddProperty('Name') as IInfraString;
+  FEmployees := AddProperty('Employees') as IInfraList;
+
+  LoadSampleData;
+end;
+
+procedure TCompany.LoadSampleData;
+var
+  vEmployee: IPerson;
+begin
+  Name.AsString := 'Microsoft';
+  vEmployee := TPerson.Create;
+  vEmployee.LoadSampleData;
+  Employees.Add(vEmployee);
+end;
+
+function TCompany.GetName: IInfraString;
+begin
+  Result := FName;
+end;
+
+procedure TCompany.SetName(const Value: IInfraString);
+begin
+  FName := Value;
+end;
+
+function TCompany.GetEmployees: IInfraList;
+begin
+  Result := FEmployees;
+end;
+
 initialization
   RegisterUser;
   RegisterCity;
   RegisterPerson;
+  RegisterCompany;
 
 end.
