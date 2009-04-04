@@ -277,7 +277,7 @@ begin
   Result := GetSQLFromCache(pSqlCommand);
   if Result = EmptyStr then
   begin
-  vReader := GetReader;
+    vReader := GetReader;
     Result := vReader.Read(pSqlCommand.Name);
     AddSQLToCache(pSqlCommand, Result);
   end;

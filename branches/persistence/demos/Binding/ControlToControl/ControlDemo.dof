@@ -142,21 +142,3 @@ C:\Util\Comps\bin\VirtualTreesD7.bpl=Virtual Treeview runtime package
 C:\Util\Comps\bin\VirtualTreesD7D.bpl=Virtual Treeview design time package
 C:\Projetos\Stocker\src\Components\graph3\sgr.bpl=(untitled)
 C:\Projetos\DynApp\_Outros\Validation\ValidationProviderD10.bpl=Validation Provider
-[HistoryLists\hlDebugSourcePath]
-Count=1
-Item0=bin;..\..\..\Src\Build
-[HistoryLists\hlUnitAliases]
-Count=1
-Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
-[HistoryLists\hlSearchPath]
-Count=1
-Item0=bin;..\..\..\Src\Build
-[HistoryLists\hlUnitOutputDirectory]
-Count=1
-Item0=bin
-[HistoryLists\hlBPLOutput]
-Count=1
-Item0=bin
-[HistoryLists\hlDCPOutput]
-Count=1
-Item0=bin

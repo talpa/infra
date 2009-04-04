@@ -78,9 +78,9 @@ begin
   Result.ListID := IInfraList;
   vTypeInfo := TypeService.GetType(pClassID, True);
   if IsEqualGUID(pClassID, NullGUID) then
-     Raise EPersistenceEngineError.Create( cErrorPersistEngineObjectIDUndefined)
+    Raise EPersistenceEngineError.Create(cErrorPersistEngineObjectIDUndefined)
   else
-     Result.ClassTypeInfo := vTypeInfo;
+    Result.ClassTypeInfo := vTypeInfo;
 end;
 
 {*

@@ -47,6 +47,11 @@ type
     Bevel1: TBevel;
     Label11: TLabel;
     Label12: TLabel;
+    Label17: TLabel;
+    Label18: TLabel;
+    Label19: TLabel;
+    Label20: TLabel;
+    Label21: TLabel;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -110,9 +115,10 @@ begin
   b.ConverterParameter := TInfraString.NewFrom('Invisivel;Visivel');
   bm.Add(Checkbox3, 'Checked', Panel1, 'Visible');
 
-  bm.Add(ListBox1, 'Items', ListBox2, 'Items');
-
+  bm.Add(ListBox1, 'Items', ListBox2, 'Items').TwoWay;
+  bm.Add(ListBox3, 'Items', ListBox4, 'Items');
   bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
+  
   bm.Active := True;
 end;
 
