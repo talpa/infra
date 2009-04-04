@@ -25,7 +25,7 @@ type
     /// PersistenceEngine ao qual o SQLCommand está vinculado
     property PersistenceEngine: IPersistenceEngine read FPersistenceEngine;
     property Params: ISQLCommandParams read GetParams;
-    property ClassTypeInfo : IClassInfo read GetClassTypeInfo write SetClassTypeInfo;
+    property ClassTypeInfo: IClassInfo read GetClassTypeInfo write SetClassTypeInfo;
   public
     constructor Create(const pPersistenceEngine: IPersistenceEngine); reintroduce;
   end;

@@ -18,6 +18,7 @@ type
 
   IBindable = interface(IElement)
     ['{E4FF9385-092B-422B-8BCB-0A28CB611C82}']
+    function IsUpdating: boolean;
     function GetValue: IInfraType;
     function Support2Way: Boolean;
     procedure SetValue(const Value: IInfraType);

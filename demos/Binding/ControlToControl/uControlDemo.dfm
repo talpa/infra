@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 187
-  Top = 123
-  Width = 733
+  Left = 489
+  Top = 151
+  Width = 732
   Height = 401
   Caption = 'Binding entre Controles VCL'
   Color = clBtnFace
@@ -14,14 +14,14 @@ object Form1: TForm1
   OnActivate = FormActivate
   OnCreate = FormCreate
   DesignSize = (
-    725
-    374)
+    724
+    367)
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
     Left = 5
     Top = 6
-    Width = 715
+    Width = 714
     Height = 356
     ActivePage = TabSheet3
     Anchors = [akLeft, akTop, akRight, akBottom]
@@ -29,7 +29,7 @@ object Form1: TForm1
     object TabSheet1: TTabSheet
       Caption = 'Binding Edits'
       DesignSize = (
-        707
+        706
         328)
       object Label1: TLabel
         Left = 65
@@ -98,7 +98,7 @@ object Form1: TForm1
       object Memo2: TMemo
         Left = 2
         Top = 2
-        Width = 702
+        Width = 701
         Height = 119
         Anchors = [akLeft, akTop, akRight]
         Color = clInfoBk
@@ -131,7 +131,7 @@ object Form1: TForm1
       Caption = 'Bind CheckBox'
       ImageIndex = 1
       DesignSize = (
-        707
+        706
         328)
       object Label2: TLabel
         Left = 4
@@ -197,7 +197,7 @@ object Form1: TForm1
       object Memo3: TMemo
         Left = 2
         Top = 2
-        Width = 702
+        Width = 701
         Height = 175
         Anchors = [akLeft, akTop, akRight]
         Color = clInfoBk
@@ -257,11 +257,11 @@ object Form1: TForm1
       Caption = 'Binding ListBox'
       ImageIndex = 2
       DesignSize = (
-        707
+        706
         328)
       object SpeedButton1: TSpeedButton
         Left = 247
-        Top = 120
+        Top = 128
         Width = 23
         Height = 22
         Caption = '+'
@@ -269,7 +269,7 @@ object Form1: TForm1
       end
       object SpeedButton2: TSpeedButton
         Left = 271
-        Top = 120
+        Top = 128
         Width = 23
         Height = 22
         Caption = '-'
@@ -277,55 +277,55 @@ object Form1: TForm1
       end
       object Label7: TLabel
         Left = 2
-        Top = 146
+        Top = 154
         Width = 42
         Height = 13
         Caption = 'Listbox1:'
       end
       object Label8: TLabel
         Left = 153
-        Top = 146
+        Top = 154
         Width = 42
         Height = 13
         Caption = 'Listbox2:'
       end
       object Label6: TLabel
         Left = 2
-        Top = 103
+        Top = 111
         Width = 218
         Height = 13
         Caption = 'Texto a ser adicionado no listbox selecionado:'
       end
       object Label9: TLabel
         Left = 314
-        Top = 146
+        Top = 154
         Width = 42
         Height = 13
         Caption = 'Listbox3:'
       end
       object Label10: TLabel
         Left = 465
-        Top = 146
+        Top = 154
         Width = 42
         Height = 13
         Caption = 'Listbox4:'
       end
       object Bevel1: TBevel
         Left = 304
-        Top = 104
+        Top = 112
         Width = 2
         Height = 145
       end
       object Label11: TLabel
         Left = 314
-        Top = 125
+        Top = 133
         Width = 107
         Height = 13
         Caption = 'O item selecionado foi:'
       end
       object Label12: TLabel
         Left = 434
-        Top = 125
+        Top = 133
         Width = 5
         Height = 13
         Font.Charset = DEFAULT_CHARSET
@@ -335,9 +335,61 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
       end
+      object Label17: TLabel
+        Left = 2
+        Top = 3
+        Width = 701
+        Height = 11
+        AutoSize = False
+        Color = 9276813
+        ParentColor = False
+      end
+      object Label18: TLabel
+        Left = 2
+        Top = 14
+        Width = 701
+        Height = 12
+        AutoSize = False
+        Color = 5197647
+        ParentColor = False
+      end
+      object Label19: TLabel
+        Left = 2
+        Top = 7
+        Width = 701
+        Height = 12
+        Alignment = taCenter
+        AutoSize = False
+        Caption = 'Tratando ListBoxes'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        Transparent = True
+      end
+      object Label21: TLabel
+        Left = 2
+        Top = 24
+        Width = 701
+        Height = 2
+        AutoSize = False
+        Color = 3947580
+        ParentColor = False
+      end
+      object Label20: TLabel
+        Left = 2
+        Top = 3
+        Width = 701
+        Height = 2
+        AutoSize = False
+        Color = 8289918
+        ParentColor = False
+      end
       object ListBox1: TListBox
         Left = 2
-        Top = 166
+        Top = 174
         Width = 144
         Height = 80
         Ctl3D = False
@@ -352,7 +404,7 @@ object Form1: TForm1
       end
       object ListBox2: TListBox
         Left = 153
-        Top = 166
+        Top = 174
         Width = 142
         Height = 80
         Ctl3D = False
@@ -362,7 +414,7 @@ object Form1: TForm1
       end
       object Edit3: TEdit
         Left = 2
-        Top = 121
+        Top = 129
         Width = 242
         Height = 19
         Ctl3D = False
@@ -371,8 +423,8 @@ object Form1: TForm1
       end
       object Memo1: TMemo
         Left = 2
-        Top = 2
-        Width = 702
+        Top = 30
+        Width = 701
         Height = 79
         Anchors = [akLeft, akTop, akRight]
         Color = clInfoBk
@@ -402,7 +454,7 @@ object Form1: TForm1
       end
       object ListBox3: TListBox
         Left = 314
-        Top = 166
+        Top = 174
         Width = 144
         Height = 80
         Ctl3D = False
@@ -418,7 +470,7 @@ object Form1: TForm1
       end
       object ListBox4: TListBox
         Left = 465
-        Top = 166
+        Top = 174
         Width = 142
         Height = 80
         Ctl3D = False

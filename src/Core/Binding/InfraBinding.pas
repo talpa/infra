@@ -9,7 +9,10 @@ uses
 
 type
   TBindable = class(TElement, IBindable)
+  private
+    FUpdating: boolean;
   protected
+    function IsUpdating: boolean;
     procedure Changed;
     function Support2Way: Boolean; virtual;
     function GetValue: IInfraType; virtual; abstract;
@@ -33,8 +36,18 @@ uses
 
 procedure TBindable.Changed;
 begin
-  if not Application.Terminated then
-    Publisher.Publish(TNotifyValueChanged.Create(Self) as INotifyValueChanged);
+  FUpdating := True;
+  try
+    if not Application.Terminated then
+      Publisher.Publish(TNotifyValueChanged.Create(Self) as INotifyValueChanged);
+  finally
+    FUpdating := False;
+  end;
+end;
+
+function TBindable.IsUpdating: boolean;
+begin
+  Result := FUpdating;
 end;
 
 function TBindable.Support2Way: Boolean;

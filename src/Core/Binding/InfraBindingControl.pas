@@ -20,8 +20,10 @@ type
   private
     FControl: TControl;
     FOldWndProc: TWndMethod;
+    // *** FOldCNCommand: TWMCommand;
   protected
     procedure WndProc(var Message: TMessage); virtual;
+    // *** procedure CNCommand(var Message: TWMCommand); virtual;
     function GetControl: TControl;
     property Control: TControl read GetControl;
   public
@@ -103,33 +105,20 @@ type
       const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
-  TBindableVCLListBased = class(TBindableVCLProperty)
+  // classe base para bindables de propriedades da vcl
+  TBindableCustomListItems = class(TBindableRTTIBasedTwoWay)
   protected
+    procedure WndProc(var Message: TMessage); override;
+  public
+    class function CreateIfSupports(pControl: TControl;
+      const pPropertyPath: string): IBindableVCLProperty; override;
+  end;
+
+  TBindableItemIndex  = class(TBindableVCLProperty)
+  protected
+    procedure WndProc(var Message: TMessage); override;
     function GetValue: IInfraType; override;
     procedure SetValue(const Value: IInfraType); override;
-  public
-    class function CreateIfSupports(pControl: TControl;
-      const pPropertyPath: string): IBindableVCLProperty; override;
-    constructor Create(pControl: TControl); reintroduce;
-  end;
-
-  TBindableVCLListBasedTwoWay = class(TBindableVCLListBased)
-  protected
-    function Support2Way: Boolean; override;
-  end;
-
-  // classe base para bindables de propriedades da vcl
-  TBindableCustomListItems = class(TBindableVCLListBased)
-  protected
-    procedure WndProc(var Message: TMessage); override;
-  public
-    class function CreateIfSupports(pControl: TControl;
-      const pPropertyPath: string): IBindableVCLProperty; override;
-  end;
-
-  TBindableItemIndex  = class(TBindableVCLListBased)
-  protected
-    procedure WndProc(var Message: TMessage); override;
   public
     class function CreateIfSupports(pControl: TControl;
       const pPropertyPath: string): IBindableVCLProperty; override;
@@ -198,7 +187,16 @@ end;
 procedure TBindableVCLProperty.WndProc(var Message: TMessage);
 begin
   FOldWndProc(Message);
+  if IsUpdating then
+    SysUtils.Abort;
 end;
+
+//procedure TBindableVCLProperty.CNCommand(var Message: TWMCommand);
+//begin
+//  FOldCNCommand(Message);
+//  if IsUpdating then
+//    SysUtils.Abort;
+//end;
 
 { TBindableRTTIBased }
 
@@ -386,40 +384,6 @@ begin
     Changed;
 end;
 
-{ TBindableVCLListBased }
-
-class function TBindableVCLListBased.CreateIfSupports(pControl: TControl;
-  const pPropertyPath: string): IBindableVCLProperty;
-var
-  vPropInfo: PPropInfo;
-begin
-  vPropInfo := GetPropInfo(pControl, pPropertyPath);
-  if Assigned(vPropInfo) then
-    Result := Self.Create(pControl)
-  else
-    Result := nil;
-end;
-
-constructor TBindableVCLListBased.Create(pControl: TControl);
-begin
-  inherited;
-end;
-
-function TBindableVCLListBased.GetValue: IInfraType;
-begin
-end;
-
-procedure TBindableVCLListBased.SetValue(const Value: IInfraType);
-begin
-end;
-
-{ TBindableVCLListBasedTwoWay }
-
-function TBindableVCLListBasedTwoWay.Support2Way: Boolean;
-begin
-  Result := True;
-end;
-
 { TBindableCustomListItems }
 
 class function TBindableCustomListItems.CreateIfSupports(
@@ -443,18 +407,34 @@ end;
 class function TBindableItemindex.CreateIfSupports(pControl: TControl;
   const pPropertyPath: string): IBindableVCLProperty;
 begin
-  if (pControl is TCustomListBox) and AnsiSameText(pPropertyPath, 'ItemIndex') then
-    Result := inherited CreateIfSupports(pControl, pPropertyPath)
+  if (pControl is TCustomListBox) and
+    AnsiSameText(pPropertyPath, 'ItemIndex') then
+    Result := inherited Create(pControl)
   else
     Result := nil;
 end;
 
+function TBindableItemIndex.GetValue: IInfraType;
+begin
+  Result := TInfraInteger.NewFrom(TCustomListControl(FControl).ItemIndex);
+end;
+
+procedure TBindableItemIndex.SetValue(const Value: IInfraType);
+var
+  vInteger: IInfraInteger;
+begin
+  if not Supports(Value, IInfraInteger, vInteger) then
+    raise EInfraBindingError.CreateFmt(cErrorBindableValueNotsupported,
+      [FControl.ClassName, 'ItemIndex', 'IInfraInteger']);
+  TCustomListControl(FControl).ItemIndex := vInteger.AsInteger; 
+end;
+
 procedure TBindableItemindex.WndProc(var Message: TMessage);
 begin
-   inherited WndProc(Message);
-  if Message.Msg = LB_SETCURSEL then
+  inherited WndProc(Message);
+  if (Message.Msg = LBN_SELCHANGE)
+    or (Message.Msg = LB_SETCURSEL) then
     Changed;
-
 end;
 
 procedure RegisterBindables;
