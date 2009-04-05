@@ -33,8 +33,6 @@ type
     Label4: TLabel;
     Panel1: TPanel;
     Edit3: TEdit;
-    SpeedButton1: TSpeedButton;
-    SpeedButton2: TSpeedButton;
     Label5: TLabel;
     Memo1: TMemo;
     Label7: TLabel;
@@ -52,16 +50,24 @@ type
     Label19: TLabel;
     Label20: TLabel;
     Label21: TLabel;
+    SpeedButton1: TButton;
+    SpeedButton2: TButton;
+    Button4: TButton;
+    Button5: TButton;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure ListBox1Exit(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
   private
     { Private declarations }
     bm: IBindManager;
+    FLastListBox: TListBox;
   public
     { Public declarations }
   end;
@@ -101,6 +107,7 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   bm := BindingService.GetNewBindManager;
+  FLastListBox := ListBox1;
 end;
 
 procedure TForm1.FormActivate(Sender: TObject);
@@ -118,32 +125,39 @@ begin
   bm.Add(ListBox1, 'Items', ListBox2, 'Items').TwoWay;
   bm.Add(ListBox3, 'Items', ListBox4, 'Items');
   bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
-  
+
+  // *** precisa-se de um converter aqui...
+  // mas este converter teria de receber um tipo especifico de type
+  // bm.Add(ListBox3, 'ItemIndex', Label12, 'Caption');
+
   bm.Active := True;
+end;
+
+procedure TForm1.ListBox1Exit(Sender: TObject);
+begin
+  FLastListBox := TListBox(Sender);
 end;
 
 procedure TForm1.SpeedButton1Click(Sender: TObject);
 begin
-  if ListBox1.Focused then
-  begin
-    ListBox1.Items.Add(Edit3.Text);
-  end else if ListBox2.Focused then
-  begin
-    ListBox2.Items.Add(Edit3.Text);
-  end else
-    ShowMessage('Selecione um dos listBoxes');
+  if Assigned(FLastListBox) then
+    FLastListBox.Items.Add(Edit3.Text);
 end;
 
 procedure TForm1.SpeedButton2Click(Sender: TObject);
 begin
-  if ListBox1.Focused and (ListBox1.ItemIndex <> -1) then
-  begin
-    ListBox1.Items.Delete(ListBox1.ItemIndex);
-  end else if ListBox2.Focused and (ListBox2.ItemIndex <> -1) then
-  begin
-    ListBox1.Items.Delete(ListBox2.ItemIndex);
-  end else
-    ShowMessage('Selecione um item em um dos listBoxes');
+  if (FLastListBox.ItemIndex <> -1) then
+    FLastListBox.Items.Delete(FLastListBox.ItemIndex);
+end;
+
+procedure TForm1.Button4Click(Sender: TObject);
+begin
+  FLastListBox.Clear;
+end;
+
+procedure TForm1.Button5Click(Sender: TObject);
+begin
+  ListBox3.ItemIndex := 2;
 end;
 
 end.

@@ -16,7 +16,7 @@ type
     procedure Changed;
     function Support2Way: Boolean; virtual;
     function GetValue: IInfraType; virtual; abstract;
-    procedure SetValue(const Value: IInfraType); virtual; abstract;    
+    procedure SetValue(const Value: IInfraType); virtual; abstract;
   end;
 
   /// Serviço de Binding

@@ -20,10 +20,8 @@ type
   private
     FControl: TControl;
     FOldWndProc: TWndMethod;
-    // *** FOldCNCommand: TWMCommand;
   protected
     procedure WndProc(var Message: TMessage); virtual;
-    // *** procedure CNCommand(var Message: TWMCommand); virtual;
     function GetControl: TControl;
     property Control: TControl read GetControl;
   public
@@ -190,13 +188,6 @@ begin
   if IsUpdating then
     SysUtils.Abort;
 end;
-
-//procedure TBindableVCLProperty.CNCommand(var Message: TWMCommand);
-//begin
-//  FOldCNCommand(Message);
-//  if IsUpdating then
-//    SysUtils.Abort;
-//end;
 
 { TBindableRTTIBased }
 
@@ -398,7 +389,9 @@ end;
 procedure TBindableCustomListItems.WndProc(var Message: TMessage);
 begin
   inherited WndProc(Message);
-  if Message.Msg = LB_ADDSTRING then
+  if (Message.Msg = LB_DELETESTRING)
+    or (Message.Msg = LB_ADDSTRING)
+    or (Message.Msg = LB_RESETCONTENT) then
     Changed;
 end;
 
@@ -432,7 +425,7 @@ end;
 procedure TBindableItemindex.WndProc(var Message: TMessage);
 begin
   inherited WndProc(Message);
-  if (Message.Msg = LBN_SELCHANGE)
+  if (TWMCommand(Message).NotifyCode = LBN_SELCHANGE)
     or (Message.Msg = LB_SETCURSEL) then
     Changed;
 end;

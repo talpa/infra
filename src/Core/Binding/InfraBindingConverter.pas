@@ -42,14 +42,6 @@ type
       const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
-  TInfraListToVCL = class(TTypeConverter)
-  protected
-    function LeftToRight(const Value: IInfraType;
-      const Parameter: IInfraType = nil): IInfraType; override;
-    function RightToLeft(const Value: IInfraType;
-      const Parameter: IInfraType = nil): IInfraType; override;
-  end;
-
 implementation
 
 
@@ -107,20 +99,6 @@ end;
 
 function TTextToItemIndex.RightToLeft(const Value,
   Parameter: IInfraType): IInfraType;
-begin
-
-end;
-
-{ TInfraListToVCL }
-
-function TInfraListToVCL.LeftToRight(const Value: IInfraType;
-  const Parameter: IInfraType = nil): IInfraType;
-begin
-
-end;
-
-function TInfraListToVCL.RightToLeft(const Value: IInfraType;
-  const Parameter: IInfraType = nil): IInfraType;
 begin
 
 end;

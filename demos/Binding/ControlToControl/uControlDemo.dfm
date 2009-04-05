@@ -259,22 +259,6 @@ object Form1: TForm1
       DesignSize = (
         706
         328)
-      object SpeedButton1: TSpeedButton
-        Left = 247
-        Top = 128
-        Width = 23
-        Height = 22
-        Caption = '+'
-        OnClick = SpeedButton1Click
-      end
-      object SpeedButton2: TSpeedButton
-        Left = 271
-        Top = 128
-        Width = 23
-        Height = 22
-        Caption = '-'
-        OnClick = SpeedButton2Click
-      end
       object Label7: TLabel
         Left = 2
         Top = 154
@@ -326,8 +310,9 @@ object Form1: TForm1
       object Label12: TLabel
         Left = 434
         Top = 133
-        Width = 5
+        Width = 263
         Height = 13
+        AutoSize = False
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 8404992
         Font.Height = -11
@@ -401,6 +386,7 @@ object Form1: TForm1
           'melancia')
         ParentCtl3D = False
         TabOrder = 0
+        OnExit = ListBox1Exit
       end
       object ListBox2: TListBox
         Left = 153
@@ -411,11 +397,12 @@ object Form1: TForm1
         ItemHeight = 13
         ParentCtl3D = False
         TabOrder = 1
+        OnExit = ListBox1Exit
       end
       object Edit3: TEdit
         Left = 2
         Top = 129
-        Width = 242
+        Width = 215
         Height = 19
         Ctl3D = False
         ParentCtl3D = False
@@ -477,6 +464,42 @@ object Form1: TForm1
         ItemHeight = 13
         ParentCtl3D = False
         TabOrder = 5
+      end
+      object SpeedButton1: TButton
+        Left = 223
+        Top = 128
+        Width = 23
+        Height = 22
+        Caption = '+'
+        TabOrder = 6
+        OnClick = SpeedButton1Click
+      end
+      object SpeedButton2: TButton
+        Left = 247
+        Top = 128
+        Width = 23
+        Height = 22
+        Caption = '-'
+        TabOrder = 7
+        OnClick = SpeedButton2Click
+      end
+      object Button4: TButton
+        Left = 271
+        Top = 128
+        Width = 23
+        Height = 22
+        Caption = 'C'
+        TabOrder = 8
+        OnClick = Button4Click
+      end
+      object Button5: TButton
+        Left = 384
+        Top = 151
+        Width = 74
+        Height = 22
+        Caption = 'ItemIndex=2'
+        TabOrder = 9
+        OnClick = Button5Click
       end
     end
   end

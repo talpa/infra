@@ -12,6 +12,7 @@ resourcestring
   cErrorBindableValueNotsupported =
     'ValueType not supported in this Bindable.'#13+
     'Control: %s, Property: %s, Type Supported: %s';
+  cErrorBindableValuesIncompatibles = 'Incompatible Values: %s';
 
 implementation
 
