@@ -39,6 +39,8 @@ type
     ['{A5945A5F-F235-4BA5-857D-F1BF67660FE3}']
     function GetActive: Boolean;
     procedure SetActive(Value: Boolean);
+    function GetName: string;
+    procedure SetName(const Value: string);
     function GetMode: TBindingMode;
     function GetLeft: IBindable;
     function GetRight: IBindable;
@@ -56,6 +58,7 @@ type
     property ConverterParameter: IInfraType read GetConverterParameter
       write SetConverterParameter;
     property Active: boolean read GetActive write SetActive;
+    property Name: string read GetName write SetName;
   end;
 
   IBindings = interface

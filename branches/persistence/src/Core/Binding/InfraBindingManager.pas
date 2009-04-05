@@ -29,6 +29,7 @@ type
   TBinding = class(TElement, IBinding)
   private
     FActive: Boolean;
+    FName: String;
     FLeft, FRight: IBindable;
     FConverter: ITypeConverter;
     FConverterParameter: IInfraType;
@@ -37,11 +38,13 @@ type
     procedure PropertyChanged(const Event: IInfraEvent);
     function PropertyChangedFilter(const Event: IInfraEvent): Boolean;
   protected
+    function GetName: string;
     function GetLeft: IBindable;
     function GetMode: TBindingMode;
     function GetRight: IBindable;
     function GetConverter: ITypeConverter;
     function GetConverterParameter: IInfraType;
+    procedure SetName(const Value: string);
     procedure SetMode(Value: TBindingMode);
     procedure SetConverter(const Value: ITypeConverter);
     procedure SetConverterParameter(const Value: IInfraType);
@@ -49,6 +52,7 @@ type
     function TwoWay: IBinding;
     function GetActive: Boolean;
     procedure SetActive(Value: Boolean);
+    property Name: string read GetName write SetName;
   public
     constructor Create(const Left, Right: IBindable); reintroduce;
   end;
@@ -184,6 +188,10 @@ begin
   begin
     if Assigned(FConverter) then
       vRightValue := FConverter.ConvertToLeft(vRightValue, FConverterParameter);
+    // *** este erro deveria mostrar os nomes das propriedades que estamos amarrando
+    if not Supports(FLeft.Value, vRightValue.TypeInfo.TypeID) then
+      raise EInfraBindingError.CreateFmt(
+        cErrorBindableValuesIncompatibles, [Name]);
     FLeft.Value := vRightValue;
   end;
 end;
@@ -195,7 +203,11 @@ begin
   vLeftValue := FLeft.Value;
   if Assigned(FConverter) then
     vLeftValue := FConverter.ConvertToRight(vLeftValue, FConverterParameter);
-  FRight.Value := vLeftValue;
+  // *** este erro deveria mostrar os nomes das propriedades que estamos amarrando
+  if not Supports(FRight.Value, vLeftValue.TypeInfo.TypeID) then
+    raise EInfraBindingError.CreateFmt(
+      cErrorBindableValuesIncompatibles, [Name]);
+  FRight.Value := vLeftValue
 end;
 
 function TBinding.GetActive: Boolean;
@@ -218,6 +230,16 @@ begin
   FConverterParameter := Value;
 end;
 
+function TBinding.GetName: string;
+begin
+  Result := FName;
+end;
+
+procedure TBinding.SetName(const Value: string);
+begin
+  FName := Value;
+end;
+
 { TBindManager }
 
 constructor TBindManager.Create;
@@ -236,6 +258,8 @@ begin
   vLeft := GetBindableVCL(pLeftControl, pLeftProperty);
   vRight := GetBindableVCL(pRightControl, pRightProperty);
   Result := Add(vLeft, vRight, pConverter);
+  Result.Name := Format('%s.%s -> %s.%s', [
+    pLeftControl.Name, pLeftProperty, pRightControl.Name, pRightProperty])
 end;
 
 function TBindManager.Add(const pLeftProperty: string;
@@ -247,6 +271,8 @@ begin
   vLeft := TBindableInfraType.GetBindable(FDataContext, pLeftProperty);
   vRight := GetBindableVCL(pRightControl, pRightProperty);
   Result := Add(vLeft, vRight, pConverter);
+  Result.Name := Format('Datacontext.%s - %s.%s', [
+    pLeftProperty, pRightControl.Name, pRightProperty])
 end;
 
 function TBindManager.Add(const pLeft, pRight: IBindable;
