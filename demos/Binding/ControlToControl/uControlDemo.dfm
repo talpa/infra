@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 489
-  Top = 151
+  Left = 351
+  Top = 255
   Width = 732
   Height = 401
   Caption = 'Binding entre Controles VCL'
@@ -15,7 +15,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   DesignSize = (
     724
-    367)
+    374)
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
@@ -81,7 +81,7 @@ object Form1: TForm1
         Top = 133
         Width = 204
         Height = 25
-        Caption = 'Mudar Edit1.Text por programa'#231#227'o '
+        Caption = 'Mudar Edit1.Text por programa'#231'ao '
         TabOrder = 1
         OnClick = Button1Click
       end
@@ -119,7 +119,7 @@ object Form1: TForm1
           ''
           'Obs:'
           
-            '    O bot'#227'o mostra que a atualiza'#231#227'o funciona por programa'#231#227'o ta' +
+            '    O botao mostra que a atualiza'#231'ao funciona por programa'#231'ao ta' +
             'mbem')
         ParentCtl3D = False
         ParentFont = False
@@ -212,12 +212,12 @@ object Form1: TForm1
           
             '    Quando marca ou desmarca o Checkbox1 o seu caption '#233' alterad' +
             'o'
-          '    Estamos usando o converter padr'#227'o TBooleanToText'
+          '    Estamos usando o converter padrao TBooleanToText'
           ''
           '2) Checkbox2.Checked -> Checkbox2.Caption. '
           
             '    An'#225'logo ao anterior mas agora usando um par'#225'metro para conve' +
-            'rs'#227'o'
+            'rsao'
           '    TBooleanToText [Invisivel;Visivel]'
           ''
           '3) Checkbox3.Checked -> Panel1.Visible'
@@ -225,7 +225,7 @@ object Form1: TForm1
           ''
           'Obs:'
           
-            '    Os bot'#245'es mostram que a atualiza'#231#227'o funciona por programa'#231#227'o' +
+            '    Os botoes mostram que a atualiza'#231'ao funciona por programa'#231'ao' +
             ' tambem')
         ParentCtl3D = False
         ParentFont = False
@@ -378,8 +378,9 @@ object Form1: TForm1
       object Label13: TLabel
         Left = 498
         Top = 133
-        Width = 199
+        Width = 111
         Height = 13
+        Alignment = taRightJustify
         AutoSize = False
         Color = clInfoBk
         Font.Charset = DEFAULT_CHARSET
@@ -389,6 +390,20 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentColor = False
         ParentFont = False
+      end
+      object Label14: TLabel
+        Left = 312
+        Top = 260
+        Width = 24
+        Height = 13
+        Caption = 'Edit4'
+      end
+      object Label15: TLabel
+        Left = 464
+        Top = 260
+        Width = 24
+        Height = 13
+        Caption = 'Edit5'
       end
       object ListBox1: TListBox
         Left = 2
@@ -518,6 +533,22 @@ object Form1: TForm1
         Caption = 'ItemIndex=2'
         TabOrder = 9
         OnClick = Button5Click
+      end
+      object Edit4: TEdit
+        Left = 344
+        Top = 256
+        Width = 113
+        Height = 21
+        TabOrder = 10
+        Text = 'Edit4'
+      end
+      object Edit5: TEdit
+        Left = 496
+        Top = 256
+        Width = 113
+        Height = 21
+        TabOrder = 11
+        Text = 'Edit5'
       end
     end
   end

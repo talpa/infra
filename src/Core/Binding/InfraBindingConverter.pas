@@ -57,7 +57,7 @@ type
       const Parameter: IInfraType = nil): IInfraType; override;
   end;
 
-  TTextToItemIndex = class(TTypeConverter)
+  TItemIndexToIntegerText = class(TTypeConverter)
   protected
     function LeftToRight(const Value: IInfraType;
       const Parameter: IInfraType = nil): IInfraType; override;
@@ -68,6 +68,8 @@ type
 implementation
 
 uses
+  SysUtils,
+  Classes,
   InfraCommonIntf;
   
 { TTextToColor }
@@ -105,27 +107,45 @@ end;
 function TItemIndexToText.LeftToRight(const Value,
   Parameter: IInfraType): IInfraType;
 begin
-
+  Result := TInfraString.NewFrom((Value as IVCLListType).ItemText);
 end;
 
 function TItemIndexToText.RightToLeft(const Value,
   Parameter: IInfraType): IInfraType;
+var
+  vItems: TStrings;
+  vListType: IVCLListType;
+  vIndex: Integer;
 begin
-
+  vItems := TStrings((Parameter as IInfraNativeObject).AsNativeObject);
+  vListType := TVCLListType.Create;
+  vListType.ItemIndex := vItems.IndexOf((Value as IInfraString).AsString);
+  if vListType.ItemIndex <> -1 then
+    vListType.Operation := loSelectionChange;
+  Result := vListType;
 end;
 
-{ TTextToItemIndex }
+{ TItemIndexToIntegerText }
 
-function TTextToItemIndex.LeftToRight(const Value,
+function TItemIndexToIntegerText.LeftToRight(const Value,
   Parameter: IInfraType): IInfraType;
 begin
-
+  Result := TInfraString.NewFrom(IntToStr((Value as IVCLListType).ItemIndex));
 end;
 
-function TTextToItemIndex.RightToLeft(const Value,
+function TItemIndexToIntegerText.RightToLeft(const Value,
   Parameter: IInfraType): IInfraType;
+var
+  vItems: TStrings;
+  vListType: IVCLListType;
+  vIndex: Integer;
 begin
-
+  vItems := TStrings((Parameter as IInfraNativeObject).AsNativeObject);
+  vListType := TVCLListType.Create;
+  vListType.ItemIndex := StrToInt((Value as IInfraString).AsString);
+  if vListType.ItemIndex <> -1 then
+    vListType.Operation := loSelectionChange;
+  Result := vListType;
 end;
 
 { TVCLListType }
