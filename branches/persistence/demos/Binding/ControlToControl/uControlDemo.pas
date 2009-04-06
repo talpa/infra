@@ -54,7 +54,11 @@ type
     SpeedButton2: TButton;
     Button4: TButton;
     Button5: TButton;
+    Edit4: TEdit;
     Label13: TLabel;
+    Edit5: TEdit;
+    Label14: TLabel;
+    Label15: TLabel;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -111,9 +115,17 @@ begin
   bm.Add(ListBox1, 'Items', ListBox2, 'Items').TwoWay;
   bm.Add(ListBox3, 'Items', ListBox4, 'Items');
 
-//  bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
-//  b := bm.Add(ListBox3, 'ItemIndex', Label13, 'Caption', TItemIndexToIntegerText.Create);
-//  b := bm.Add(ListBox3, 'ItemIndex', Label12, 'Caption', TItemIndexToText.Create);
+  bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
+
+  b := bm.Add(ListBox4, 'ItemIndex', Label13, 'Caption', TItemIndexToIntegerText.Create);
+  b.ConverterParameter := TInfraNativeObject.NewFrom(ListBox4.Items);
+
+  b := bm.Add(ListBox4, 'ItemIndex', Edit5, 'Text', TItemIndexToIntegerText.Create).TwoWay;
+  b.ConverterParameter := TInfraNativeObject.NewFrom(ListBox4.Items);
+
+  bm.Add(ListBox3, 'ItemIndex', Label12, 'Caption', TItemIndexToText.Create);
+  b := bm.Add(ListBox3, 'ItemIndex', Edit4, 'Text', TItemIndexToText.Create).TwoWay;
+  b.ConverterParameter := TInfraNativeObject.NewFrom(ListBox3.Items);
 
   bm.Active := True;
 end;
@@ -153,7 +165,6 @@ end;
 procedure TForm1.Button4Click(Sender: TObject);
 begin
   FLastListBox.Clear;
-  FLastListBox.Items.Objects[FLastListBox.ItemIndex]
 end;
 
 procedure TForm1.Button5Click(Sender: TObject);

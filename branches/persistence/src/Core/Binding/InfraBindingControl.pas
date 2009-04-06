@@ -120,8 +120,9 @@ type
     constructor Create(pControl: TControl); reintroduce;
   end;
 
-  {
   TBindableItemIndex  = class(TBindableVCLPropertyTwoWay)
+  private
+    FListType: IVCLListType;  
   protected
     procedure WndProc(var Message: TMessage); override;
     function GetValue: IInfraType; override;
@@ -129,8 +130,8 @@ type
   public
     class function CreateIfSupports(pControl: TControl;
       const pPropertyPath: string): IBindableVCLProperty; override;
+    constructor Create(pControl: TControl); reintroduce;      
   end;
-  }
   
 procedure RegisterBindableClass(pBindableClass: TBindableVCLPropertyClass);
 function GetBindableVCL(pControl: TControl;
@@ -469,40 +470,63 @@ begin
 end;
 
 { TBindableItemindex }
-{
-class function TBindableItemindex.CreateIfSupports(pControl: TControl;
+
+class function TBindableItemIndex.CreateIfSupports(pControl: TControl;
   const pPropertyPath: string): IBindableVCLProperty;
 begin
   if (pControl is TCustomListBox) and
     AnsiSameText(pPropertyPath, 'ItemIndex') then
-    Result := inherited Create(pControl)
+    Result := Self.Create(pControl)
   else
     Result := nil;
 end;
 
+constructor TBindableItemIndex.Create(pControl: TControl);
+begin
+  inherited Create(pControl);
+  FListType := TVCLListType.Create;
+  FListType.Control := pControl;
+  if TCustomListBox(pControl).ItemIndex <> -1 then
+  begin
+    FListType.Operation := loSelectionChange;
+    FListType.ItemIndex := TCustomListBox(pControl).ItemIndex;
+  end else
+  begin
+    FListType.Operation := loNone;
+    FListType.ItemIndex := -1;
+  end;
+end;
+
 function TBindableItemIndex.GetValue: IInfraType;
 begin
-  Result := TInfraInteger.NewFrom(TCustomListControl(FControl).ItemIndex);
+  Result := FListType;
+  {Result := TInfraInteger.NewFrom(TCustomListControl(FControl).ItemIndex);}
 end;
 
 procedure TBindableItemIndex.SetValue(const Value: IInfraType);
 var
-  vInteger: IInfraInteger;
+  vListType: IVCLListType;
 begin
-  if not Supports(Value, IInfraInteger, vInteger) then
-    raise EInfraBindingError.CreateFmt(cErrorBindableValueNotsupported,
-      [FControl.ClassName, 'ItemIndex', 'IInfraInteger']);
-  TCustomListControl(FControl).ItemIndex := vInteger.AsInteger;
+  if Supports(Value, IVCLListType, vListType) then
+  begin
+    case vListType.Operation of
+      loSelectionChange: TCustomListBox(Control).ItemIndex := vListType.ItemIndex;
+    end;
+  end;
 end;
 
-procedure TBindableItemindex.WndProc(var Message: TMessage);
+procedure TBindableItemIndex.WndProc(var Message: TMessage);
 begin
   inherited WndProc(Message);
   if (TWMCommand(Message).NotifyCode = LBN_SELCHANGE)
     or (Message.Msg = LB_SETCURSEL) then
+  begin
+    FListType.Operation := loSelectionChange;
+    FListType.ItemIndex := TCustomListBox(FControl).ItemIndex;
+    FListType.ItemText := TCustomListBox(FControl).Items[FListType.ItemIndex];
     Changed;
+  end;
 end;
-}
 
 procedure RegisterBindables;
 begin
@@ -514,7 +538,7 @@ begin
   RegisterBindableClass(TBindableChecked);
   RegisterBindableClass(TBindableColor);
   RegisterBindableClass(TBindableCustomListItems);
-  // *** RegisterBindableClass(TBindableItemindex);
+  RegisterBindableClass(TBindableItemIndex);
 end;
 
 initialization
