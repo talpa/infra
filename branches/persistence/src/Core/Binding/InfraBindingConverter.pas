@@ -18,6 +18,7 @@ type
     FItemText: String;
     FOperation: TListOperation;
   protected
+    procedure Assign(const Source: IInfraType); override;
     function GetOperation: TListOperation;
     function GetControl: TControl;
     function GetItemIndex: integer;
@@ -113,15 +114,12 @@ end;
 function TItemIndexToText.RightToLeft(const Value,
   Parameter: IInfraType): IInfraType;
 var
-  vItems: TStrings;
   vListType: IVCLListType;
-  vIndex: Integer;
 begin
-  vItems := TStrings((Parameter as IInfraNativeObject).AsNativeObject);
   vListType := TVCLListType.Create;
-  vListType.ItemIndex := vItems.IndexOf((Value as IInfraString).AsString);
-  if vListType.ItemIndex <> -1 then
-    vListType.Operation := loSelectionChange;
+  vListType.Operation := loSelectionChange;
+  vListType.ItemIndex := -1;
+  vListType.ItemText := (Value as IInfraString).AsString;
   Result := vListType;
 end;
 
@@ -139,13 +137,27 @@ var
   vListType: IVCLListType;
 begin
   vListType := TVCLListType.Create;
+  vListType.Operation := loSelectionChange;
   vListType.ItemIndex := StrToInt((Value as IInfraString).AsString);
-  if vListType.ItemIndex <> -1 then
-    vListType.Operation := loSelectionChange;
+  vListType.ItemText := '';
   Result := vListType;
 end;
 
 { TVCLListType }
+
+procedure TVCLListType.Assign(const Source: IInfraType);
+var
+  vListType: IVCLListType;
+begin
+  if (Source <> nil) and Supports(Source, IVCLListType, vListType) then
+  begin
+    SetControl(vListType.Control);
+    SetItemIndex(vListType.ItemIndex);
+    SetOperation(vListType.Operation);
+    SetItemText(vListType.ItemText);
+  end else
+    inherited Assign(Source);
+end;
 
 procedure TVCLListType.Clear;
 begin

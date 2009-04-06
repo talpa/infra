@@ -486,15 +486,14 @@ begin
   inherited Create(pControl);
   FListType := TVCLListType.Create;
   FListType.Control := pControl;
-  if TCustomListBox(pControl).ItemIndex <> -1 then
+  FListType.ItemIndex := TCustomListBox(pControl).ItemIndex;
+  if FListType.ItemIndex <> -1 then
   begin
     FListType.Operation := loSelectionChange;
-    FListType.ItemIndex := TCustomListBox(pControl).ItemIndex;
     FListType.ItemText := TCustomListBox(pControl).Items[FListType.ItemIndex];
   end else
   begin
     FListType.Operation := loNone;
-    FListType.ItemIndex := -1;
     FListType.ItemText := '';
   end;
 end;
@@ -502,18 +501,20 @@ end;
 function TBindableItemIndex.GetValue: IInfraType;
 begin
   Result := FListType;
-  {Result := TInfraInteger.NewFrom(TCustomListControl(FControl).ItemIndex);}
 end;
 
 procedure TBindableItemIndex.SetValue(const Value: IInfraType);
 var
   vListType: IVCLListType;
 begin
-  if Supports(Value, IVCLListType, vListType) then
+  if Supports(Value, IVCLListType, vListType)
+    and (vListType.Operation = loSelectionChange) then
   begin
-    case vListType.Operation of
-      loSelectionChange: TCustomListBox(Control).ItemIndex := vListType.ItemIndex;
-    end;
+    if vListType.ItemIndex <> -1 then
+      TCustomListBox(Control).ItemIndex := vListType.ItemIndex
+    else if vListType.ItemText <> '' then
+      TCustomListBox(Control).ItemIndex :=
+        TCustomListBox(Control).Items.IndexOf(vListType.ItemText);
   end;
 end;
 
