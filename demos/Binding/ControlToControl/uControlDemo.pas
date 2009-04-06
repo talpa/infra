@@ -59,6 +59,16 @@ type
     Edit5: TEdit;
     Label14: TLabel;
     Label15: TLabel;
+    Label16: TLabel;
+    Label22: TLabel;
+    Label23: TLabel;
+    Label24: TLabel;
+    Label25: TLabel;
+    Label26: TLabel;
+    Label27: TLabel;
+    Label28: TLabel;
+    Label29: TLabel;
+    Label30: TLabel;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -115,18 +125,12 @@ begin
   bm.Add(ListBox1, 'Items', ListBox2, 'Items').TwoWay;
   bm.Add(ListBox3, 'Items', ListBox4, 'Items');
 
-  ListBox3.ItemIndex := 3;
   bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
-
-  b := bm.Add(ListBox4, 'ItemIndex', Label13, 'Caption', TItemIndexToIntegerText.Create);
-  b.ConverterParameter := TInfraNativeObject.NewFrom(ListBox4.Items);
-
-  b := bm.Add(ListBox4, 'ItemIndex', Edit5, 'Text', TItemIndexToIntegerText.Create).TwoWay;
-  b.ConverterParameter := TInfraNativeObject.NewFrom(ListBox4.Items);
-
   bm.Add(ListBox3, 'ItemIndex', Label12, 'Caption', TItemIndexToText.Create);
   b := bm.Add(ListBox3, 'ItemIndex', Edit4, 'Text', TItemIndexToText.Create).TwoWay;
-  b.ConverterParameter := TInfraNativeObject.NewFrom(ListBox3.Items);
+
+  b := bm.Add(ListBox4, 'ItemIndex', Label13, 'Caption', TItemIndexToIntegerText.Create);
+  b := bm.Add(ListBox4, 'ItemIndex', Edit5, 'Text', TItemIndexToIntegerText.Create).TwoWay;
 
   bm.Active := True;
 end;

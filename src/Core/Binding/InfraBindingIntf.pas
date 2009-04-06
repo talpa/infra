@@ -15,7 +15,7 @@ type
   TBindingMode = (bmLeftToRight, bmTwoWay);
   TUpdateTrigger = (utLostFocus, utPropertyChanged, utExplicit);
   TListOperation = (loNone, loAdd, loPutObject, loRemove, loClear, loRefresh,
-    loChange, loExchange, loSelectionChange);
+    loExchange, loSelectionChange);
   TPropertyAccessMode = (paRTTI, paCustom);
 
   IBindable = interface(IElement)
