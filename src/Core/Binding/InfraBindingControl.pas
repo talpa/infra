@@ -11,8 +11,6 @@ uses
   InfraValueTypeIntf;
 
 type
-  TPropertyAccessMode = (paRTTI, paCustom);
-
   TBindableVCLPropertyClass = class of TBindableVCLProperty;
 
   // classe base para bindables de propriedades da vcl
@@ -29,6 +27,11 @@ type
       const pPropertyPath: string): IBindableVCLProperty; virtual; abstract;
     constructor Create(pControl: TControl); reintroduce;
     destructor Destroy; override;
+  end;
+
+  TBindableVCLPropertyTwoWay = class(TBindableVCLProperty)
+  protected
+    function Support2Way: Boolean; override;
   end;
 
   // classe base para bindables de propriedades da vcl
@@ -104,15 +107,21 @@ type
   end;
 
   // classe base para bindables de propriedades da vcl
-  TBindableCustomListItems = class(TBindableRTTIBasedTwoWay)
+  TBindableCustomListItems = class(TBindableVCLPropertyTwoWay)
+  private
+    FListType: IVCLListType;
   protected
     procedure WndProc(var Message: TMessage); override;
+    function GetValue: IInfraType; override;
+    procedure SetValue(const Value: IInfraType); override;
   public
     class function CreateIfSupports(pControl: TControl;
       const pPropertyPath: string): IBindableVCLProperty; override;
+    constructor Create(pControl: TControl); reintroduce;
   end;
 
-  TBindableItemIndex  = class(TBindableVCLProperty)
+  {
+  TBindableItemIndex  = class(TBindableVCLPropertyTwoWay)
   protected
     procedure WndProc(var Message: TMessage); override;
     function GetValue: IInfraType; override;
@@ -121,7 +130,8 @@ type
     class function CreateIfSupports(pControl: TControl;
       const pPropertyPath: string): IBindableVCLProperty; override;
   end;
-
+  }
+  
 procedure RegisterBindableClass(pBindableClass: TBindableVCLPropertyClass);
 function GetBindableVCL(pControl: TControl;
   const pPropertyPath: string): IBindable;
@@ -133,7 +143,7 @@ uses
   SysUtils,
   StdCtrls,
   InfraValueType,
-  InfraBindingConsts;
+  InfraBindingConsts, InfraBindingConverter;
 
 var
   _BindableClasses: TList;
@@ -152,7 +162,8 @@ var
 begin
   for vI := 0 to _BindableClasses.Count - 1 do
   begin
-    Result := TBindableVCLPropertyClass(_BindableClasses[vI]).CreateIfSupports(pControl, pPropertyPath) as IBindable;
+    Result := TBindableVCLPropertyClass(_BindableClasses[vI]).CreateIfSupports(
+      pControl, pPropertyPath) as IBindable;
     if Assigned(Result) then
       Break;
   end;
@@ -185,8 +196,15 @@ end;
 procedure TBindableVCLProperty.WndProc(var Message: TMessage);
 begin
   FOldWndProc(Message);
-  if IsUpdating then
-    SysUtils.Abort;
+//  if Updating then
+//    SysUtils.Abort;
+end;
+
+{ TBindableVCLPropertyTwoWay }
+
+function TBindableVCLPropertyTwoWay.Support2Way: Boolean;
+begin
+  Result := True;
 end;
 
 { TBindableRTTIBased }
@@ -222,9 +240,9 @@ begin
         Result := TInfraInteger.NewFrom(GetOrdProp(FControl, FPropInfo));
     tkInteger, tkChar, tkWChar:
       Result := TInfraInteger.NewFrom(GetOrdProp(FControl, FPropInfo));
-    tkClass:
-      if GetObjectProp(FControl, FPropInfo) is TStrings then
-        Result := TInfraString.NewFrom((GetObjectProp(FControl, FPropInfo) as TStrings).Text);
+//    tkClass:
+//      if GetObjectProp(FControl, FPropInfo) is TStrings then
+//        Result := TInfraString.NewFrom((GetObjectProp(FControl, FPropInfo) as TStrings).Text);
   end;
 end;
 
@@ -243,9 +261,9 @@ begin
     tkInteger, tkChar, tkWChar:
       SetOrdProp(FControl, FPropInfo,
         Trunc((Value as IInfraInteger).AsInteger));
-    tkClass:
-      if GetObjectProp(FControl, FPropInfo) is TStrings then
-        (GetObjectProp(FControl, FPropInfo) as TStrings).Text := (Value as IInfraString).AsString;
+//    tkClass:
+//      if GetObjectProp(FControl, FPropInfo) is TStrings then
+//        (GetObjectProp(FControl, FPropInfo) as TStrings).Text := (Value as IInfraString).AsString;
   end;
 end;
 
@@ -381,9 +399,25 @@ class function TBindableCustomListItems.CreateIfSupports(
   pControl: TControl; const pPropertyPath: string): IBindableVCLProperty;
 begin
   if (pControl is TCustomListBox) and AnsiSameText(pPropertyPath, 'Items') then
-    Result := inherited CreateIfSupports(pControl, pPropertyPath)
+    Result := Self.Create(pControl)
   else
     Result := nil;
+end;
+
+constructor TBindableCustomListItems.Create(pControl: TControl);
+begin
+  inherited Create(pControl);
+  FListType := TVCLListType.Create;
+  FListType.Control := pControl;
+  if TCustomListBox(pControl).Items.Count <> 0 then
+  begin
+    FListType.Operation := loRefresh;
+    FListType.ItemText := TCustomListBox(pControl).Items.Text;
+  end else
+  begin
+    FListType.Operation := loNone;
+    FListType.ItemText := '';
+  end;
 end;
 
 procedure TBindableCustomListItems.WndProc(var Message: TMessage);
@@ -392,11 +426,49 @@ begin
   if (Message.Msg = LB_DELETESTRING)
     or (Message.Msg = LB_ADDSTRING)
     or (Message.Msg = LB_RESETCONTENT) then
+  begin
+    case Message.Msg of
+      // Add -> SendMessage(ListBox.Handle, LB_ADDSTRING, 0, Longint(PChar(S)));
+      LB_ADDSTRING:
+      begin
+        FListType.Operation := loAdd;
+        FListType.ItemText := PChar(Message.lParam);
+      end;
+      // Delete -> SendMessage(Handle, LB_DELETESTRING, Index, 0);
+      LB_DELETESTRING: FListType.Operation := loRemove;
+      // Clear -> SendMessage(Handle, LB_RESETCONTENT, 0, 0);
+      LB_RESETCONTENT: FListType.Operation := loClear;
+      // PutObject -> SendMessage(Handle, LB_SETITEMDATA, Index, AData);
+      LB_SETITEMDATA: FListType.Operation := loPutObject;
+    end;
     Changed;
+  end;
+end;
+
+function TBindableCustomListItems.GetValue: IInfraType;
+begin
+  Result := FListType;
+end;
+
+procedure TBindableCustomListItems.SetValue(const Value: IInfraType);
+var
+  vListType: IVCLListType;
+begin
+  if Supports(Value, IVCLListType, vListType) then
+  begin
+    with TCustomListBox(vListType.Control) do
+    begin
+      case vListType.Operation of
+        loAdd: AddItem(vListType.ItemText, nil);
+        loRefresh: TCustomListBox(Control).Items.Assign(
+          TCustomListBox(vListType.Control).Items);
+      end;
+    end;
+  end;
 end;
 
 { TBindableItemindex }
-
+{
 class function TBindableItemindex.CreateIfSupports(pControl: TControl;
   const pPropertyPath: string): IBindableVCLProperty;
 begin
@@ -419,7 +491,7 @@ begin
   if not Supports(Value, IInfraInteger, vInteger) then
     raise EInfraBindingError.CreateFmt(cErrorBindableValueNotsupported,
       [FControl.ClassName, 'ItemIndex', 'IInfraInteger']);
-  TCustomListControl(FControl).ItemIndex := vInteger.AsInteger; 
+  TCustomListControl(FControl).ItemIndex := vInteger.AsInteger;
 end;
 
 procedure TBindableItemindex.WndProc(var Message: TMessage);
@@ -429,6 +501,7 @@ begin
     or (Message.Msg = LB_SETCURSEL) then
     Changed;
 end;
+}
 
 procedure RegisterBindables;
 begin
@@ -440,7 +513,7 @@ begin
   RegisterBindableClass(TBindableChecked);
   RegisterBindableClass(TBindableColor);
   RegisterBindableClass(TBindableCustomListItems);
-  RegisterBindableClass(TBindableItemindex);
+  // *** RegisterBindableClass(TBindableItemindex);
 end;
 
 initialization
@@ -451,4 +524,3 @@ finalization
     FreeAndNil(_BindableClasses);
 
 end.
-

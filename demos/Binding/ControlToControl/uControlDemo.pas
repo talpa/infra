@@ -54,6 +54,7 @@ type
     SpeedButton2: TButton;
     Button4: TButton;
     Button5: TButton;
+    Label13: TLabel;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -89,6 +90,34 @@ uses
 
 { TForm1 }
 
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  bm := BindingService.GetNewBindManager;
+  FLastListBox := ListBox1;
+end;
+
+procedure TForm1.FormActivate(Sender: TObject);
+var
+  b: IBinding;
+begin
+//  bm.Add(Edit1, 'Text', Label1, 'Caption');
+//  bm.Add(Edit2, 'Text', Edit2, 'Color', TTextToColor.Create);
+
+//  bm.Add(Checkbox1, 'Checked', Checkbox1, 'Caption', TBooleanToText.Create);
+//  b := bm.Add(Checkbox2, 'Checked', Checkbox2, 'Caption', TBooleanToText.Create);
+//  b.ConverterParameter := TInfraString.NewFrom('Invisivel;Visivel');
+//  bm.Add(Checkbox3, 'Checked', Panel1, 'Visible');
+
+  bm.Add(ListBox1, 'Items', ListBox2, 'Items').TwoWay;
+//  bm.Add(ListBox3, 'Items', ListBox4, 'Items');
+//  bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
+
+//  b := bm.Add(ListBox3, 'ItemIndex', Label13, 'Caption', TItemIndexToIntegerText.Create);
+//  b := bm.Add(ListBox3, 'ItemIndex', Label12, 'Caption', TItemIndexToText.Create);
+
+  bm.Active := True;
+end;
+
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   Edit1.Text := 'InfraBinding Framework ROCKS!';
@@ -102,35 +131,6 @@ end;
 procedure TForm1.Button3Click(Sender: TObject);
 begin
   CheckBox2.Checked := not CheckBox2.Checked;
-end;
-
-procedure TForm1.FormCreate(Sender: TObject);
-begin
-  bm := BindingService.GetNewBindManager;
-  FLastListBox := ListBox1;
-end;
-
-procedure TForm1.FormActivate(Sender: TObject);
-var
-  b: IBinding;
-begin
-  bm.Add(Edit1, 'Text', Label1, 'Caption');
-  bm.Add(Edit2, 'Text', Edit2, 'Color', TTextToColor.Create);
-
-  bm.Add(Checkbox1, 'Checked', Checkbox1, 'Caption', TBooleanToText.Create);
-  b := bm.Add(Checkbox2, 'Checked', Checkbox2, 'Caption', TBooleanToText.Create);
-  b.ConverterParameter := TInfraString.NewFrom('Invisivel;Visivel');
-  bm.Add(Checkbox3, 'Checked', Panel1, 'Visible');
-
-  bm.Add(ListBox1, 'Items', ListBox2, 'Items').TwoWay;
-  bm.Add(ListBox3, 'Items', ListBox4, 'Items');
-  bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
-
-  // *** precisa-se de um converter aqui...
-  // mas este converter teria de receber um tipo especifico de type
-  // bm.Add(ListBox3, 'ItemIndex', Label12, 'Caption');
-
-  bm.Active := True;
 end;
 
 procedure TForm1.ListBox1Exit(Sender: TObject);
@@ -153,6 +153,7 @@ end;
 procedure TForm1.Button4Click(Sender: TObject);
 begin
   FLastListBox.Clear;
+  FLastListBox.Items.Objects[FLastListBox.ItemIndex]
 end;
 
 procedure TForm1.Button5Click(Sender: TObject);

@@ -14,15 +14,20 @@ type
 
   TBindingMode = (bmLeftToRight, bmTwoWay);
   TUpdateTrigger = (utLostFocus, utPropertyChanged, utExplicit);
-  TListOperation = (loDelete, loExchange, loAdd, loClear, loFill);
+  TListOperation = (loNone, loAdd, loPutObject, loRemove, loClear, loRefresh,
+    loChange, loExchange);
+  TPropertyAccessMode = (paRTTI, paCustom);
 
   IBindable = interface(IElement)
     ['{E4FF9385-092B-422B-8BCB-0A28CB611C82}']
-    function IsUpdating: boolean;
+    function GetUpdating: boolean;
+    procedure BeginUpdate;
+    procedure EndUpdate;
     function GetValue: IInfraType;
     function Support2Way: Boolean;
     procedure SetValue(const Value: IInfraType);
     property Value: IInfraType read GetValue write SetValue;
+    property Updating: boolean read GetUpdating;
   end;
 
   IBindableInfraType = interface(IBindable)
@@ -113,6 +118,23 @@ type
     procedure SetIndexSource(pValue: Integer);
     function GetIndexDestination: Integer;
     procedure SetIndexDestination(pValue: Integer);
+  end;
+
+  IVCLListType = interface(IInfraType)
+    ['{FAAFAA1A-9CCD-4FEA-BDE2-A7D74C3013EF}']
+    function GetOperation: TListOperation;
+    function GetControl: TControl;
+    function GetItemIndex: integer;
+    function GetItemText: String;
+    procedure SetControl(Value: TControl);
+    procedure SetItemIndex(Value: integer);
+    procedure SetItemText(const Value: String);
+    procedure SetOperation(const Value: TListOperation);
+    procedure Clear;
+    property Control: TControl read GetControl write SetControl;
+    property ItemIndex: integer read GetItemIndex write SetItemIndex;
+    property ItemText: String read GetItemText write SetItemText;
+    property Operation: TListOperation read GetOperation write SetOperation;
   end;
 
 function BindingService: IInfraBindingService;
