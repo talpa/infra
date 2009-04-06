@@ -490,10 +490,12 @@ begin
   begin
     FListType.Operation := loSelectionChange;
     FListType.ItemIndex := TCustomListBox(pControl).ItemIndex;
+    FListType.ItemText := TCustomListBox(pControl).Items[FListType.ItemIndex];
   end else
   begin
     FListType.Operation := loNone;
     FListType.ItemIndex := -1;
+    FListType.ItemText := '';
   end;
 end;
 

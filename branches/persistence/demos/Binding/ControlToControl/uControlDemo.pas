@@ -115,6 +115,7 @@ begin
   bm.Add(ListBox1, 'Items', ListBox2, 'Items').TwoWay;
   bm.Add(ListBox3, 'Items', ListBox4, 'Items');
 
+  ListBox3.ItemIndex := 3;
   bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
 
   b := bm.Add(ListBox4, 'ItemIndex', Label13, 'Caption', TItemIndexToIntegerText.Create);
