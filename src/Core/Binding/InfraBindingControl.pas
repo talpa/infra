@@ -196,8 +196,6 @@ end;
 procedure TBindableVCLProperty.WndProc(var Message: TMessage);
 begin
   FOldWndProc(Message);
-//  if Updating then
-//    SysUtils.Abort;
 end;
 
 { TBindableVCLPropertyTwoWay }
@@ -435,11 +433,15 @@ begin
         FListType.ItemText := PChar(Message.lParam);
       end;
       // Delete -> SendMessage(Handle, LB_DELETESTRING, Index, 0);
-      LB_DELETESTRING: FListType.Operation := loRemove;
+      LB_DELETESTRING:
+      begin
+        FListType.Operation := loRemove;
+        FListType.ItemIndex := Message.WParam;
+      end;
       // Clear -> SendMessage(Handle, LB_RESETCONTENT, 0, 0);
       LB_RESETCONTENT: FListType.Operation := loClear;
       // PutObject -> SendMessage(Handle, LB_SETITEMDATA, Index, AData);
-      LB_SETITEMDATA: FListType.Operation := loPutObject;
+      // *** LB_SETITEMDATA: FListType.Operation := loPutObject;
     end;
     Changed;
   end;
@@ -456,13 +458,12 @@ var
 begin
   if Supports(Value, IVCLListType, vListType) then
   begin
-    with TCustomListBox(vListType.Control) do
-    begin
-      case vListType.Operation of
-        loAdd: AddItem(vListType.ItemText, nil);
-        loRefresh: TCustomListBox(Control).Items.Assign(
-          TCustomListBox(vListType.Control).Items);
-      end;
+    case vListType.Operation of
+      loAdd: TCustomListBox(Control).AddItem(vListType.ItemText, nil);
+      loRemove: TCustomListBox(Control).Items.Delete(vListType.ItemIndex);
+      loRefresh: TCustomListBox(Control).Items.Assign(
+        TCustomListBox(vListType.Control).Items);
+      loClear: TCustomListBox(Control).Clear;
     end;
   end;
 end;

@@ -100,18 +100,18 @@ procedure TForm1.FormActivate(Sender: TObject);
 var
   b: IBinding;
 begin
-//  bm.Add(Edit1, 'Text', Label1, 'Caption');
-//  bm.Add(Edit2, 'Text', Edit2, 'Color', TTextToColor.Create);
+  bm.Add(Edit1, 'Text', Label1, 'Caption');
+  bm.Add(Edit2, 'Text', Edit2, 'Color', TTextToColor.Create);
 
-//  bm.Add(Checkbox1, 'Checked', Checkbox1, 'Caption', TBooleanToText.Create);
-//  b := bm.Add(Checkbox2, 'Checked', Checkbox2, 'Caption', TBooleanToText.Create);
-//  b.ConverterParameter := TInfraString.NewFrom('Invisivel;Visivel');
-//  bm.Add(Checkbox3, 'Checked', Panel1, 'Visible');
+  bm.Add(Checkbox1, 'Checked', Checkbox1, 'Caption', TBooleanToText.Create);
+  b := bm.Add(Checkbox2, 'Checked', Checkbox2, 'Caption', TBooleanToText.Create);
+  b.ConverterParameter := TInfraString.NewFrom('Invisivel;Visivel');
+  bm.Add(Checkbox3, 'Checked', Panel1, 'Visible');
 
   bm.Add(ListBox1, 'Items', ListBox2, 'Items').TwoWay;
-//  bm.Add(ListBox3, 'Items', ListBox4, 'Items');
-//  bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
+  bm.Add(ListBox3, 'Items', ListBox4, 'Items');
 
+//  bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
 //  b := bm.Add(ListBox3, 'ItemIndex', Label13, 'Caption', TItemIndexToIntegerText.Create);
 //  b := bm.Add(ListBox3, 'ItemIndex', Label12, 'Caption', TItemIndexToText.Create);
 
