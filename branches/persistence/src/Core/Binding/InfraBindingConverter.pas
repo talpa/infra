@@ -136,11 +136,8 @@ end;
 function TItemIndexToIntegerText.RightToLeft(const Value,
   Parameter: IInfraType): IInfraType;
 var
-  vItems: TStrings;
   vListType: IVCLListType;
-  vIndex: Integer;
 begin
-  vItems := TStrings((Parameter as IInfraNativeObject).AsNativeObject);
   vListType := TVCLListType.Create;
   vListType.ItemIndex := StrToInt((Value as IInfraString).AsString);
   if vListType.ItemIndex <> -1 then
