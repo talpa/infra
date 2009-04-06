@@ -29,6 +29,7 @@ type
   TBinding = class(TElement, IBinding)
   private
     FActive: Boolean;
+    FUpdatingRight: Boolean;
     FName: String;
     FLeft, FRight: IBindable;
     FConverter: ITypeConverter;
@@ -114,6 +115,7 @@ begin
     Raise EInfraBindingError.Create(cErrorLeftBindableNotDefined);
   if not Assigned(Right) then
     Raise EInfraBindingError.Create(cErrorRightBindableNotDefined);
+  FUpdatingRight := False;
   FLeft := Left;
   FRight := Right;
   SetMode(bmLeftToRight);
@@ -183,12 +185,13 @@ procedure TBinding.UpdateLeft;
 var
   vRightValue: IInfraType;
 begin
+  if FRight.Updating then
+    Exit;
   vRightValue := FRight.Value;
-  if FMode = bmTwoWay then
+  if (FMode = bmTwoWay) then
   begin
     if Assigned(FConverter) then
       vRightValue := FConverter.ConvertToLeft(vRightValue, FConverterParameter);
-    // *** este erro deveria mostrar os nomes das propriedades que estamos amarrando
     if not Supports(FLeft.Value, vRightValue.TypeInfo.TypeID) then
       raise EInfraBindingError.CreateFmt(
         cErrorBindableValuesIncompatibles, [Name]);
@@ -203,11 +206,15 @@ begin
   vLeftValue := FLeft.Value;
   if Assigned(FConverter) then
     vLeftValue := FConverter.ConvertToRight(vLeftValue, FConverterParameter);
-  // *** este erro deveria mostrar os nomes das propriedades que estamos amarrando
   if not Supports(FRight.Value, vLeftValue.TypeInfo.TypeID) then
     raise EInfraBindingError.CreateFmt(
       cErrorBindableValuesIncompatibles, [Name]);
-  FRight.Value := vLeftValue
+  FRight.BeginUpdate;
+  try
+    FRight.Value := vLeftValue
+  finally
+    FRight.EndUpdate;
+  end;
 end;
 
 function TBinding.GetActive: Boolean;

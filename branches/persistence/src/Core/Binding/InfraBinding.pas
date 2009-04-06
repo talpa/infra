@@ -10,13 +10,16 @@ uses
 type
   TBindable = class(TElement, IBindable)
   private
-    FUpdating: boolean;
+    FUpdateCount: integer;
   protected
-    function IsUpdating: boolean;
+    function GetUpdating: boolean;
+    procedure BeginUpdate;
+    procedure EndUpdate;
     procedure Changed;
     function Support2Way: Boolean; virtual;
     function GetValue: IInfraType; virtual; abstract;
     procedure SetValue(const Value: IInfraType); virtual; abstract;
+    property Updating: boolean read GetUpdating;
   end;
 
   /// Serviço de Binding
@@ -34,20 +37,25 @@ uses
 
 { TBindable }
 
-procedure TBindable.Changed;
+procedure TBindable.BeginUpdate;
 begin
-  FUpdating := True;
-  try
-    if not Application.Terminated then
-      Publisher.Publish(TNotifyValueChanged.Create(Self) as INotifyValueChanged);
-  finally
-    FUpdating := False;
-  end;
+  Inc(FUpdateCount);
 end;
 
-function TBindable.IsUpdating: boolean;
+procedure TBindable.Changed;
 begin
-  Result := FUpdating;
+  if not Application.Terminated then
+    Publisher.Publish(TNotifyValueChanged.Create(Self) as INotifyValueChanged);
+end;
+
+procedure TBindable.EndUpdate;
+begin
+  Dec(FUpdateCount);
+end;
+
+function TBindable.GetUpdating: boolean;
+begin
+  Result := FUpdateCount > 0;
 end;
 
 function TBindable.Support2Way: Boolean;

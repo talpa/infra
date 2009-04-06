@@ -310,14 +310,17 @@ object Form1: TForm1
       object Label12: TLabel
         Left = 434
         Top = 133
-        Width = 263
+        Width = 55
         Height = 13
+        Alignment = taRightJustify
         AutoSize = False
+        Color = clInfoBk
         Font.Charset = DEFAULT_CHARSET
         Font.Color = 8404992
         Font.Height = -11
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
+        ParentColor = False
         ParentFont = False
       end
       object Label17: TLabel
@@ -371,6 +374,21 @@ object Form1: TForm1
         AutoSize = False
         Color = 8289918
         ParentColor = False
+      end
+      object Label13: TLabel
+        Left = 498
+        Top = 133
+        Width = 199
+        Height = 13
+        AutoSize = False
+        Color = clInfoBk
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 8404992
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
       end
       object ListBox1: TListBox
         Left = 2
