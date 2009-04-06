@@ -195,7 +195,12 @@ begin
     if not Supports(FLeft.Value, vRightValue.TypeInfo.TypeID) then
       raise EInfraBindingError.CreateFmt(
         cErrorBindableValuesIncompatibles, [Name]);
-    FLeft.Value := vRightValue;
+    FLeft.BeginUpdate;
+    try
+      FLeft.Value := vRightValue;
+    finally
+      FLeft.EndUpdate;
+    end;
   end;
 end;
 
@@ -203,6 +208,8 @@ procedure TBinding.UpdateRight;
 var
   vLeftValue: IInfraType;
 begin
+  if FLeft.Updating then
+    Exit;
   vLeftValue := FLeft.Value;
   if Assigned(FConverter) then
     vLeftValue := FConverter.ConvertToRight(vLeftValue, FConverterParameter);
