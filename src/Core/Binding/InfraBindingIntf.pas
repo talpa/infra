@@ -34,6 +34,10 @@ type
     ['{91B97C6D-6F56-462E-941B-C7E236E71F26}']
   end;
 
+  IBindableInfraList = interface(IBindable)
+    ['{A6DC67DE-E637-400A-A372-2BC57C47D9A4}']
+  end;
+
   IBindableVCLProperty = interface(IBindable)
     ['{36236C4B-607B-4287-8D0E-A617832F17CC}']
     function GetControl: TControl;
@@ -110,14 +114,17 @@ type
     ['{FAAFAA1A-9CCD-4FEA-BDE2-A7D74C3013EF}']
     function GetOperation: TListOperation;
     function GetControl: TControl;
+    function GetInfraValue: IInfraType;
     function GetItemIndex: integer;
     function GetItemText: String;
     procedure SetControl(Value: TControl);
+    procedure SetInfraValue(Value: IInfraType);
     procedure SetItemIndex(Value: integer);
     procedure SetItemText(const Value: String);
     procedure SetOperation(const Value: TListOperation);
     procedure Clear;
     property Control: TControl read GetControl write SetControl;
+    property InfraValue: IInfraType read GetInfraValue write SetInfraValue;
     property ItemIndex: integer read GetItemIndex write SetItemIndex;
     property ItemText: String read GetItemText write SetItemText;
     property Operation: TListOperation read GetOperation write SetOperation;

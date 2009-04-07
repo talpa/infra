@@ -14,6 +14,7 @@ type
   TVCLListType = class(TInfraType, IVCLListType)
   private
     FControl: TControl;
+    FInfraValue: IInfraType;
     FItemIndex: Integer;
     FItemText: String;
     FOperation: TListOperation;
@@ -21,14 +22,17 @@ type
     procedure Assign(const Source: IInfraType); override;
     function GetOperation: TListOperation;
     function GetControl: TControl;
+    function GetInfraValue: IInfraType;
     function GetItemIndex: integer;
     function GetItemText: String;
     procedure SetControl(Value: TControl);
+    procedure SetInfraValue(Value: IInfraType);
     procedure SetItemIndex(Value: integer);
     procedure SetItemText(const Value: String);
     procedure SetOperation(const Value: TListOperation);
     procedure Clear; override;
     property Control: TControl read GetControl write SetControl;
+    property InfraValue: IInfraType read GetInfraValue write SetInfraValue;
     property ItemIndex: integer read GetItemIndex write SetItemIndex;
     property ItemText: String read GetItemText write SetItemText;
     property Operation: TListOperation read GetOperation write SetOperation;
@@ -59,6 +63,14 @@ type
   end;
 
   TItemIndexToIntegerText = class(TTypeConverter)
+  protected
+    function LeftToRight(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+    function RightToLeft(const Value: IInfraType;
+      const Parameter: IInfraType = nil): IInfraType; override;
+  end;
+
+  TInfraListToText = class(TTypeConverter)
   protected
     function LeftToRight(const Value: IInfraType;
       const Parameter: IInfraType = nil): IInfraType; override;
@@ -143,6 +155,34 @@ begin
   Result := vListType;
 end;
 
+{ TInfraListToText }
+
+function TInfraListToText.LeftToRight(const Value,
+  Parameter: IInfraType): IInfraType;
+var
+  vIterator: Integer;
+  vVCLListType: IVCLListType;
+begin
+  vVCLListType := Value as IVCLListType;
+  case vVCLListType.Operation of
+    loRefresh:
+      for vIterator := 0 to (vVCLListType.InfraValue as IInfraList).Count - 1 do
+        vVCLListType.ItemText := vVCLListType.ItemText +
+        (((vVCLListType.InfraValue as IInfraList)[vIterator] as IInfraObject).GetProperty((Parameter as IInfraString).AsString) as IInfraString).AsString +
+        #13 + #10;
+    loAdd: vVCLListType.ItemText := ((vVCLListType.InfraValue as IInfraObject).GetProperty((Parameter as IInfraString).AsString) as IInfraString).AsString;
+    loClear: ;
+    loRemove: ;
+  end;
+  Result := Value;
+end;
+
+function TInfraListToText.RightToLeft(const Value,
+  Parameter: IInfraType): IInfraType;
+begin
+
+end;
+
 { TVCLListType }
 
 procedure TVCLListType.Assign(const Source: IInfraType);
@@ -173,6 +213,11 @@ begin
   Result := FControl;
 end;
 
+function TVCLListType.GetInfraValue: IInfraType;
+begin
+  Result := FInfraValue;
+end;
+
 function TVCLListType.GetItemIndex: integer;
 begin
   Result := FItemIndex;
@@ -191,6 +236,11 @@ end;
 procedure TVCLListType.SetControl(Value: TControl);
 begin
   FControl := Value;
+end;
+
+procedure TVCLListType.SetInfraValue(Value: IInfraType);
+begin
+  FInfraValue := Value;
 end;
 
 procedure TVCLListType.SetItemIndex(Value: integer);

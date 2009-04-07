@@ -462,8 +462,7 @@ begin
     case vListType.Operation of
       loAdd: TCustomListBox(Control).AddItem(vListType.ItemText, nil);
       loRemove: TCustomListBox(Control).Items.Delete(vListType.ItemIndex);
-      loRefresh: TCustomListBox(Control).Items.Assign(
-        TCustomListBox(vListType.Control).Items);
+      loRefresh: TCustomListBox(Control).Items.Text := vListType.ItemText;
       loClear: TCustomListBox(Control).Clear;
     end;
   end;

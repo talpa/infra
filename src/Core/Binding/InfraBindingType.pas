@@ -24,10 +24,24 @@ type
       const pPropertyPath: string): IBindable;
   end;
 
+  TBindableInfraList = class(TBindableInfraType, IBindableInfraList)
+  private
+    FListType: IVCLListType;
+  protected
+    function GetValue: IInfraType; override;
+    procedure SetValue(const Value: IInfraType); override;
+    procedure ItemAdded(const Event: IInfraEvent);
+    procedure ItemRemove(const Event: IInfraEvent);    
+    procedure ItemsClear(const Event: IInfraEvent);
+  public
+    constructor Create(const pProperty: IProperty); reintroduce;  
+  end;
+
 implementation
 
 uses
-  SysUtils;
+  SysUtils,
+  InfraBindingConverter;
 
 { TBindableInfraType }
 
@@ -51,7 +65,10 @@ begin
   begin
     vProperty := vObject.GetProperty(pPropertyPath);
     // *** teria de gerar exceção quando o infraobject nao possuir a propriedade?
-    Result := TBindableInfraType.Create(vProperty);
+    if Supports(vProperty, IInfraList) then
+      Result := TBindableInfraList.Create(vProperty)
+    else
+      Result := TBindableInfraType.Create(vProperty);
   end;
 end;
 
@@ -81,6 +98,51 @@ var
 begin
   vSource := Event.Source as IInfraType;
   Result := vSource = FInfraType;
+end;
+
+{ TBindableInfraList }
+
+constructor TBindableInfraList.Create(const pProperty: IProperty);
+begin
+  inherited Create(pProperty);
+  EventService.Subscribe(IInfraAddItemEvent, Self as ISubscriber,
+    ItemAdded, EmptyStr, ValueChangedFilter);
+  EventService.Subscribe(IInfraClearListEvent, Self as ISubscriber,
+    ItemsClear, EmptyStr, ValueChangedFilter);
+  EventService.Subscribe(IInfraRemoveItemEvent, Self as ISubscriber,
+    ItemRemove, EmptyStr, ValueChangedFilter);
+
+  FListType := TVCLListType.Create;
+  FListType.Operation := loRefresh;
+  FListType.InfraValue := FInfraType;
+end;
+
+function TBindableInfraList.GetValue: IInfraType;
+begin
+  Result := FListType;
+end;
+
+procedure TBindableInfraList.SetValue(const Value: IInfraType);
+begin
+  FListType := Value as IVCLListType;
+end;
+
+procedure TBindableInfraList.ItemAdded(const Event: IInfraEvent);
+begin
+  FListType.Operation := loAdd;
+  FListType.InfraValue := (Event as IInfraAddItemEvent).NewItem as IInfraObject;
+end;
+
+procedure TBindableInfraList.ItemRemove(const Event: IInfraEvent);
+begin
+  FListType.Operation := loRemove;
+  FListType.ItemIndex := (Event as IInfraRemoveItemEvent).ItemIndex;
+end;
+
+procedure TBindableInfraList.ItemsClear(const Event: IInfraEvent);
+begin
+  FListType.Operation := loClear;
+  FListType.InfraValue := FInfraType;
 end;
 
 end.
