@@ -133,4 +133,31 @@ object Form1: TForm1
     ParentCtl3D = False
     TabOrder = 7
   end
+  object Button4: TButton
+    Left = 344
+    Top = 128
+    Width = 105
+    Height = 25
+    Caption = 'Add Employee'
+    TabOrder = 8
+    OnClick = Button4Click
+  end
+  object Button5: TButton
+    Left = 456
+    Top = 128
+    Width = 75
+    Height = 25
+    Caption = 'Clear'
+    TabOrder = 9
+    OnClick = Button5Click
+  end
+  object Button6: TButton
+    Left = 368
+    Top = 160
+    Width = 145
+    Height = 25
+    Caption = 'Delete selected'
+    TabOrder = 10
+    OnClick = Button6Click
+  end
 end
