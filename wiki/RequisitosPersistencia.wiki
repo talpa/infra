@@ -41,3 +41,4 @@
    q.setMaxResults(10);
    List cats = q.list();
    }}}
+ * suportar multiplos bancos ao mesmo tempo. dá uma olhada no burow, parece que ele trata até controle transacional por negócio - http://nhforge.org/wikis/burrow/introduction.aspx
