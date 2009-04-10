@@ -23,14 +23,21 @@
  * suportar consultas baseado em criteria;
  * suportar agregações baseado em criteria sum, count, avg, etc...;
  * suportar consultas informando a sql diretamente, como "namedqueries" do hibernate;
-  {{{
-  Query query = session.getNamedQuery("tracksNoLongerThan");
-  query.setTime("length", length);
-  return query.list();
-  }}}
+   {{{
+   Query query = session.getNamedQuery("tracksNoLongerThan");
+   query.setTime("length", length);
+   return query.list();
+   }}}
  * suportar consultas baseadas em hql ou oql - Infra Query Language;
  * suporte a bancos legados: chaves compostas e uso de storedprocedures;
  * suportar geração do banco de dados baseado no mapeamento. geração do schema;
  * geração de eventos antes e após de certas tarefas. PostUpdate, PostLoad, PreLoad, PreUpdate, etc...;
  * versionamento de objetos;
  * suportar um pool de conexões para evitar abrir várias conexões com o banco sem necessidade;
+ * suporte a paginação de registro
+   {{{
+   Query q = sess.createQuery("from DomesticCat cat");
+   q.setFirstResult(20);
+   q.setMaxResults(10);
+   List cats = q.list();
+   }}}
