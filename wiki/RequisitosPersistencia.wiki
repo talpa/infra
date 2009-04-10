@@ -36,7 +36,7 @@
  * suportar um pool de conexões para evitar abrir várias conexões com o banco sem necessidade;
  * suporte a paginação de registro
    {{{
-   Query q = sess.createQuery("from DomesticCat cat");
+   Query q = session.getNamedQuery("DomesticCats");
    q.setFirstResult(20);
    q.setMaxResults(10);
    List cats = q.list();
