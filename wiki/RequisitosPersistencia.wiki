@@ -44,10 +44,10 @@
  * suportar multiplos bancos ao mesmo tempo. dá uma olhada no burow, parece que ele trata até controle transacional por negócio - http://nhforge.org/wikis/burrow/introduction.aspx
  * Adicionar algum esquema de Log dentro do framework para facilitar depuração. isso vai mostrar a ordem e o momento da execução das SQL's e outras coisas. Talvez possamos usar o http://log4delphi.sourceforge.net/;
  * Suportar mapeamento de formulas, ou seja, atributos que são resultados de cálculos entre campos ou subselects;
-  {{
+  {{{
   Collumn{ Name="TotalIncludingTax", formula="TOTAL + TAX_RATE * TOTAL", type="Double"
 
   ou ainda
 
   Collumn{ Name="AverageBidAmount", formula="( select AVG(b.AMOUNT) from BID b where b.ITEM_ID = ITEM_ID )", type="Double"
-  }}
+  }}}
