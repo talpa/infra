@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 374
-  Top = 46
+  Left = 308
+  Top = 127
   Width = 732
   Height = 477
   Caption = 'Binding entre Controles VCL'
@@ -15,7 +15,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   DesignSize = (
     724
-    443)
+    450)
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
@@ -23,7 +23,7 @@ object Form1: TForm1
     Top = 4
     Width = 714
     Height = 435
-    ActivePage = TabSheet3
+    ActivePage = TabSheet4
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 0
     object TabSheet1: TTabSheet
@@ -108,6 +108,22 @@ object Form1: TForm1
         AutoSize = False
         Color = 3947580
         ParentColor = False
+      end
+      object Label34: TLabel
+        Left = 5
+        Top = 15
+        Width = 701
+        Height = 12
+        Alignment = taCenter
+        AutoSize = False
+        Caption = 'Tratando ListBoxes'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        Transparent = True
       end
       object Edit1: TEdit
         Left = 64
@@ -615,6 +631,12 @@ object Form1: TForm1
         Height = 76
         Ctl3D = False
         ItemHeight = 13
+        Items.Strings = (
+          'fusca'
+          'uno mille'
+          'fox'
+          'vectra'
+          'ferrari')
         ParentCtl3D = False
         TabOrder = 5
       end
@@ -673,6 +695,152 @@ object Form1: TForm1
         ParentCtl3D = False
         TabOrder = 11
         Text = 'Edit5'
+      end
+    end
+    object TabSheet4: TTabSheet
+      Caption = 'TabSheet4'
+      ImageIndex = 3
+      DesignSize = (
+        706
+        407)
+      object Label31: TLabel
+        Left = 2
+        Top = 3
+        Width = 701
+        Height = 11
+        AutoSize = False
+        Color = 9276813
+        ParentColor = False
+      end
+      object Label32: TLabel
+        Left = 2
+        Top = 14
+        Width = 701
+        Height = 12
+        AutoSize = False
+        Color = 5197647
+        ParentColor = False
+      end
+      object Label35: TLabel
+        Left = 2
+        Top = 7
+        Width = 701
+        Height = 12
+        Alignment = taCenter
+        AutoSize = False
+        Caption = 'Tratando ListBoxes'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        Transparent = True
+      end
+      object Label33: TLabel
+        Left = 10
+        Top = 289
+        Width = 93
+        Height = 13
+        Caption = 'O item selecionado:'
+      end
+      object Label36: TLabel
+        Left = 112
+        Top = 289
+        Width = 121
+        Height = 13
+        AutoSize = False
+        Color = clInfoBk
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 8404992
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
+      object Label37: TLabel
+        Left = 240
+        Top = 289
+        Width = 39
+        Height = 13
+        Alignment = taRightJustify
+        AutoSize = False
+        Color = clInfoBk
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 8404992
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
+      object Memo4: TMemo
+        Left = 2
+        Top = 32
+        Width = 701
+        Height = 209
+        Anchors = [akLeft, akTop, akRight]
+        Color = clInfoBk
+        Ctl3D = False
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Lines.Strings = (
+          '1) ListBox1.Items -> ListBox2.Items - 2Way'
+          
+            '    Quando adiciona/remove/clear um novo item no ListBox1 ou Lis' +
+            'tBox2 automaticamente '#233' adicionado no ListBox '
+          'contr'#225'rio'
+          '2) ListBox3.Items -> ListBox4.Items'
+          '    Os items do ListBox3 aparecem no ListBox4'
+          '3) ListBox3.ItemIndex -> ListBox4.ItemIndex'
+          
+            '    Ao selecionar um item no ListBox3 o mesmo item '#233' selecionado' +
+            'ListBox4'
+          '4) ListBox3.ItemIndex -> Label12.Caption  -  TItemIndexToText'
+          
+            '    O Label12.Caption mostra o valor do item selecionado no List' +
+            'Box3'
+          
+            '5) ListBox3.ItemIndex -> Edit4.Text   -   TItemIndexToText   -  ' +
+            '2Way;'
+          
+            '    Ao por um texto no Edit4 e sair do mesmo o item corresponden' +
+            'te '#233' selecionado no ListBox3.'
+          
+            '6) ListBox4.ItemIndex -> Label13.Caption  -  TItemIndexToInteger' +
+            'Text'
+          
+            '    O Label13.Caption mostra o index do item selecionado no List' +
+            'Box4'
+          
+            '7) ListBox4.ItemIndex -> Edit5.Text   -   TItemIndexToIntegerTex' +
+            'te   -  2Way;'
+          
+            '    Ao por um numero no Edit4 e sair do mesmo o itemindex do Lis' +
+            'tBox4 '#233' modificado.')
+        ParentCtl3D = False
+        ParentFont = False
+        ReadOnly = True
+        TabOrder = 0
+      end
+      object ComboBox1: TComboBox
+        Left = 16
+        Top = 256
+        Width = 145
+        Height = 21
+        ItemHeight = 13
+        TabOrder = 1
+        Text = 'ComboBox1'
+        Items.Strings = (
+          'fusca'
+          'uno mille'
+          'fox'
+          'vectra'
+          'ferrari')
       end
     end
   end
