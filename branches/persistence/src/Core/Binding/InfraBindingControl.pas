@@ -473,7 +473,7 @@ end;
 class function TBindableItemIndex.CreateIfSupports(pControl: TControl;
   const pPropertyPath: string): IBindableVCLProperty;
 begin
-  if (pControl is TCustomListBox) and
+  if (pControl is TCustomListControl) and
     AnsiSameText(pPropertyPath, 'ItemIndex') then
     Result := Self.Create(pControl)
   else
@@ -524,8 +524,8 @@ begin
     or (Message.Msg = LB_SETCURSEL) then
   begin
     FListType.Operation := loSelectionChange;
-    FListType.ItemIndex := TCustomListBox(FControl).ItemIndex;
-    FListType.ItemText := TCustomListBox(FControl).Items[FListType.ItemIndex];
+    FListType.ItemIndex := TCustomListControl(FControl).ItemIndex;
+//    FListType.ItemText := TCustomListControl(FControl). Items[FListType.ItemIndex];
     Changed;
   end;
 end;

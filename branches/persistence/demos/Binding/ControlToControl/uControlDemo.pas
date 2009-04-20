@@ -69,6 +69,16 @@ type
     Label28: TLabel;
     Label29: TLabel;
     Label30: TLabel;
+    TabSheet4: TTabSheet;
+    Label31: TLabel;
+    Label32: TLabel;
+    Label34: TLabel;
+    Label35: TLabel;
+    Memo4: TMemo;
+    Label33: TLabel;
+    Label36: TLabel;
+    Label37: TLabel;
+    ComboBox1: TComboBox;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -131,6 +141,8 @@ begin
 
   b := bm.Add(ListBox4, 'ItemIndex', Label13, 'Caption', TItemIndexToIntegerText.Create);
   b := bm.Add(ListBox4, 'ItemIndex', Edit5, 'Text', TItemIndexToIntegerText.Create).TwoWay;
+
+  bm.Add(ComboBox1, 'ItemIndex', Label36, 'Caption', TItemIndexToText.Create);
 
   bm.Active := True;
 end;
