@@ -16,22 +16,22 @@ begin
   with TypeService do
   begin
     AddType(IInfraType, 'InfraType', TInfraType, IElement);
-    AddType(IInfraBoolean, 'InfraBoolean', TInfraBoolean, IInfraType);
-    AddType(IInfraDate, 'InfraDate', TInfraDate, IInfraType);
-    AddType(IInfraDateTime, 'InfraDateTime', TInfraDateTime, IInfraType);
-    AddType(IInfraDouble, 'InfraDouble', TInfraDouble, IInfraType);
+    AddType(IInfraBoolean, 'InfraBoolean', TInfraBoolean, IInfraBoolean);
+    AddType(IInfraDate, 'InfraDate', TInfraDate, IInfraDate);
+    AddType(IInfraDateTime, 'InfraDateTime', TInfraDateTime, IInfraDateTime);
+    AddType(IInfraDouble, 'InfraDouble', TInfraDouble, IInfraDouble);
     AddType(IInfraEnumeration, 'InfraEnumeration', TInfraEnumeration,
-      IInfraType);
-    AddType(IInfraInteger, 'InfraInteger', TInfraInteger, IInfraType);
-    AddType(IInfraList, 'InfraList', TInfraList, IInfraType);
-    AddType(IInfraMap, 'InfraMap', TInfraMap, IInfraType);
+      IInfraEnumeration);
+    AddType(IInfraInteger, 'InfraInteger', TInfraInteger, IInfraInteger);
+    AddType(IInfraList, 'InfraList', TInfraList, IInfraList);
+    AddType(IInfraMap, 'InfraMap', TInfraMap, IInfraMap);
     AddType(IInfraNativeObject, 'InfraNativeObject', TInfraNativeObject,
-      IInfraType);
-    AddType(IInfraObject, 'InfraObject', TInfraObject, IInfraType);
-    AddType(IInfraStream, 'InfraStream', TInfraStream, IInfraType);
-    AddType(IInfraString, 'InfraString', TInfraString, IInfraType);
-    AddType(IInfraTime, 'InfraTime', TInfraTime, IInfraType);
-    AddType(IInfraVariant, 'InfraVariant', TInfraVariant, IInfraType);
+      IInfraNativeObject);
+    AddType(IInfraObject, 'InfraObject', TInfraObject, IInfraObject);
+    AddType(IInfraStream, 'InfraStream', TInfraStream, IInfraStream);
+    AddType(IInfraString, 'InfraString', TInfraString, IInfraString);
+    AddType(IInfraTime, 'InfraTime', TInfraTime, IInfraTime);
+    AddType(IInfraVariant, 'InfraVariant', TInfraVariant, IInfraVariant);
   end;
 end;
 

@@ -59,7 +59,7 @@ type
 
 implementation
 
-uses InfraCriteria;
+uses List_Criterion, InfraCriteria;
 
 { TRestrictions }
 

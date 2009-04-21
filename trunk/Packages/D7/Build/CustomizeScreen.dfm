@@ -1,6 +1,6 @@
 object CustomizeScreen: TCustomizeScreen
-  Left = 671
-  Top = 134
+  Left = 374
+  Top = 35
   Width = 727
   Height = 557
   Caption = 'Customize screen'

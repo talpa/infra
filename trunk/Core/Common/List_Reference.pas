@@ -19,7 +19,6 @@ type
   _ITERATOR_INTF_ = IInterface;                   // List's Interface Implementing
   _INDEX_ = Pointer;                              // List's Item Index
   _VALUE_ = Pointer;                              // List's Item Valeu
-
   {$I ..\Templates\InfraTempl_ListDynIndex.inc}
   end;
 

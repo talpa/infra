@@ -114,6 +114,7 @@ type
       const pOID: IInfraType): IInfraType; overload;
     function Load(const pInstanceToLoad: IInfraType;
       const pOID: IInfraType): IInfraType; overload;
+    procedure Delete(const pObject: IInfraType);
     procedure SetConnection(const Value: IZConnection);
     function CreateCriteria(const pTypeID: TGUID): ICriteria; overload;
     function CreateCriteria(const pTypeInfo: IClassInfo): ICriteria; overload;
@@ -131,8 +132,43 @@ type
     function GetIdentifierColumns: IMemberInfoList;
     function GetAllColumns: IMemberInfoList;
     function GetSQLSnapshotSelectString: string;
+    function GetSQLSnapshotDeleteString: string;
     property PersistentClass: IPersistentClass read GetPersistentClass;
     property SQLSnapshotSelectString: string read GetSQLSnapshotSelectString;
+    property SQLSnapshotDelectString: string read GetSQLSnapshotDeleteString;
+  end;
+
+  // Ações de persistencia
+  IEntityAction = interface(IBaseElement)
+    ['{83C73BE0-7AC5-4CF2-B9C7-B07B9E7957C8}']
+    function GetSession: ISession;
+    function GetPersister: IEntityPersister;
+    function GetInstance: IInfraType;
+    function GetOID: IInfraType;
+   end;
+
+  // Ação de deleção
+  IEntityDeleteAction = interface(IEntityAction)
+    ['{3EA4F6D5-1828-40E1-A7AE-9AA70A32278B}']
+     procedure execute;
+  end;
+
+  // Lista de ações de persistencia
+  IEntityActionList = interface(IBaseElement)
+    ['{541A4F62-F13B-4DFA-9456-2CBA7E4563F7}']
+    function Add(const Item: IEntityAction): Integer;
+    function First: IEntityAction;
+    function GetCount: Integer;
+    function GetItem(Index: Integer): IEntityAction;
+    function IndexOf(const Item: IEntityAction): Integer;
+    function Last: IEntityAction;
+    procedure Clear;
+    procedure Delete(Index: Integer);
+    procedure Insert(Index: Integer; const Item: IEntityAction);
+    procedure SetItem(Index: Integer; const TypeInfo: IEntityAction);
+    property Count: Integer read GetCount;
+    property Items[Index: Integer]: IEntityAction read GetItem
+    write SetItem; default;
   end;
 
   // Map de EntityPersisters
@@ -271,10 +307,31 @@ type
     procedure SetWhereClause(const Value: String); overload;
   end;
 
+  IDeleteBuilder   = interface
+    ['{FD1DEBA9-BB94-43CC-B976-B61B74E5F527}']
+    procedure SetTableName(const pTableName: String);
+    procedure SetWhere(const Value: String);
+    procedure setPrimaryKeyColumnNames(const Value: String);
+    function toStatementString: String;
+  end;
+
   TStringHelper = class
     class function StartsWith(const Value, pFragment: string): boolean;
     class function Substring(const Value: string; pCount: integer): string;
     class function Join(const pSeparator: string; pList: TStrings): string;
+  end;
+
+  TPersistentStateKind = (osClean, osDirty, osDeleted);
+
+  IPersistentState = interface
+    ['{3FA101F8-097F-4875-93A6-AA39F6F6D8BE}']
+    function GetIsPersistent: Boolean;
+    function GetState: TPersistentStateKind;
+    procedure SetIsPersistent(Value: Boolean);
+    procedure SetState(Value: TPersistentStateKind);
+    property IsPersistent: Boolean read GetIsPersistent write SetIsPersistent;
+    property State: TPersistentStateKind read GetState
+      write SetState;
   end;
 
 function PersistenceService: IPersistenceService;
@@ -320,6 +377,3 @@ initialization
   InfraHibernateRegister.RegisterOnReflection;
 
 end.
-
-
-
