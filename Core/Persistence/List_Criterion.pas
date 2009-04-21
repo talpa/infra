@@ -19,7 +19,7 @@ type
   {$I ..\Templates\InfraTempl_IntfList.inc}
   end;
 
-  TCriterionList = class(_ITERABLELIST_);
+  TCriterionList = class(_ITERABLELIST_, ICriterionList);
 
 implementation
 

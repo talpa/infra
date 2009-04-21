@@ -1,9 +1,14 @@
-{
+(*
 
   Generic to list with any element as Index. See List_Reference.pas to sample.
 
   To use this generic, you must set a few things before the include. Define:
 
+  {$DEFINE EQUAL_INDEX_DEFAULT}
+  {$DEFINE EQUAL_VALUE_DEFAULT}
+  {$DEFINE INVALID_INDEX_DEFAULT}
+  {$DEFINE INVALID_VALUE_DEFAULT}
+  {$DEFINE ITEMS_INDEX_DEFAULT}    
   type
     _ITERABLELIST_BASE_ = TAnyThingClass;           // List's Class Base
     _ITERABLELIST_INTF_ = IAnyThingInterface;       // List's Interface Implementing
@@ -20,7 +25,8 @@
     // Define the include file again, now to get the implementation.
     // you can put specific methods implementatios here
   end;
-}
+*)
+
 {$IFNDEF SECOND_PASS}
   _ITEM_ = class(TObject)
   private
@@ -80,13 +86,19 @@
     function PositionOf(Index: _INDEX_; Value: _VALUE_): integer;
     function ValueOfPosition(Index: Integer): _VALUE_;
     function IndexOfPosition(Index: Integer): _INDEX_;
-    constructor Create; overload; override; 
+    constructor Create; overload; override;
     destructor Destroy; override;
     property Count: Integer read GetCount;
+    {$IFDEF ITEMS_INDEX_DEFAULT}
     property Items[Index: _INDEX_]: _VALUE_ read GetItem write SetItem; default;
+    {$ELSE}
+    property Items[Index: _INDEX_]: _VALUE_ read GetItem write SetItem;
+    {$ENDIF}
 {$DEFINE SECOND_PASS}
 {$ELSE}
+
 { _ITEM_ }
+
 constructor _ITEM_.Create(pIndex: _INDEX_; pValue: _VALUE_);
 begin
   inherited Create;

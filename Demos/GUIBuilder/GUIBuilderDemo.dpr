@@ -123,9 +123,7 @@ begin
   lItem.ControlClass := TComboBox;
   lItem.PutAfter := 'Address';
 
-
-  
-  //Build ----------------------------------------------------------------------
+  // GUIService.RegisterGUIMapping(TcxTextEdit, IInfraString, 'Text');
   GUIService.Build(lPerson, lGUIPersonSimple);
   GUIService.Build(lPerson, lGUIPerson);
   GUIService.Build(lPerson);

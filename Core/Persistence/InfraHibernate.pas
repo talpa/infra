@@ -67,7 +67,7 @@ type
   private
     FConfiguration: IConfiguration;
     FConnectionProvider: IConnectionProvider;
-    //FDialect: IDialect;
+    // *** FDialect: IDialect;
     FEntityPersisters: IEntityPersisters;
     function GetConnectionProvider: IConnectionProvider;
     function GetDialect: IDialect;
@@ -94,6 +94,7 @@ type
       const pOID: IInfraType): IInfraType; overload;
     function Load(const pInstanceToLoad: IInfraType;
       const pOID: IInfraType): IInfraType; overload;
+    procedure Delete(const pObject: IInfraType);
     procedure SetConnection(const Value: IZConnection);
     function CreateCriteria(const pTypeID: TGUID): ICriteria; overload;
     function CreateCriteria(const pTypeInfo: IClassInfo): ICriteria; overload;
@@ -134,13 +135,16 @@ type
     FEntityLoader: IEntityLoader;
     FSessionFactory: ISessionFactory;
     FSQLSnapshotSelectString: string;
+    FSQLSnapshotDeleteString: string;
+    FIdentifierColumnNames: TStrings;
     function GetPersistentClass: IPersistentClass;
     function GetSQLSnapshotSelectString: string;
+    function GetSQLSnapshotDeleteString: string;
     function GetColumnName(const pPropertyInfo: IPropertyInfo): string;
     function ConcretePropertySelectFragment: string;
     procedure LoadColumns;
-    function getIdentifierColumnNames: TStrings;
     function GenerateSnapshotSelectString: string;
+    function GenerateSnapshotDeleteString: string;
     function GetAllColumns: IMemberInfoList;
     function GetIdentifierColumns: IMemberInfoList;
   protected
@@ -149,16 +153,66 @@ type
     function Instantiate(const pOID: IInfraType): IInfraType;
     property PersistentClass: IPersistentClass read GetPersistentClass;
     property SQLSnapshotSelectString: string read GetSQLSnapshotSelectString;
+    property SQLSnapshotDeleteString: string read GetSQLSnapshotDeleteString;
   public
     constructor Create(const pEntityInfo: IClassInfo;
       const pSessionFactory: ISessionFactory); reintroduce;
+    destructor Destroy; override;
+  end;
+
+  TPersistentState = class(TBaseElement, IPersistentState)
+  private
+    FState: TPersistentStateKind;
+    FIsPersistent: Boolean;
+  protected
+    function GetIsPersistent: Boolean;
+    function GetState: TPersistentStateKind;
+    procedure SetIsPersistent(Value: Boolean);
+    procedure SetState(Value: TPersistentStateKind);
+    property IsPersistent: Boolean read GetIsPersistent write SetIsPersistent;
+    property State: TPersistentStateKind read GetState
+      write SetState;
+  end;
+
+  // Base class for actions relating to insert/update/delete of an entity instance.
+  TEntityAction  = class(TBaseElement, IEntityAction)
+  private
+    FSession: ISession;
+    Fpersister: IEntityPersister;
+    FInstance: IInfraType;
+    FOID: IInfraType;
+    function GetPersister: IEntityPersister;
+    function GetSession: ISession;
+    function GetInstance: IInfraType;
+    function GetOID: IInfraType ;
+  protected
+   property Session: ISession read GetSession;
+   property Persister: IEntityPersister read GetPersister;
+   property Instance: IInfraType read GetInstance;
+   property OID: IInfraType read GetOid;
+  public
+   constructor Create(const pSession: ISession;
+     const pPersister: IEntityPersister; const pInstance: IInfraType;
+     const pOID :IInfraType); reintroduce;
+  end;
+
+  TEntityDeleteAction = class(TEntityAction, IEntityDeleteAction)
+  private
+    FIsCascadeDeleteEnabled: Boolean;
+    FVersion: IInfraType;
+  protected
+    property IsCascadeDeleteEnabled: Boolean read FisCascadeDeleteEnabled
+      write FisCascadeDeleteEnabled;
+    property Version: IInfraType read FVersion write FVersion;
+  public
+    procedure Execute;
   end;
 
 implementation
 
 uses
   SysUtils, List_MemberInfo, InfraHibernateAnnotationIntf, List_EntityPersister, InfraConsts,
-  List_Criterion, InfraValueType, InfraCriteria, InfraSQLBuilder;
+  InfraValueType, InfraSQLBuilder;
 
 // *** acho que nao precisamos desta classe
 type
@@ -417,12 +471,21 @@ end;
 
 function TSession.CreateCriteria(const pTypeInfo: IClassInfo): ICriteria;
 begin
-  Result := TCriteria.Create(pTypeInfo, Self);
+  // *** Result := TCriteria.Create(pTypeInfo, Self);
 end;
 
 function TSession.List(const Criteria: ICriteria): IInfraList;
 begin
 
+end;
+
+// Dispara o delete
+procedure TSession.Delete(const pObject: IInfraType);
+begin  
+  // Procura o object no session
+  // Se existe e status nao está deletado
+  //   pega o persister e o id do entityentry
+  //   chama DeleteEntity(pObject, persister)
 end;
 
 { TEntityLoader }
@@ -614,11 +677,14 @@ begin
   FIdentifierColumns := TMemberInfoList.Create;
   FAllColumns := TMemberInfoList.Create;
   vPropIterator := FPersistentClass.EntityTypeInfo.GetProperties;
+  FIdentifierColumnNames := TStringList.Create;
   while not vPropIterator.IsDone do
   begin
     if FPersistentClass.IsIdentifierColumn(vPropIterator.CurrentItem) then
-      FIdentifierColumns.Add(vPropIterator.CurrentItem)
-    else
+    begin
+      FIdentifierColumns.Add(vPropIterator.CurrentItem);
+      FIdentifierColumnNames.Add(GetColumnName(vPropIterator.CurrentItem));
+    end else
       FColumns.Add(vPropIterator.CurrentItem);
     FAllColumns.Add(vPropIterator.CurrentItem);
     vPropIterator.Next;
@@ -643,24 +709,26 @@ begin
   Result := FSQLSnapshotSelectString;
 end;
 
+function TEntityPersister.GetSQLSnapshotDeleteString: string;
+begin
+  if (FSQLSnapshotDeleteString = EmptyStr) then
+    FSQLSnapshotDeleteString := GenerateSnapshotDeleteString;
+  Result := FSQLSnapshotDeleteString;
+end;
+
 function TEntityPersister.GenerateSnapshotSelectString: string;
 var
   vSelect: ISelectBuilder;
   vSelectClause, vFromClause, vWhereClause: string;
-  vIdColumns: TStrings;
 begin
   vSelect := TSelectBuilder.Create(FSessionFactory.Dialect);
   with vSelect do
   begin
-    vIdColumns := getIdentifierColumnNames;
-    try
-      vSelectClause := TStringHelper.Join(',', vIdColumns) + ',' +
-        ConcretePropertySelectFragment;
+    vSelectClause := TStringHelper.Join(',',
+      FIdentifierColumnNames) + ',' + ConcretePropertySelectFragment;
       vFromClause := FPersistentClass.GetEntityName;
-      vWhereClause := TStringHelper.Join('=? and ', vIdColumns) + '=?';
-    finally
-      vIdColumns.Free;
-    end;
+    vWhereClause := TStringHelper.Join('=? and ',
+      FIdentifierColumnNames) + '=?';
     SetSelectClause(vSelectClause);
     SetFromClause(vFromClause);
     SetOuterJoins(EmptyStr, EmptyStr);
@@ -669,17 +737,26 @@ begin
   end;
 end;
 
-function TEntityPersister.getIdentifierColumnNames: TStrings;
+function TEntityPersister.GenerateSnapshotDeleteString: string;
 var
-  i: integer;
-  vColumn: IPropertyInfo;
+  vDelete: IDeleteBuilder;
 begin
-  Result := TStringList.Create;
-  for i := 0 to FIdentifierColumns.Count-1 do
-  begin
-    vColumn := FIdentifierColumns[i] as IPropertyInfo;
-    Result.Add(FPersistentClass.GetColumnName(vColumn));
-  end;
+  vDelete := TDeleteBuilder.Create(FSessionFactory.Dialect);
+  (*
+  *** Implementar aqui
+	protected String generateDeleteString(int j) {
+		Delete delete = new Delete()
+				.setTableName( getTableName( j ) )
+				.setPrimaryKeyColumnNames( getKeyColumns( j ) );
+		if ( j == 0 ) {
+			delete.setVersionColumnName( getVersionColumnName() );
+		}
+		if ( getFactory().getSettings().isCommentsEnabled() ) {
+			delete.setComment( "delete " + getEntityName() );
+		}
+		return delete.toStatementString();
+	}
+  *)
 end;
 
 function TEntityPersister.ConcretePropertySelectFragment: string;
@@ -728,6 +805,75 @@ end;
 function TEntityPersister.GetIdentifierColumns: IMemberInfoList;
 begin
   Result := FIdentifierColumns;
+end;
+
+destructor TEntityPersister.Destroy;
+begin
+  if Assigned(FIdentifierColumnNames) then
+    FIdentifierColumnNames.Free;
+  inherited;
+end;
+
+{ TPersistentState }
+
+function TPersistentState.GetIsPersistent: Boolean;
+begin
+  Result := FIsPersistent;
+end;
+
+function TPersistentState.GetState: TPersistentStateKind;
+begin
+  Result := FState;
+end;
+
+procedure TPersistentState.SetIsPersistent(Value: Boolean);
+begin
+  FIsPersistent := Value;
+end;
+
+procedure TPersistentState.SetState(Value: TPersistentStateKind);
+begin
+  FState := Value;
+end;
+
+{ TEntityAction }
+
+constructor TEntityAction.Create(const pSession: ISession;
+  const pPersister: IEntityPersister; const pInstance: IInfraType; 
+  const pOID :IInfraType);
+begin
+  inherited Create;
+  FSession := pSession;
+  FPersister := ppersister;
+  FInstance := pInstance;
+  FOID := pOID;
+end;
+
+function TEntityAction.GetInstance: IInfraType;
+begin
+  Result := FInstance;
+end;
+
+function TEntityAction.GetOID: IInfraType;
+begin
+  Result := FOID;
+end;
+
+function TEntityAction.GetPersister: IEntityPersister;
+begin
+  Result := FPersister;
+end;
+
+function TEntityAction.GetSession: ISession;
+begin
+  Result := FSession;
+end;
+
+{ TEntityDeleteAction }
+
+procedure TEntityDeleteAction.execute;
+begin
+  // *** executar a deleção efetiva aqui, isso é chamado durante Flush
 end;
 
 initialization

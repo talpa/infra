@@ -6,7 +6,6 @@ program InfraHibernateTests;
 {$I Test.Inc}
 
 uses
-  FastMM4,
   ApplicationContext,
   TestFramework,
   InfraHibernate {$IFDEF LINUX},

@@ -9,8 +9,8 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = InfraCore70.bpl InfraTypes70.bpl InfraPersistence70.bpl \
-  InfraAOP70.bpl InfraGUI70.bpl InfraHibernateTests.exe InfraReflectTests.exe \
+PROJECTS = InfraCore70.bpl InfraTypes70.bpl InfraAOP70.bpl InfraOPF70.bpl \
+  InfraGUI70.bpl InfraHibernateTests.exe InfraReflectTests.exe \
   InfraAnnotationTests.exe InfraAspectTests.exe GUIBuilderDemo.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
@@ -28,9 +28,6 @@ InfraHibernateTests.exe: UnitTests\InfraHibernate\InfraHibernateTests.dpr
 InfraReflectTests.exe: UnitTests\InfraReflect\InfraReflectTests.dpr
   $(DCC)
 
-InfraPersistence70.bpl: Packages\D7\InfraPersistence.dpk
-  $(DCC)
-
 InfraCore70.bpl: Packages\D7\InfraCore.dpk
   $(DCC)
 
@@ -44,6 +41,9 @@ InfraGUI70.bpl: Packages\D7\InfraGUI.dpk
   $(DCC)
 
 GUIBuilderDemo.exe: Demos\GUIBuilder\GUIBuilderDemo.dpr
+  $(DCC)
+
+InfraOPF70.bpl: Packages\D7\InfraOPF.dpk
   $(DCC)
 
 

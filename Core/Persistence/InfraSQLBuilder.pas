@@ -3,7 +3,7 @@ unit InfraSQLBuilder;
 interface
 
 uses
-  InfraBase, InfraHibernateIntf;
+  Classes, InfraBase, InfraHibernateIntf;
 
 type
   TSelectBuilder = class(TInfraBaseObject, ISelectBuilder)
@@ -29,22 +29,22 @@ type
     constructor Create(const pDialect: IDialect); reintroduce;
   end;
 
-  (*
-  TDeleteBuilder = class(TElement, IDeleteBuilder)
+  TDeleteBuilder = class(TInfraBaseObject, IDeleteBuilder)
   private
+    FDialect: IDialect;
     FTableName: String;
-    FPrimaryKeyColumnNames: TArrayString;
-    FVersionColumnName: String;
+    FPrimaryKeyColumnNames: TStrings;
     FWhereClause: String;
     function ToStatementString: String;
     procedure SetTableName(const Value: String);
-    procedure SetWhereClause(const Value: String);
-    procedure AddWhereFragment(const Value: String);
-    procedure SetPrimaryKeyColumnNames(Value: TArrayString);
-    procedure SetVersionColumnName(const Value: String);
+    procedure SetWhere(const Value: String);
+    procedure SetPrimaryKeyColumnNames(const Value: string);
+  public
+    constructor Create(const pDialect: IDialect); reintroduce;
   end;
 
-  TUpdateBuilder = class(TElement, IUpdateBuilder)
+  (*
+  TUpdateBuilder = class(TInfraBaseObject, IUpdateBuilder)
   private
     FTableName: String;
     FPrimaryKeyColumnNames: TArrayString;
@@ -76,7 +76,7 @@ type
   
 implementation
 
-uses Classes, SysUtils;
+uses SysUtils;
 
 { TSelectBuilder }
 
@@ -176,39 +176,66 @@ begin
   FWhereClause := Value;
 end;
 
-(*
 { TDeleteBuilder }
 
-procedure TDeleteBuilder.AddWhereFragment(const Value: String);
+constructor TDeleteBuilder.Create(const pDialect: IDialect);
 begin
-
+  // *** Leak aqui?
+  FDialect := pDialect;
 end;
 
-procedure TDeleteBuilder.SetPrimaryKeyColumnNames(Value: TArrayString);
+procedure TDeleteBuilder.setPrimaryKeyColumnNames(const Value: String);
 begin
-
+  // *** vai vir uma string de campos separados por virgula ou
+  // *** FPrimaryKeyColumnNames := Value;
 end;
 
 procedure TDeleteBuilder.SetTableName(const Value: String);
 begin
-
+  FTableName := Value;
 end;
 
-procedure TDeleteBuilder.SetVersionColumnName(const Value: String);
+procedure TDeleteBuilder.SetWhere(const Value: String);
 begin
-
+  FTableName := Value;
 end;
 
-procedure TDeleteBuilder.SetWhereClause(const Value: String);
+function TDeleteBuilder.toStatementString: String;
+var
+  vBuf: TStrings;
+  vConditionsAppended: boolean;
 begin
-
+  vBuf := TStringList.Create;
+  try
+    with vBuf do
+    begin
+      Add('delete from ');
+      Add(FTableName);
+      if (FWhereClause <> EmptyStr)
+        or (FPrimaryKeyColumnNames.Count <> 0) then
+      begin
+        Add(' WHERE ');
+        vConditionsAppended := False;
+        if (FPrimaryKeyColumnNames.Count <> 0) then
+        begin
+          Add(TStringHelper.Join('=? and ', FPrimaryKeyColumnNames) + '=?');
+          vConditionsAppended := True;
+        end;
+        if (FWhereClause <> EmptyStr) then
+        begin
+          if vConditionsAppended then
+            Add(' and ');
+          Add(FWhereClause);
+        end;
+      end;
+    end;
+  finally
+    Result := vBuf.Text;
+    vBuf.Free;
+  end;
 end;
 
-function TDeleteBuilder.ToStatementString: String;
-begin
-
-end;
-
+(*
 { TUpdateBuilder }
 
 function TUpdateBuilder.GetTableName: string;
