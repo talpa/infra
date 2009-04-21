@@ -1,0 +1,48 @@
+package InfraGUIGen;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'Infra - GUI Generator'}
+{$LIBSUFFIX '70'}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  InfraCore,
+  InfraTypes,
+  vcl,
+  dbrtl;
+
+contains
+  List_GuiElement in '..\..\Core\GUIGenerator\List_GuiElement.pas',
+  InfraGuiDefinition in '..\..\Core\GUIGenerator\InfraGuiDefinition.pas',
+  InfraGUIIntf in '..\..\Core\GUIGenerator\InfraGUIIntf.pas',
+  InfraGuiSchema in '..\..\Core\GUIGenerator\InfraGuiSchema.pas',
+  List_SchemaTable in '..\..\Core\GUIGenerator\List_SchemaTable.pas',
+  List_SchemaRelation in '..\..\Core\GUIGenerator\List_SchemaRelation.pas',
+  InfraStyleSheet in '..\..\Core\GUIGenerator\InfraStyleSheet.pas',
+  List_StyleSheet in '..\..\Core\GUIGenerator\List_StyleSheet.pas',
+  InfraGuiController_VCL in '..\..\Core\GUIGenerator\InfraGuiController_VCL.pas',
+  InfraGuiDataset in '..\..\Core\GUIGenerator\InfraGuiDataset.pas';
+
+end.
