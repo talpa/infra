@@ -142,7 +142,8 @@ begin
   b := bm.Add(ListBox4, 'ItemIndex', Label13, 'Caption', TItemIndexToIntegerText.Create);
   b := bm.Add(ListBox4, 'ItemIndex', Edit5, 'Text', TItemIndexToIntegerText.Create).TwoWay;
 
-  bm.Add(ComboBox1, 'ItemIndex', Label36, 'Caption', TItemIndexToText.Create);
+  bm.Add(ComboBox1, 'Text', Label36, 'Caption');
+  bm.Add(ComboBox1, 'ItemIndex', Label37, 'Caption', TItemIndexToIntegerText.Create);
 
   bm.Active := True;
 end;

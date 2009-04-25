@@ -27,31 +27,19 @@ package InfraOPF;
 {$IMPLICITBUILD OFF}
 
 requires
-  rtl,
   InfraCore,
-  InfraTypes,
   ZDbc,
-  designide,
-  vclactnband,
-  vclx,
-  vcl,
-  dbrtl;
+  rtl;
 
 contains
-  InfraOPFIntf in '..\..\Core\Persistence\InfraOPFIntf.pas',
-  InfraOPFService in '..\..\Core\Persistence\InfraOPFService.pas',
-  InfraOPFConsts in '..\..\Core\Persistence\InfraOPFConsts.pas',
-  List_SQLCommandParam in '..\..\Core\Persistence\List_SQLCommandParam.pas',
-  List_SQLCommandList in '..\..\Core\Persistence\List_SQLCommandList.pas',
-  InfraOPFAnnotation in '..\..\Core\Persistence\InfraOPFAnnotation.pas',
-  InfraOPFConnectionProvider in '..\..\Core\Persistence\InfraOPFConnectionProvider.pas',
-  InfraOPFConfiguration in '..\..\Core\Persistence\InfraOPFConfiguration.pas',
-  InfraOPFTemplates in '..\..\Core\Persistence\InfraOPFTemplates.pas',
-  InfraOPFParsers in '..\..\Core\Persistence\InfraOPFParsers.pas',
-  InfraOPFSqlCommands in '..\..\Core\Persistence\InfraOPFSqlCommands.pas',
-  InfraOPFSession in '..\..\Core\Persistence\InfraOPFSession.pas',
-  InfraOPFEngine in '..\..\Core\Persistence\InfraOPFEngine.pas',
-  InfraOPFSessionFactory in '..\..\Core\Persistence\InfraOPFSessionFactory.pas',
-  List_SQLCache in '..\..\Core\Persistence\List_SQLCache.pas';
+  InfraHibernate in '..\..\Core\OPF\InfraHibernate.pas',
+  InfraHibernateAnnotation in '..\..\Core\OPF\InfraHibernateAnnotation.pas',
+  InfraHibernateAnnotationIntf in '..\..\Core\OPF\InfraHibernateAnnotationIntf.pas',
+  InfraHibernateIntf in '..\..\Core\OPF\InfraHibernateIntf.pas',
+  InfraHibernateRegister in '..\..\Core\OPF\InfraHibernateRegister.pas',
+  InfraSQLBuilder in '..\..\Core\OPF\InfraSQLBuilder.pas',
+  List_Criterion in '..\..\Core\OPF\List_Criterion.pas',
+  List_EntityPersister in '..\..\Core\OPF\List_EntityPersister.pas',
+  List_MapperCollumn in '..\..\Core\OPF\List_MapperCollumn.pas';
 
 end.

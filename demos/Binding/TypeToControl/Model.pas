@@ -428,8 +428,6 @@ begin
   inherited;
   FName := AddProperty('Name') as IInfraString;
   FEmployees := AddProperty('Employees') as IInfraList;
-
-  LoadSampleData;
 end;
 
 procedure TCompany.LoadSampleData;

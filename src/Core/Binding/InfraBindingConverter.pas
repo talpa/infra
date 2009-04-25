@@ -163,10 +163,13 @@ var
   vIterator: Integer;
   vVCLListType: IVCLListType;
 begin
+  {
   vVCLListType := Value as IVCLListType;
   case vVCLListType.Operation of
-    loRefresh:
-      for vIterator := 0 to (vVCLListType.InfraValue as IInfraList).Count - 1 do
+    loRefresh: FillItemText(vVCLListType);
+    loAdd: vVCLListType.ItemText := GetItemText(vVCLListType);
+
+  for vIterator := 0 to (vVCLListType.InfraValue as IInfraList).Count - 1 do
         vVCLListType.ItemText := vVCLListType.ItemText +
         (((vVCLListType.InfraValue as IInfraList)[vIterator] as IInfraObject).GetProperty((Parameter as IInfraString).AsString) as IInfraString).AsString +
         #13 + #10;
@@ -175,12 +178,13 @@ begin
     loRemove: ;
   end;
   Result := Value;
+  }
 end;
 
 function TInfraListToText.RightToLeft(const Value,
   Parameter: IInfraType): IInfraType;
 begin
-
+  Result := Value;
 end;
 
 { TVCLListType }
@@ -195,6 +199,7 @@ begin
     SetItemIndex(vListType.ItemIndex);
     SetOperation(vListType.Operation);
     SetItemText(vListType.ItemText);
+    SetInfraValue(vListType.InfraValue);
   end else
     inherited Assign(Source);
 end;
@@ -203,6 +208,7 @@ procedure TVCLListType.Clear;
 begin
   inherited Clear;
   FControl := nil;
+  FInfraValue := nil;
   FItemIndex := -1;
   FOperation := loNone;
   FItemText := '';

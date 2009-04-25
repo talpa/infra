@@ -106,7 +106,6 @@ type
       const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
-  // classe base para bindables de propriedades da vcl
   TBindableCustomListItems = class(TBindableVCLPropertyTwoWay)
   private
     FListType: IVCLListType;
@@ -278,7 +277,7 @@ end;
 class function TBindableText.CreateIfSupports(pControl: TControl;
   const pPropertyPath: string): IBindableVCLProperty;
 begin
-  if (pControl is TCustomEdit) and AnsiSameText(pPropertyPath, 'Text') then
+  if AnsiSameText(pPropertyPath, 'Text') then
     Result := inherited CreateIfSupports(pControl, pPropertyPath)
   else
     Result := nil;
