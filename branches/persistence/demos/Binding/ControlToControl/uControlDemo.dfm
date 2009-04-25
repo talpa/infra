@@ -15,7 +15,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   DesignSize = (
     724
-    450)
+    443)
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
@@ -384,14 +384,14 @@ object Form1: TForm1
       end
       object Label9: TLabel
         Left = 314
-        Top = 258
+        Top = 254
         Width = 42
         Height = 13
         Caption = 'Listbox3:'
       end
       object Label10: TLabel
-        Left = 497
-        Top = 258
+        Left = 521
+        Top = 254
         Width = 42
         Height = 13
         Caption = 'Listbox4:'
@@ -405,14 +405,14 @@ object Form1: TForm1
       object Label11: TLabel
         Left = 314
         Top = 385
-        Width = 151
+        Width = 141
         Height = 13
-        Caption = 'O item selecionado no ListBox3:'
+        Caption = 'Item selecionado no ListBox3:'
       end
       object Label12: TLabel
-        Left = 472
+        Left = 464
         Top = 385
-        Width = 121
+        Width = 193
         Height = 13
         AutoSize = False
         Color = clInfoBk
@@ -477,7 +477,7 @@ object Form1: TForm1
         ParentColor = False
       end
       object Label13: TLabel
-        Left = 600
+        Left = 664
         Top = 385
         Width = 39
         Height = 13
@@ -494,14 +494,14 @@ object Form1: TForm1
       end
       object Label14: TLabel
         Left = 312
-        Top = 363
+        Top = 364
         Width = 24
         Height = 13
         Caption = 'Edit4'
       end
       object Label15: TLabel
-        Left = 496
-        Top = 363
+        Left = 523
+        Top = 364
         Width = 24
         Height = 13
         Caption = 'Edit5'
@@ -514,8 +514,8 @@ object Form1: TForm1
         Caption = '<--->'
       end
       object Label30: TLabel
-        Left = 470
-        Top = 312
+        Left = 494
+        Top = 308
         Width = 15
         Height = 13
         Caption = '--->'
@@ -610,9 +610,9 @@ object Form1: TForm1
       end
       object ListBox3: TListBox
         Left = 312
-        Top = 278
-        Width = 144
-        Height = 76
+        Top = 274
+        Width = 177
+        Height = 83
         Ctl3D = False
         ItemHeight = 13
         Items.Strings = (
@@ -625,10 +625,10 @@ object Form1: TForm1
         TabOrder = 4
       end
       object ListBox4: TListBox
-        Left = 496
-        Top = 278
-        Width = 142
-        Height = 76
+        Left = 522
+        Top = 274
+        Width = 180
+        Height = 83
         Ctl3D = False
         ItemHeight = 13
         Items.Strings = (
@@ -668,8 +668,8 @@ object Form1: TForm1
         OnClick = Button4Click
       end
       object Button5: TButton
-        Left = 365
-        Top = 253
+        Left = 397
+        Top = 249
         Width = 91
         Height = 22
         Caption = 'ItemIndex=2'
@@ -678,8 +678,8 @@ object Form1: TForm1
       end
       object Edit4: TEdit
         Left = 343
-        Top = 359
-        Width = 113
+        Top = 361
+        Width = 146
         Height = 19
         Ctl3D = False
         ParentCtl3D = False
@@ -687,9 +687,9 @@ object Form1: TForm1
         Text = 'Edit4'
       end
       object Edit5: TEdit
-        Left = 526
-        Top = 359
-        Width = 113
+        Left = 552
+        Top = 361
+        Width = 151
         Height = 19
         Ctl3D = False
         ParentCtl3D = False
@@ -834,7 +834,6 @@ object Form1: TForm1
         Height = 21
         ItemHeight = 13
         TabOrder = 1
-        Text = 'ComboBox1'
         Items.Strings = (
           'fusca'
           'uno mille'
