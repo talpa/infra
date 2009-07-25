@@ -11,7 +11,7 @@ BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = InfraCore70.bpl InfraTypes70.bpl InfraOPF70.bpl InfraOPFTemplate70.bpl InfraBind70.bpl \
   InfraAOP70.bpl InfraGUI70.bpl InfraReflectTests.exe InfraAnnotationTests.exe InfraAspectTests.exe \
-  TypeDemo.exe ControlDemo.exe
+  TypeDemo.exe ControlDemo.exe BindingSystem.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -50,6 +50,9 @@ InfraOPF70.bpl: Packages\D7\InfraOPF.dpk
   $(DCC)
 
 InfraOPFTemplate70.bpl: Packages\D7\InfraOPFTemplate.dpk
+  $(DCC)
+
+BindingSystem.exe: ..\demos\BindingSistem\BindingSystem.dpr
   $(DCC)
 
 
