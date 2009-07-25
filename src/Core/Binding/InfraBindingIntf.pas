@@ -70,6 +70,10 @@ type
     property Name: string read GetName write SetName;
   end;
 
+  IBindingList = interface(IBinding)
+    procedure AddSelection(index: Integer);
+  end;
+
   IBindings = interface
     ['{20CF48B1-FAF9-4366-8C70-76D65D071407}']
     function Add(const Item: IBinding): Integer;
@@ -103,8 +107,9 @@ type
     procedure ClearBindings;
     property DataContext: IInfraType read GetDataContext write SetDataContext;
     property Active: boolean read GetActive write SetActive;
+    function AddList(Control :TControl; pProperty: string; BindExpression: string): IBindingList;
   end;
-  
+
   IInfraBindingService = interface(IBaseElement)
     ['{306425B2-4590-49C8-A4CE-62F5293F1820}']
     function GetNewBindManager: IBindManager;
@@ -116,17 +121,17 @@ type
     function GetControl: TControl;
     function GetInfraValue: IInfraType;
     function GetItemIndex: integer;
-    function GetItemText: String;
+    function GetItemText: string;
     procedure SetControl(Value: TControl);
     procedure SetInfraValue(Value: IInfraType);
     procedure SetItemIndex(Value: integer);
-    procedure SetItemText(const Value: String);
+    procedure SetItemText(const Value: string);
     procedure SetOperation(const Value: TListOperation);
     procedure Clear;
     property Control: TControl read GetControl write SetControl;
     property InfraValue: IInfraType read GetInfraValue write SetInfraValue;
     property ItemIndex: integer read GetItemIndex write SetItemIndex;
-    property ItemText: String read GetItemText write SetItemText;
+    property ItemText: string read GetItemText write SetItemText;
     property Operation: TListOperation read GetOperation write SetOperation;
   end;
 
