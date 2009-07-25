@@ -19,7 +19,7 @@ type
   {$I ..\Templates\InfraTempl_IntfList.inc}
   end;
 
-  TBindingList = class(_ITERABLELIST_);
+  TListBinding = class(_ITERABLELIST_);
 
 implementation
 

@@ -15,7 +15,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   DesignSize = (
     724
-    443)
+    450)
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl

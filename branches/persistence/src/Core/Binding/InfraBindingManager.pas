@@ -30,7 +30,7 @@ type
   private
     FActive: Boolean;
     FUpdatingRight: Boolean;
-    FName: String;
+    FName: string;
     FLeft, FRight: IBindable;
     FConverter: ITypeConverter;
     FConverterParameter: IInfraType;
@@ -56,6 +56,11 @@ type
     property Name: string read GetName write SetName;
   public
     constructor Create(const Left, Right: IBindable); reintroduce;
+  end;
+
+  TBindingList = class(TBinding, IBindingList)
+  protected
+    procedure AddSelection(index: Integer);
   end;
 
   {
@@ -86,11 +91,13 @@ type
       const pConverter: ITypeConverter = nil): IBinding; overload;
     function Add(
       const pLeftProperty: string;
-      pRightControl: TControl; const pRightProperty: string = '';
+          pRightControl: TControl;
+    const pRightProperty: string = '';
       const pConverter: ITypeConverter = nil): IBinding; overload;
     procedure ClearBindings;
     property DataContext: IInfraType read GetDataContext write SetDataContext;
     property Active: boolean read GetActive write SetActive;
+    function AddList(Control: TControl; pProperty: string; BindExpression: string): IBindingList;
   public
     constructor Create; override;
   end;
@@ -112,9 +119,9 @@ uses
 constructor TBinding.Create(const Left, Right: IBindable);
 begin
   if not Assigned(Left) then
-    Raise EInfraBindingError.Create(cErrorLeftBindableNotDefined);
+    raise EInfraBindingError.Create(cErrorLeftBindableNotDefined);
   if not Assigned(Right) then
-    Raise EInfraBindingError.Create(cErrorRightBindableNotDefined);
+    raise EInfraBindingError.Create(cErrorRightBindableNotDefined);
   FUpdatingRight := False;
   FLeft := Left;
   FRight := Right;
@@ -138,7 +145,7 @@ function TBinding.PropertyChangedFilter(const Event: IInfraEvent): Boolean;
 var
   vSource: IBindable;
 begin
-  vSource := Event.Source As IBindable;
+  vSource := Event.Source as IBindable;
   Result := (vSource = FLeft) or (vSource = FRight);
 end;
 
@@ -166,7 +173,7 @@ procedure TBinding.SetMode(Value: TBindingMode);
 begin
   if (Value = bmTwoWay)
     and not FRight.Support2Way then
-    Raise EInfraBindingError.Create(cErrorBindable2WayNotSupported);
+    raise EInfraBindingError.Create(cErrorBindable2WayNotSupported);
   FMode := Value;
 end;
 
@@ -259,7 +266,7 @@ end;
 constructor TBindManager.Create;
 begin
   inherited Create;
-  FBindingList := TBindingList.Create;
+  FBindingList := TListBinding.Create;
 end;
 
 function TBindManager.Add(
@@ -335,4 +342,22 @@ begin
   end;
 end;
 
+function TBindManager.AddList(Control: TControl; pProperty,
+  BindExpression: string): IBindingList;
+var
+  vlist: IBindable;
+begin
+  vlist := GetBindableVCL(Control, pProperty);
+  //Result := TBindingList.Create;
+  FBindingList.Add(Result);
+end;
+
+{ TBindingList }
+
+procedure TBindingList.AddSelection(index: Integer);
+begin
+
+end;
+
 end.
+
