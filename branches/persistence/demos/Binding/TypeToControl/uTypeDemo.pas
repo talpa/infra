@@ -97,7 +97,7 @@ begin
   PersonBindManager.DataContext := Person;
   PersonBindManager.Add('Name', Edit3, 'Text').TwoWay;
   PersonBindManager.Add('Name', Label3, 'Caption');
-  PersonBindManager.Add('Country', Edit1, 'Text');
+  PersonBindManager.Add('Country', Edit1, 'Text').TwoWay;
   PersonBindManager.Add('Country', Label4, 'Caption');
   PersonBindManager.Add('Active', CheckBox1, 'Checked').TwoWay;
   PersonBindManager.Add('Active', Label5, 'Caption', TBooleanToText.Create);
@@ -109,8 +109,10 @@ begin
   // set DataContext to Company e bind employers to list
   CompanyBindManager.DataContext := Company;
   CompanyBindManager.Add('Name', Label10, 'Caption');
+  {
   Binding := CompanyBindManager.Add('Employees', ListBox1, 'Items', TInfraListToText.Create);
   Binding.ConverterParameter := TInfraString.NewFrom('Name');
+  }
   CompanyBindManager.Active := True;
 end;
 

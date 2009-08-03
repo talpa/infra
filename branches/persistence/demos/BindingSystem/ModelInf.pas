@@ -2,11 +2,11 @@ unit ModelInf;
 
 interface
 
-uses InfraCommonIntf,
+uses
+  InfraCommonIntf,
   InfraValueTypeIntf;
 
 type
-
   IFornecedor = interface(Iinfraobject)
     ['{C2921579-47B5-4F47-9E17-3A0A652A6622}']
     function getEndereco: IInfraString;

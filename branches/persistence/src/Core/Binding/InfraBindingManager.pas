@@ -60,7 +60,7 @@ type
 
   TBindingList = class(TBinding, IBindingList)
   protected
-    procedure AddSelection(index: Integer);
+    procedure AddSelection(const pPropertyName: string);
   end;
 
   {
@@ -91,13 +91,13 @@ type
       const pConverter: ITypeConverter = nil): IBinding; overload;
     function Add(
       const pLeftProperty: string;
-          pRightControl: TControl;
-    const pRightProperty: string = '';
+      pRightControl: TControl; const pRightProperty: string = '';
       const pConverter: ITypeConverter = nil): IBinding; overload;
+    function AddList(const pLeftExpression: string;
+      pRightControl: TControl; const pRightProperty: string): IBindingList;
     procedure ClearBindings;
     property DataContext: IInfraType read GetDataContext write SetDataContext;
     property Active: boolean read GetActive write SetActive;
-    function AddList(Control: TControl; pProperty: string; BindExpression: string): IBindingList;
   public
     constructor Create; override;
   end;
@@ -289,7 +289,7 @@ function TBindManager.Add(const pLeftProperty: string;
 var
   vLeft, vRight: IBindable;
 begin
-  vLeft := TBindableInfraType.GetBindable(FDataContext, pLeftProperty);
+  vLeft := GetBindableType(FDataContext, pLeftProperty);
   vRight := GetBindableVCL(pRightControl, pRightProperty);
   Result := Add(vLeft, vRight, pConverter);
   Result.Name := Format('Datacontext.%s - %s.%s', [
@@ -302,6 +302,30 @@ begin
   Result := TBinding.Create(pLeft, pRight);
   Result.Converter := pConverter;
   FBindingList.Add(Result);
+end;
+
+function TBindManager.AddList(const pLeftExpression: string;
+  pRightControl: TControl; const pRightProperty: string): IBindingList;
+//var
+//  vLeft, vRight: IBindable;
+begin
+//  GetPropertyByExpression(pLeftProperty)
+//  vLeft := TBindableInfraType.GetBindable(FDataContext, );
+//  vRight := GetBindableVCL(pRightControl, pRightProperty);
+//
+//  vlist: IBindable;
+//begin
+//
+//  vlist := GetBindableVCL(pLeftControl, pLeftProperty);
+//  Result := FBindingList.Add(Result);
+//  pRightExpression
+//
+//  vLeft := GetBindableVCL(pLeftControl, pLeftProperty);
+//  vRight := GetBindableVCL(pRightControl, pRightProperty);
+//  Result := Add(vLeft, vRight, pConverter);
+//  Result.Name := Format('%s.%s -> %s.%s', [
+//    pLeftControl.Name, pLeftProperty, pRightControl.Name, pRightProperty])
+//
 end;
 
 procedure TBindManager.ClearBindings;
@@ -342,19 +366,9 @@ begin
   end;
 end;
 
-function TBindManager.AddList(Control: TControl; pProperty,
-  BindExpression: string): IBindingList;
-var
-  vlist: IBindable;
-begin
-  vlist := GetBindableVCL(Control, pProperty);
-  //Result := TBindingList.Create;
-  FBindingList.Add(Result);
-end;
-
 { TBindingList }
 
-procedure TBindingList.AddSelection(index: Integer);
+procedure TBindingList.AddSelection(const pPropertyName: string);
 begin
 
 end;
