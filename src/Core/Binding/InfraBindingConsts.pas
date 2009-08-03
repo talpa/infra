@@ -13,6 +13,8 @@ resourcestring
     'ValueType not supported in this Bindable.'#13+
     'Control: %s, Property: %s, Type Supported: %s';
   cErrorBindableValuesIncompatibles = 'Incompatible Values: %s';
+  cErrorDataContextNotIsInfraObject = 'Datacontext shoould be a InfraObject or descendent';
+  cErrorBindingExpressionNotsupported = 'Cannot get property of this expression: %s';
 
 implementation
 

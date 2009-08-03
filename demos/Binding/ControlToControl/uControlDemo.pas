@@ -136,15 +136,15 @@ begin
   bm.Add(ListBox3, 'Items', ListBox4, 'Items');
 
   bm.Add(ListBox3, 'ItemIndex', ListBox4, 'ItemIndex');
-  bm.Add(ListBox3, 'ItemIndex', Label12, 'Caption', TItemIndexToText.Create);
-  b := bm.Add(ListBox3, 'ItemIndex', Edit4, 'Text', TItemIndexToText.Create).TwoWay;
-
-  b := bm.Add(ListBox4, 'ItemIndex', Label13, 'Caption', TItemIndexToIntegerText.Create);
-  b := bm.Add(ListBox4, 'ItemIndex', Edit5, 'Text', TItemIndexToIntegerText.Create).TwoWay;
-
-  bm.Add(ComboBox1, 'Text', Label36, 'Caption');
-  bm.Add(ComboBox1, 'ItemIndex', Label37, 'Caption', TItemIndexToIntegerText.Create);
-
+  bm.Add(ListBox3, 'ItemIndex', Label12, 'Caption', TIntegerToText.Create);
+  
+//  b := bm.Add(ListBox3, 'ItemIndex', Edit4, 'Text', TItemIndexToText.Create).TwoWay;
+//
+//  b := bm.Add(ListBox4, 'ItemIndex', Label13, 'Caption', TItemIndexToIntegerText.Create);
+//  b := bm.Add(ListBox4, 'ItemIndex', Edit5, 'Text', TItemIndexToIntegerText.Create).TwoWay;
+//
+//  bm.Add(ComboBox1, 'Text', Label36, 'Caption');
+//  bm.Add(ComboBox1, 'ItemIndex', Label37, 'Caption', TItemIndexToIntegerText.Create);
   bm.Active := True;
 end;
 

@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 308
-  Top = 127
+  Left = 494
+  Top = 25
   Width = 732
   Height = 477
   Caption = 'Binding entre Controles VCL'
@@ -15,7 +15,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   DesignSize = (
     724
-    450)
+    443)
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
@@ -23,7 +23,7 @@ object Form1: TForm1
     Top = 4
     Width = 714
     Height = 435
-    ActivePage = TabSheet4
+    ActivePage = TabSheet3
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 0
     object TabSheet1: TTabSheet
@@ -631,12 +631,6 @@ object Form1: TForm1
         Height = 83
         Ctl3D = False
         ItemHeight = 13
-        Items.Strings = (
-          'fusca'
-          'uno mille'
-          'fox'
-          'vectra'
-          'ferrari')
         ParentCtl3D = False
         TabOrder = 5
       end
