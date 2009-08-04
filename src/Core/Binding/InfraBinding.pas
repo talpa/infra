@@ -35,6 +35,7 @@ type
   private
     FCurrent: IInfraType;
     FItemIndex: Integer;
+    FItemOperated: IInfraType;
     FList: IInfraType;
     FOperation: TListModelOperation;
     FExpression: string;
@@ -42,17 +43,21 @@ type
     function GetCurrent: IInfraType;
     function GetExpression: string;
     function GetItemIndex: integer;
+    function GetItemOperated: IInfraType;
     function GetList: IInfraType;
     function GetOperation: TListModelOperation;
+    function GetValueOfExpression: string;
     procedure Assign(const Source: IInfraType); override;
     procedure Clear; override;
     procedure SetCurrent(const Value: IInfraType);
     procedure SetExpression(const Value: string);
     procedure SetItemIndex(Value: integer);
+    procedure SetItemOperated(const Value: IInfraType);
     procedure SetList(const Value: IInfraType);
     procedure SetOperation(Value: TListModelOperation);
     property Current: IInfraType read GetCurrent write SetCurrent;
     property ItemIndex: integer read GetItemIndex write SetItemIndex;
+    property ItemOperated: IInfraType read GetItemOperated write SetItemOperated;
     property List: IInfraType read GetList write SetList;
     property Operation: TListModelOperation read GetOperation write SetOperation;
     property Expression: string read GetExpression write SetExpression;
@@ -70,7 +75,7 @@ uses
 
 { TInfraBindingService }
 
-{**
+{*
   Cria um novo objeto BindManager
   Chame GetNewBindManager para obter um novo objeto BindManager, com o qual
   poderá fazer a ligação entre controles de tela, ou entre controles de tela
@@ -154,6 +159,11 @@ begin
   Result := FItemIndex;
 end;
 
+function TBindableListModel.GetItemOperated: IInfraType;
+begin
+  Result := FItemOperated;
+end;
+
 function TBindableListModel.GetList: IInfraType;
 begin
   Result := FList;
@@ -172,6 +182,11 @@ end;
 procedure TBindableListModel.SetItemIndex(Value: integer);
 begin
   FItemIndex := Value;
+end;
+
+procedure TBindableListModel.SetItemOperated(const Value: IInfraType);
+begin
+  FItemOperated := Value;
 end;
 
 procedure TBindableListModel.SetList(const Value: IInfraType);
@@ -202,6 +217,11 @@ procedure InjectBindingService;
 begin
   (ApplicationContext as IBaseElement).Inject(
     IInfraBindingService, TInfraBindingService.Create);
+end;
+
+function TBindableListModel.GetValueOfExpression: string;
+begin
+
 end;
 
 initialization

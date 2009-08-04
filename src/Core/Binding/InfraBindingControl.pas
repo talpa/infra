@@ -108,12 +108,12 @@ type
 
   TBindableCustomListItems = class(TBindableRTTIBasedTwoWay)
   private
-    //FListModel: IBindableListModel;
+    FListModel: IBindableListModel;
     //function GetListModel: IBindableListModel;
   protected
     procedure WndProc(var Message: TMessage); override;
     //function GetValue: IInfraType; override;
-    //procedure SetValue(const Value: IInfraType); override;
+    procedure SetValue(const Value: IInfraType); override;
   public
     class function CreateIfSupports(pControl: TControl;
       const pPropertyPath: string): IBindableVCLProperty; override;
@@ -416,6 +416,11 @@ end;
 procedure TBindableCustomListItems.WndProc(var Message: TMessage);
 begin
   inherited WndProc(Message);
+  if not Assigned(FListModel) then
+    case Message.Msg of
+      LB_ADDSTRING, LB_DELETESTRING, LB_RESETCONTENT: Changed;
+    end;
+  {
   case Message.Msg of
     // Add -> SendMessage(ListBox.Handle, LB_ADDSTRING, 0, Longint(PChar(S)));
     LB_ADDSTRING:
@@ -447,6 +452,7 @@ begin
     // PutObject -> SendMessage(Handle, LB_SETITEMDATA, Index, AData);
     // *** LB_SETITEMDATA: FListType.Operation := loPutObject;
   end;
+  }
 end;
 
 {
@@ -454,28 +460,37 @@ function TBindableCustomListItems.GetValue: IInfraType;
 begin
   Result := FListModel;
 end;
+}
 
 procedure TBindableCustomListItems.SetValue(const Value: IInfraType);
 var
   vListModel: IBindableListModel;
 begin
-  if Supports(Value, IBindableListModel, vListModel) then
+  if Assigned(FListModel)
+    and Supports(Value, IBindableListModel, vListModel) then
   begin
     case vListModel.Operation of
-      loAdd: AddItem() TCustomListControl(Control).AddItem(vListType.ItemText, nil);
-      loRemove: TCustomListBox(Control).Items.Delete(vListType.ItemIndex);
-      loRefresh: TCustomListBox(Control).Items.Text := vListType.ItemText;
-      loClear: TCustomListBox(Control).Clear;
+      loAdd: ;//AddItemToControl(vListModel.GetTextOfExpression, vListModel.ItemOperated);
+      loRemove: ;//RemoveItemOfControl(vListModel.ItemOperated);
+      loRefresh: ;//FillControl(vListModel);
+      loClear: ;//TCustomListBox(Control).Clear;
     end;
-  end;
+  end else
+    inherited SetValue(Value);
 end;
 
-function TBindableCustomListItems.GetListModel: IBindableListModel;
-begin
-  if not Assigned(FListModel) then
-    FListModel := TBindableListModel.Create;
-  Result := FListModel;
-end;
+{
+Criar aqui os métodos de opeção no listbox:
+AddItemToControl(vListModel.GetValueOfExpression, vListModel.ItemOperated);
+  TCustomListControl(Control).AddItem(pTexto, pObject);
+RemoveItemOfControl(vListModel.ItemOperated);
+  TCustomListBox(Control).Items.Delete(FindObjectNoListBox(pObject));
+FillControl(vListModel);
+  Laco no VListModel.Vlist
+      loAdd:
+      loRemove:
+      loRefresh: TCustomListBox(Control).Items.Text := vListType.ItemText;
+      loClear: TCustomListBox(Control).Clear;
 }
 
 { TBindableItemindex }

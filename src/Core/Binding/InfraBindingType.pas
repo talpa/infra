@@ -35,13 +35,15 @@ type
   TBindableInfraList = class(TBindable, IBindableInfraList)
   private
     FListModel: IBindableListModel;
+    function CurrentItemChangedFilter(const Event: IInfraEvent): Boolean;
     function ListChangedFilter(const Event: IInfraEvent): Boolean;
-  protected
-    function GetValue: IInfraType; override;
-    procedure SetValue(const Value: IInfraType); override;
+    procedure CurrentItemChanged(const Event: IInfraEvent);
     procedure ItemAdded(const Event: IInfraEvent);
     procedure ItemRemoved(const Event: IInfraEvent);
     procedure ItemsClear(const Event: IInfraEvent);
+  protected
+    function GetValue: IInfraType; override;
+    procedure SetValue(const Value: IInfraType); override;
   public
     constructor Create(const pProperty: IProperty;
       const pExpression: string); reintroduce;
@@ -143,6 +145,8 @@ begin
     ItemsClear, EmptyStr, ListChangedFilter);
   EventService.Subscribe(IInfraRemoveItemEvent, Self as ISubscriber,
     ItemRemoved, EmptyStr, ListChangedFilter);
+  EventService.Subscribe(IInfraChangedEvent, Self as ISubscriber,
+    CurrentItemChanged, EmptyStr, CurrentItemChangedFilter);
 end;
 
 function TBindableInfraList.GetValue: IInfraType;
@@ -152,7 +156,8 @@ end;
 
 procedure TBindableInfraList.SetValue(const Value: IInfraType);
 begin
-  FListModel := Value as IBindableListModel;
+  Raise EInfraBindingError.CreateFmt(cErrorBindableisReadOnly,
+    ['TBindableInfraList']);
 end;
 
 procedure TBindableInfraList.ItemAdded(const Event: IInfraEvent);
@@ -161,10 +166,9 @@ var
 begin
   with FListModel do
   begin
-    vAddEvent := Event as IInfraAddItemEvent;
     Operation := loAdd;
-    Current := vAddEvent.NewItem;
-    ItemIndex := vAddEvent.ItemIndex;
+    vAddEvent := Event as IInfraAddItemEvent;
+    ItemOperated := vAddEvent.NewItem;
   end;
   Changed;
 end;
@@ -175,10 +179,9 @@ var
 begin
   with FListModel do
   begin
-    vRemoveEvent := Event as IInfraRemoveItemEvent;
     Operation := loRemove;
-    Current := vRemoveEvent.RemovedItem;
-    ItemIndex := vRemoveEvent.ItemIndex;
+    vRemoveEvent := Event as IInfraRemoveItemEvent;
+    ItemOperated := vRemoveEvent.RemovedItem;
   end;
   Changed;
 end;
@@ -186,10 +189,7 @@ end;
 procedure TBindableInfraList.ItemsClear(const Event: IInfraEvent);
 begin
   with FListModel do
-  begin
     Operation := loClear;
-    ItemIndex := -1;
-  end;
   Changed;
 end;
 
@@ -200,6 +200,25 @@ var
 begin
   vSource := Event.Source as IInfraType;
   Result := vSource = FListModel.List;
+end;
+
+procedure TBindableInfraList.CurrentItemChanged(const Event: IInfraEvent);
+begin
+  with FListModel do
+  begin
+    Operation := loSelectionChange;
+    Current := Event.Source as IInfraType;
+  end;
+  Changed;
+end;
+
+function TBindableInfraList.CurrentItemChangedFilter(
+  const Event: IInfraEvent): Boolean;
+var
+  vSource: IInfraType;
+begin
+  vSource := Event.Source as IInfraType;
+  Result := vSource = FListModel.Current;
 end;
 
 end.

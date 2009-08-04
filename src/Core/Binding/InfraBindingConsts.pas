@@ -15,6 +15,7 @@ resourcestring
   cErrorBindableValuesIncompatibles = 'Incompatible Values: %s';
   cErrorDataContextNotIsInfraObject = 'Datacontext shoould be a InfraObject or descendent';
   cErrorBindingExpressionNotsupported = 'Cannot get property of this expression: %s';
+  cErrorBindableisReadOnly = '%s is ReadOnly';
 
 implementation
 

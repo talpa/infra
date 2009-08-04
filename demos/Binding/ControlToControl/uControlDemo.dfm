@@ -412,7 +412,7 @@ object Form1: TForm1
       object Label12: TLabel
         Left = 464
         Top = 385
-        Width = 193
+        Width = 49
         Height = 13
         AutoSize = False
         Color = clInfoBk
@@ -477,9 +477,9 @@ object Form1: TForm1
         ParentColor = False
       end
       object Label13: TLabel
-        Left = 664
+        Left = 520
         Top = 385
-        Width = 39
+        Width = 183
         Height = 13
         Alignment = taRightJustify
         AutoSize = False
