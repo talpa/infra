@@ -19,22 +19,22 @@ type
 
   ICity = interface(IInfraObject)
     ['{AAF2F0C1-034F-4A86-827C-6284A82860F4}']
-    function GetName: IInfraString;
+    function GetCityName: IInfraString;
     function GetPopulation: IInfraInteger;
-    procedure SetName(const Value: IInfraString);
+    procedure SetCityName(const Value: IInfraString);
     procedure SetPopulation(const Value: IInfraInteger);
     procedure LoadSampleData;
-    property Name: IInfraString read GetName write SetName;
+    property CityName: IInfraString read GetCityName write SetCityName;
     property Population: IInfraInteger read GetPopulation write SetPopulation;
   end;
 
   ICompany = interface(IInfraObject)
     ['{03A807ED-586A-4E67-99B5-FD098B4C0D90}']
-    function GetName: IInfraString;
-    procedure SetName(const Value: IInfraString);
+    function GetCompanyName: IInfraString;
+    procedure SetCompanyName(const Value: IInfraString);
     function GetEmployees: IInfraList;
     procedure LoadSampleData;
-    property Name: IInfraString read GetName write SetName;
+    property CompanyName: IInfraString read GetCompanyName write SetCompanyName;
     property Employees: IInfraList read GetEmployees;
   end;
 
@@ -47,7 +47,7 @@ type
     function GetCountry: IInfraString;
     function GetEmail: IInfraString;
     function GetID: IInfraInteger;
-    function GetName: IInfraString;
+    function GetPersonName: IInfraString;
     function GetState: IInfraString;
     function GetDetails: IInfraString;
     function GetCity: ICity;
@@ -58,13 +58,13 @@ type
     procedure SetCountry(const Value: IInfraString);
     procedure SetEmail(const Value: IInfraString);
     procedure SetID(const Value: IInfraInteger);
-    procedure SetName(const Value: IInfraString);
+    procedure SetPersonName(const Value: IInfraString);
     procedure SetState(const Value: IInfraString);
     procedure SetDetails(const Value: IInfraString);
     procedure SetCity(const Value: ICity);
     procedure LoadSampleData;    
     property ID: IInfraInteger read GetID write SetID;
-    property Name: IInfraString read GetName write SetName;
+    property PersonName: IInfraString read GetPersonName write SetPersonName;
     property Email: IInfraString read GetEmail write SetEmail;
     property Address: IInfraString read GetAddress write SetAddress;
     property State: IInfraString read GetState write SetState;

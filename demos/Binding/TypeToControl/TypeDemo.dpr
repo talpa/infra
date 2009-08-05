@@ -5,7 +5,8 @@ uses
   Forms,
   uTypeDemo in 'uTypeDemo.pas' {Form1},
   ModelIntf in 'ModelIntf.pas',
-  Model in 'Model.pas';
+  Model in 'Model.pas',
+  uRandomData in 'uRandomData.pas';
 
 {$R *.res}
 

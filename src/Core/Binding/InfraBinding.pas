@@ -46,7 +46,7 @@ type
     function GetItemOperated: IInfraType;
     function GetList: IInfraType;
     function GetOperation: TListModelOperation;
-    function GetValueOfExpression: string;
+    function GetValueOfExpression(const pObject: IInfraType): string;
     procedure Assign(const Source: IInfraType); override;
     procedure Clear; override;
     procedure SetCurrent(const Value: IInfraType);
@@ -209,6 +209,22 @@ begin
   FExpression := Value;
 end;
 
+function TBindableListModel.GetValueOfExpression(const pObject: IInfraType): string;
+var
+  vObject: IInfraObject;
+  vValue: IInfraString;
+  vProperty: IProperty;
+begin
+  // *** Precisamos usar um converter dependendo do tipo de pObject
+  if Supports(pObject, IInfraObject, vObject) then
+  begin
+    vProperty := vObject.GetProperty(FExpression);
+    if Supports(vProperty, IInfraString, vValue) then
+      Result := vValue.AsString;
+  end else if Supports(pObject, IInfraString, vValue) then
+    Result := vValue.AsString;
+end;
+
 // Não entendi, mas se pôr direto no Initialization acontece Access Violations.
 // ATENÇÃO: Vc não deve atribuir BindingService para uma variável de
 // instancia nem global sem que no final da aplicação atribuia nil a ela explicitamente,
@@ -217,11 +233,6 @@ procedure InjectBindingService;
 begin
   (ApplicationContext as IBaseElement).Inject(
     IInfraBindingService, TInfraBindingService.Create);
-end;
-
-function TBindableListModel.GetValueOfExpression: string;
-begin
-
 end;
 
 initialization

@@ -52,7 +52,7 @@ type
     function GetItemOperated: IInfraType;
     function GetList: IInfraType;
     function GetOperation: TListModelOperation;
-    function GetValueOfExpression: string;
+    function GetValueOfExpression(const pObject: IInfraType): string;
     procedure SetCurrent(const Value: IInfraType);
     procedure SetExpression(const Value: string);
     procedure SetItemIndex(Value: integer);

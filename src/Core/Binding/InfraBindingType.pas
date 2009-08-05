@@ -193,15 +193,6 @@ begin
   Changed;
 end;
 
-function TBindableInfraList.ListChangedFilter(
-  const Event: IInfraEvent): Boolean;
-var
-  vSource: IInfraType;
-begin
-  vSource := Event.Source as IInfraType;
-  Result := vSource = FListModel.List;
-end;
-
 procedure TBindableInfraList.CurrentItemChanged(const Event: IInfraEvent);
 begin
   with FListModel do
@@ -210,6 +201,15 @@ begin
     Current := Event.Source as IInfraType;
   end;
   Changed;
+end;
+
+function TBindableInfraList.ListChangedFilter(
+  const Event: IInfraEvent): Boolean;
+var
+  vSource: IInfraType;
+begin
+  vSource := Event.Source as IInfraType;
+  Result := vSource = FListModel.List;
 end;
 
 function TBindableInfraList.CurrentItemChangedFilter(
