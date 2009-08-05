@@ -426,12 +426,17 @@ begin
     end;
 end;
 
+//function TBindableCustomListItems.GetValue: IInfraType;
+//begin
+//  if not Assigned(FListModel) then
+//  Result := TInfraInteger.NewFrom(TCustomListControl(Control).ItemIndex);
+//end;
+
 procedure TBindableCustomListItems.SetValue(const Value: IInfraType);
 var
   vListModel: IBindableListModel;
 begin
-  if Assigned(FListModel)
-    and Supports(Value, IBindableListModel, vListModel) then
+  if Supports(Value, IBindableListModel, vListModel) then
   begin
     case vListModel.Operation of
       loAdd: AddItemToControl(

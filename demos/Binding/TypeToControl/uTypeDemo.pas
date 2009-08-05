@@ -108,7 +108,7 @@ begin
   // set DataContext to Company e bind employers to list
   CompanyBindManager.DataContext := Company;
   CompanyBindManager.Add('CompanyName', Label10, 'Caption');
-  CompanyBindManager.Add('Employees.Person.Name', ListBox1, 'Items');
+  CompanyBindManager.Add('Employees.PersonName', ListBox1, 'Items');
   CompanyBindManager.Active := True;
 end;
 
