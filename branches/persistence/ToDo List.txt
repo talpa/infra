@@ -1,3 +1,7 @@
+- procedure TBinding.UpdateRight trata o getvalue que tem de suportar o typeinfo do rigth value;
+- problema no getvalue do TBindableCustomListItems que nao retorna o listmodel
+- como tratar o selection do TBindableItemIndex já que teremos outro listmodel
+
 - A reflexão deve procurar a propriedades nos pais se nao encontrar no objeto atual;
 - Mudar a propriedade TInfraType.Name para TypeName;
 

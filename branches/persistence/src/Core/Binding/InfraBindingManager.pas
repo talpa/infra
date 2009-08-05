@@ -220,9 +220,12 @@ begin
   vLeftValue := FLeft.Value;
   if Assigned(FConverter) then
     vLeftValue := FConverter.ConvertToRight(vLeftValue, FConverterParameter);
-  if not Supports(FRight.Value, vLeftValue.TypeInfo.TypeID) then
-    raise EInfraBindingError.CreateFmt(
-      cErrorBindableValuesIncompatibles, [Name]);
+// *** deu problema por que TBindableCustomListItems GetValue retorna um TInfraStrings por
+// *** podemos estar ligando um listbox a outro, e nao posso herdar o getvalue por que
+// *** nao sei se está usando ou nao o bindablelistmodel
+//  if not Supports(FRight.Value, vLeftValue.TypeInfo.TypeID) then
+//    raise EInfraBindingError.CreateFmt(
+//      cErrorBindableValuesIncompatibles, [Name]);
   FRight.BeginUpdate;
   try
     FRight.Value := vLeftValue

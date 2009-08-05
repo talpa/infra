@@ -9,9 +9,9 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = InfraCore70.bpl InfraTypes70.bpl InfraBind70.bpl ControlDemo.exe \
-  TypeDemo.exe InfraReflectTests.exe InfraOPF70.bpl InfraAOP70.bpl InfraGUI70.bpl \
-  InfraAnnotationTests.exe InfraAspectTests.exe BindingSystem.exe
+PROJECTS = InfraCore70.bpl InfraTypes70.bpl InfraBind70.bpl TypeDemo.exe \
+  ControlDemo.exe InfraReflectTests.exe InfraOPF70.bpl InfraAOP70.bpl \
+  InfraGUI70.bpl InfraAnnotationTests.exe InfraAspectTests.exe BindingSystem.exe
 InfraOPFTemplate70.bpl BindingSystem.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
