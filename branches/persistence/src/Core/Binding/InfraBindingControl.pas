@@ -109,11 +109,9 @@ type
   TBindableCustomListItems = class(TBindableRTTIBasedTwoWay)
   private
     FListModel: IBindableListModel;
-    //function GetListModel: IBindableListModel;
     function FindObjectNoListBox(const pObject: IInfraType): integer;
   protected
     procedure WndProc(var Message: TMessage); override;
-    //function GetValue: IInfraType; override;
     procedure AddItemToControl(const pValue: string; const pObject: IInfraType);
     procedure RemoveItemOfControl(const pObject: IInfraType);
     procedure FillControl(const pListModel: IBindableListModel);
@@ -125,7 +123,7 @@ type
 
   TBindableItemIndex = class(TBindableVCLPropertyTwoWay)
   private
-    FListModel: IBindableListModel;
+    //FListModel: IBindableListModel;
   protected
     procedure WndProc(var Message: TMessage); override;
     function GetValue: IInfraType; override;
@@ -426,47 +424,7 @@ begin
     case Message.Msg of
       LB_ADDSTRING, LB_DELETESTRING, LB_RESETCONTENT: Changed;
     end;
-  {
-  case Message.Msg of
-    // Add -> SendMessage(ListBox.Handle, LB_ADDSTRING, 0, Longint(PChar(S)));
-    LB_ADDSTRING:
-    begin
-//      with GetListModel do
-//      begin
-//        Operation := loAdd;
-//        //(List as IInfraList).Add()
-//        Current := TInfraString.NewFrom(PChar(Message.lParam));
-//      end;
-      Changed;
-    end;
-    // Delete -> SendMessage(Handle, LB_DELETESTRING, Index, 0);
-    LB_DELETESTRING:
-    begin
-//      with GetListModel do
-//      begin
-//        Operation := loRemove;
-//        ItemIndex := Message.WParam;
-//      end;
-      Changed;
-    end;
-    // Clear -> SendMessage(Handle, LB_RESETCONTENT, 0, 0);
-    LB_RESETCONTENT:
-    begin
-//      FListModel.Operation := loClear;
-      Changed;
-    end;
-    // PutObject -> SendMessage(Handle, LB_SETITEMDATA, Index, AData);
-    // *** LB_SETITEMDATA: FListType.Operation := loPutObject;
-  end;
-  }
 end;
-
-{
-function TBindableCustomListItems.GetValue: IInfraType;
-begin
-  Result := FListModel;
-end;
-}
 
 procedure TBindableCustomListItems.SetValue(const Value: IInfraType);
 var
@@ -476,33 +434,19 @@ begin
     and Supports(Value, IBindableListModel, vListModel) then
   begin
     case vListModel.Operation of
-      loAdd: AddItemToControl(vListModel.GetValueOfExpression, vListModel.ItemOperated);
+      loAdd: AddItemToControl(
+        vListModel.GetValueOfExpression(vListModel.ItemOperated),
+        vListModel.ItemOperated);
       loRemove: RemoveItemOfControl(vListModel.ItemOperated);
       loRefresh: FillControl(vListModel);
       loClear: TCustomListControl(Control).Clear;
     end;
-  end
-  else
+  end else
     inherited SetValue(Value);
 end;
 
-{
-
-Criar aqui os métodos de opeção no listbox:
-AddItemToControl(vListModel.GetValueOfExpression, vListModel.ItemOperated);
-  TCustomListControl(Control).AddItem(pTexto, pObject);
-RemoveItemOfControl(vListModel.ItemOperated);
-  TCustomListBox(Control).Items.Delete(FindObjectNoListBox(pObject));
-FillControl(vListModel);
-  Laco no VListModel.Vlist
-      loAdd:
-      loRemove:
-      loRefresh: TCustomListBox(Control).Items.Text := vListType.ItemText;
-      loClear: TCustomListBox(Control).Clear;
-}
-
-procedure TBindableCustomListItems.AddItemToControl(
-  const pValue: string; const pObject: IInfraType);
+procedure TBindableCustomListItems.AddItemToControl(const pValue: string;
+  const pObject: IInfraType);
 begin
   TCustomListControl(Control).AddItem(pValue, TObject(Pointer(pObject)));
 end;
@@ -516,22 +460,19 @@ end;
 procedure TBindableCustomListItems.FillControl(
   const pListModel: IBindableListModel);
 var
-  x: Integer;
+  vI: Integer;
   vList: IInfraList;
 begin
   if Supports(pListModel.List, IInfraList, vList) then
-  begin
-    for x := 0 to vList.Count-1 do
-    begin
-      AddItemToControl(pListModel.GetValueOfExpression, vList.Items[x]);
-    end;
-  end;
+    for vI := 0 to vList.Count-1 do
+      AddItemToControl(pListModel.GetValueOfExpression(vList.Items[vI]),
+        vList.Items[vI]);
 end;
 
 function TBindableCustomListItems.FindObjectNoListBox(
   const pObject: IInfraType): integer;
 begin
-  result := TCustomListBox(Control).Items.IndexOfObject(TObject(Pointer(pObject)));
+  Result := TCustomListBox(Control).Items.IndexOfObject(TObject(Pointer(pObject)));
 end;
 
 { TBindableItemindex }
@@ -630,4 +571,3 @@ finalization
     FreeAndNil(_BindableClasses);
 
 end.
-

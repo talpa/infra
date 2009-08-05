@@ -1,3 +1,7 @@
+- A reflexão deve procurar a propriedades nos pais se nao encontrar no objeto atual;
+- Mudar a propriedade TInfraType.Name para TypeName;
+
+
 Duvidas:
 a) Qual a necessidade o IsClosed e Close no SessionFactory?
 

@@ -75,7 +75,7 @@ uses
   InfraValueTypeConvert,
   InfraBindingConverter,
   InfraValueType,
-  InfraBindingManager;
+  InfraBindingManager, uRandomData;
 
 { TForm1 }
 
@@ -92,11 +92,10 @@ begin
   // initialize and load sample Person data
   Person := TPerson.Create;
   Person.LoadSampleData;
-
   // set DataContext of BindingManager and bind Person properties to Controls
   PersonBindManager.DataContext := Person;
-  PersonBindManager.Add('Name', Edit3, 'Text').TwoWay;
-  PersonBindManager.Add('Name', Label3, 'Caption');
+  PersonBindManager.Add('PersonName', Edit3, 'Text').TwoWay;
+  PersonBindManager.Add('PersonName', Label3, 'Caption');
   PersonBindManager.Add('Country', Edit1, 'Text').TwoWay;
   PersonBindManager.Add('Country', Label4, 'Caption');
   PersonBindManager.Add('Active', CheckBox1, 'Checked').TwoWay;
@@ -108,22 +107,19 @@ begin
   Company.LoadSampleData;
   // set DataContext to Company e bind employers to list
   CompanyBindManager.DataContext := Company;
-  CompanyBindManager.Add('Name', Label10, 'Caption');
-  {
-  Binding := CompanyBindManager.Add('Employees', ListBox1, 'Items', TInfraListToText.Create);
-  Binding.ConverterParameter := TInfraString.NewFrom('Name');
-  }
+  CompanyBindManager.Add('CompanyName', Label10, 'Caption');
+  CompanyBindManager.Add('Employees.Person.Name', ListBox1, 'Items');
   CompanyBindManager.Active := True;
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
 begin
-  Person.Name.AsString := 'Mattrah John';
+  Person.PersonName.AsString := RandomPersonName;
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
-  Person.Country.AsString := 'England';
+  Person.Country.AsString := RandomCountry;
 end;
 
 procedure TForm1.Button3Click(Sender: TObject);
@@ -139,7 +135,7 @@ begin
   for vI := 0 to 3 do
   begin
     vEmployee := TPerson.Create;
-    vEmployee.Name.AsString := 'Employer ' + IntToStr(ListBox1.Items.Count);
+    vEmployee.LoadSampleData;
     Company.Employees.Add(vEmployee);
   end;
 end;

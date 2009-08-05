@@ -25,23 +25,23 @@ type
 
   TCity = class(TInfraObject, ICity)
   private
-    FName: IInfraString;
+    FCityName: IInfraString;
     FPopulation: IInfraInteger;
-    function GetName: IInfraString;
+    function GetCityName: IInfraString;
     function GetPopulation: IInfraInteger;
-    procedure SetName(const Value: IInfraString);
+    procedure SetCityName(const Value: IInfraString);
     procedure SetPopulation(const Value: IInfraInteger);
   public
     procedure InfraInitInstance; override;
     procedure LoadSampleData;
-    property Name: IInfraString read GetName write SetName;
+    property CityName: IInfraString read GetCityName write SetCityName;
     property Population: IInfraInteger read GetPopulation write SetPopulation;
   end;
 
   TPerson = class(TInfraObject, IPerson)
   private
     FID: IInfraInteger;
-    FName: IInfraString;
+    FPersonName: IInfraString;
     FEmail: IInfraString;
     FAddress: IInfraString;
     FState: IInfraString;
@@ -58,7 +58,7 @@ type
     function GetCountry: IInfraString;
     function GetEmail: IInfraString;
     function GetID: IInfraInteger;
-    function GetName: IInfraString;
+    function GetPersonName: IInfraString;
     function GetState: IInfraString;
     function GetDetails: IInfraString;
     function GetCity: ICity;
@@ -69,7 +69,7 @@ type
     procedure SetCountry(const Value: IInfraString);
     procedure SetEmail(const Value: IInfraString);
     procedure SetID(const Value: IInfraInteger);
-    procedure SetName(const Value: IInfraString);
+    procedure SetPersonName(const Value: IInfraString);
     procedure SetState(const Value: IInfraString);
     procedure SetDetails(const Value: IInfraString);
     procedure SetCity(const Value: ICity);
@@ -77,7 +77,7 @@ type
     procedure InfraInitInstance; override;
     procedure LoadSampleData;
     property ID: IInfraInteger read GetID write SetID;
-    property Name: IInfraString read GetName write SetName;
+    property PersonName: IInfraString read GetPersonName write SetPersonName;
     property Email: IInfraString read GetEmail write SetEmail;
     property Address: IInfraString read GetAddress write SetAddress;
     property State: IInfraString read GetState write SetState;
@@ -91,15 +91,15 @@ type
 
   TCompany = class(TInfraObject, ICompany)
   private
-    FName: IInfraString;
+    FCompanyName: IInfraString;
     FEmployees: IInfraList;
-    function GetName: IInfraString;
-    procedure SetName(const Value: IInfraString);
+    function GetCompanyName: IInfraString;
+    procedure SetCompanyName(const Value: IInfraString);
     function GetEmployees: IInfraList;
   public
     procedure InfraInitInstance; override;
     procedure LoadSampleData;
-    property Name: IInfraString read GetName write SetName;
+    property CompanyName: IInfraString read GetCompanyName write SetCompanyName;
     property Employees: IInfraList read GetEmployees;
   end;  
 
@@ -109,6 +109,8 @@ procedure RegisterCity;
 procedure RegisterCompany;
 
 implementation
+
+uses uRandomData, SysUtils, Math, StrUtils;
 
 procedure RegisterUser;
 var
@@ -143,8 +145,8 @@ begin
       AddConstructorInfo('Create', nil, @TPerson.Create);
       AddPropertyInfo('ID', GetType(IInfraInteger),
         @TPerson.GetID, @TPerson.SetID);
-      AddPropertyInfo('Name', GetType(IInfraString),
-        @TPerson.GetName, @TPerson.SetName);
+      AddPropertyInfo('PersonName', GetType(IInfraString),
+        @TPerson.GetPersonName, @TPerson.SetPersonName);
       AddPropertyInfo('Email', GetType(IInfraString),
         @TPerson.GetEmail, @TPerson.SetEmail);
       AddPropertyInfo('Address', GetType(IInfraString),
@@ -178,8 +180,8 @@ begin
     with lCity do
     begin
       AddConstructorInfo('Create', nil, @TCity.Create);
-      AddPropertyInfo('Name', GetType(IInfraString),
-        @TCity.GetName, @TCity.SetName);
+      AddPropertyInfo('CityName', GetType(IInfraString),
+        @TCity.GetCityName, @TCity.SetCityName);
       AddPropertyInfo('Population', GetType(IInfraInteger),
         @TCity.GetPopulation, @TCity.SetPopulation);
     end;
@@ -197,8 +199,8 @@ begin
     with lCompany do
     begin
       AddConstructorInfo('Create', nil, @TCompany.Create);
-      AddPropertyInfo('Name', GetType(IInfraString),
-        @TCompany.GetName, @TCompany.SetName);
+      AddPropertyInfo('CompanyName', GetType(IInfraString),
+        @TCompany.GetCompanyName, @TCompany.SetCompanyName);
       AddPropertyInfo('Employees', GetType(IInfraList),
         @TCompany.GetEmployees);
     end;
@@ -245,20 +247,19 @@ end;
 procedure TCity.InfraInitInstance;
 begin
   inherited;
-
-  FName := AddProperty('Name') as IInfraString;
+  FCityName := AddProperty('CityName') as IInfraString;
   FPopulation := AddProperty('Population') as IInfraInteger;
 end;
 
 procedure TCity.LoadSampleData;
 begin
-  Name.AsString := 'São Leopoldo';
-  Population.AsInteger := 200000;
+  CityName.AsString := RandomCity;
+  Population.AsInteger := Random(200000);
 end;
 
-function TCity.GetName: IInfraString;
+function TCity.GetCityName: IInfraString;
 begin
-  Result := FName;
+  Result := FCityName;
 end;
 
 function TCity.GetPopulation: IInfraInteger;
@@ -266,9 +267,9 @@ begin
   Result := FPopulation;
 end;
 
-procedure TCity.SetName(const Value: IInfraString);
+procedure TCity.SetCityName(const Value: IInfraString);
 begin
-  FName := Value;
+  FCityName := Value;
 end;
 
 procedure TCity.SetPopulation(const Value: IInfraInteger);
@@ -282,7 +283,7 @@ procedure TPerson.InfraInitInstance;
 begin
   inherited;
   FID := AddProperty('ID') as IInfraInteger;
-  FName := AddProperty('Name') as IInfraString;
+  FPersonName := AddProperty('PersonName') as IInfraString;
   FEmail := AddProperty('Email') as IInfraString;
   FAddress := AddProperty('Address') as IInfraString;
   FState := AddProperty('State') as IInfraString;
@@ -296,18 +297,19 @@ end;
 
 procedure TPerson.LoadSampleData;
 begin
-  ID.AsInteger := 1;
-  Name.AsString := 'Diogo Augusto Pereira';
-  Email.AsString := 'diogoap82@gmail.com';
-  Address.AsString := 'Rua ABC';
-  State.AsString := 'RS';
-  Country.AsString := 'Brasil';
-  Birthday.AsDateTime := 30280;
-  Active.AsBoolean := True;
-  Amount.AsDouble := 10000;
-  Details.AsString := 'Observações linha 1' + #13 +
-    'Observações linha 2' + #13 +
-    'Observações linha 3';
+  ID.AsInteger := Random(1500);
+  PersonName.AsString := RandomPersonName;
+  Email.AsString := RandomEmail(RandomPersonName, RandomCompanyName);
+  Address.AsString := RandomStreet;
+  State.AsString := RandomState;
+  Country.AsString := RandomCountry;
+  Birthday.AsDateTime := 30280+Random(1000);
+  Active.AsBoolean := Random(1)=1;
+  Amount.AsDouble := Random(100000);
+  Details.AsString :=
+    'Observações ' + RandomCompanySuffixes + #13 +
+    'Observações ' + RandomCompanySuffixes + #13 +
+    'Observações ' + RandomCompanySuffixes;
   City.LoadSampleData;  
 end;
 
@@ -356,9 +358,9 @@ begin
   Result := FID;
 end;
 
-function TPerson.GetName: IInfraString;
+function TPerson.GetPersonName: IInfraString;
 begin
-  Result := FName;
+  Result := FPersonName;
 end;
 
 function TPerson.GetState: IInfraString;
@@ -411,9 +413,9 @@ begin
   FID := Value;
 end;
 
-procedure TPerson.SetName(const Value: IInfraString);
+procedure TPerson.SetPersonName(const Value: IInfraString);
 begin
-  FName := Value;
+  FPersonName := Value;
 end;
 
 procedure TPerson.SetState(const Value: IInfraString);
@@ -426,7 +428,7 @@ end;
 procedure TCompany.InfraInitInstance;
 begin
   inherited;
-  FName := AddProperty('Name') as IInfraString;
+  FCompanyName := AddProperty('CompanyName') as IInfraString;
   FEmployees := AddProperty('Employees') as IInfraList;
 end;
 
@@ -434,20 +436,20 @@ procedure TCompany.LoadSampleData;
 var
   vEmployee: IPerson;
 begin
-  Name.AsString := 'Microsoft';
+  CompanyName.AsString := RandomCompanyName;
   vEmployee := TPerson.Create;
   vEmployee.LoadSampleData;
   Employees.Add(vEmployee);
 end;
 
-function TCompany.GetName: IInfraString;
+function TCompany.GetCompanyName: IInfraString;
 begin
-  Result := FName;
+  Result := FCompanyName;
 end;
 
-procedure TCompany.SetName(const Value: IInfraString);
+procedure TCompany.SetCompanyName(const Value: IInfraString);
 begin
-  FName := Value;
+  FCompanyName := Value;
 end;
 
 function TCompany.GetEmployees: IInfraList;
