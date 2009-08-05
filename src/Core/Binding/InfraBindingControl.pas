@@ -110,16 +110,20 @@ type
   private
     FListModel: IBindableListModel;
     //function GetListModel: IBindableListModel;
+    function FindObjectNoListBox(const pObject: IInfraType): integer;
   protected
     procedure WndProc(var Message: TMessage); override;
     //function GetValue: IInfraType; override;
+    procedure AddItemToControl(const pValue: string; const pObject: IInfraType);
+    procedure RemoveItemOfControl(const pObject: IInfraType);
+    procedure FillControl(const pListModel: IBindableListModel);
     procedure SetValue(const Value: IInfraType); override;
   public
     class function CreateIfSupports(pControl: TControl;
       const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
-  TBindableItemIndex  = class(TBindableVCLPropertyTwoWay)
+  TBindableItemIndex = class(TBindableVCLPropertyTwoWay)
   private
     FListModel: IBindableListModel;
   protected
@@ -131,7 +135,7 @@ type
       const pPropertyPath: string): IBindableVCLProperty; override;
     //constructor Create(pControl: TControl); reintroduce;
   end;
-  
+
 procedure RegisterBindableClass(pBindableClass: TBindableVCLPropertyClass);
 function GetBindableVCL(pControl: TControl;
   const pExpression: string): IBindable;
@@ -143,7 +147,8 @@ uses
   SysUtils,
   StdCtrls,
   InfraValueType,
-  InfraBindingConsts, InfraBindingConverter;
+  InfraBindingConsts,
+  InfraBindingConverter;
 
 var
   _BindableClasses: TList;
@@ -227,6 +232,7 @@ begin
 end;
 
 // *** ver uma forma de nao precisar ficar criando o type a cada getvalue
+
 function TBindableRTTIBased.GetValue: IInfraType;
 var
   vObject: TObject;
@@ -242,11 +248,11 @@ begin
     tkInteger, tkChar, tkWChar:
       Result := TInfraInteger.NewFrom(GetOrdProp(FControl, FPropInfo));
     tkClass:
-    begin
-      vObject := GetObjectProp(FControl, FPropInfo);
-      if vObject is TStrings then
-        Result := TInfraString.NewFrom(TStrings(vObject).Text);
-    end;
+      begin
+        vObject := GetObjectProp(FControl, FPropInfo);
+        if vObject is TStrings then
+          Result := TInfraString.NewFrom(TStrings(vObject).Text);
+      end;
   end;
 end;
 
@@ -268,11 +274,11 @@ begin
       SetOrdProp(FControl, FPropInfo,
         Trunc((Value as IInfraInteger).AsInteger));
     tkClass:
-    begin
-      vObject := GetObjectProp(FControl, FPropInfo);
-      if vObject is TStrings then
-        TStrings(vObject).Text := (Value as IInfraString).AsString;
-    end;
+      begin
+        vObject := GetObjectProp(FControl, FPropInfo);
+        if vObject is TStrings then
+          TStrings(vObject).Text := (Value as IInfraString).AsString;
+      end;
   end;
 end;
 
@@ -470,16 +476,18 @@ begin
     and Supports(Value, IBindableListModel, vListModel) then
   begin
     case vListModel.Operation of
-      loAdd: ;//AddItemToControl(vListModel.GetTextOfExpression, vListModel.ItemOperated);
-      loRemove: ;//RemoveItemOfControl(vListModel.ItemOperated);
-      loRefresh: ;//FillControl(vListModel);
-      loClear: ;//TCustomListBox(Control).Clear;
+      loAdd: AddItemToControl(vListModel.GetValueOfExpression, vListModel.ItemOperated);
+      loRemove: RemoveItemOfControl(vListModel.ItemOperated);
+      loRefresh: FillControl(vListModel);
+      loClear: TCustomListControl(Control).Clear;
     end;
-  end else
+  end
+  else
     inherited SetValue(Value);
 end;
 
 {
+
 Criar aqui os métodos de opeção no listbox:
 AddItemToControl(vListModel.GetValueOfExpression, vListModel.ItemOperated);
   TCustomListControl(Control).AddItem(pTexto, pObject);
@@ -492,6 +500,39 @@ FillControl(vListModel);
       loRefresh: TCustomListBox(Control).Items.Text := vListType.ItemText;
       loClear: TCustomListBox(Control).Clear;
 }
+
+procedure TBindableCustomListItems.AddItemToControl(
+  const pValue: string; const pObject: IInfraType);
+begin
+  TCustomListControl(Control).AddItem(pValue, TObject(Pointer(pObject)));
+end;
+
+procedure TBindableCustomListItems.RemoveItemOfControl(
+  const pObject: IInfraType);
+begin
+  TCustomListBox(Control).Items.Delete(FindObjectNoListBox(pObject));
+end;
+
+procedure TBindableCustomListItems.FillControl(
+  const pListModel: IBindableListModel);
+var
+  x: Integer;
+  vList: IInfraList;
+begin
+  if Supports(pListModel.List, IInfraList, vList) then
+  begin
+    for x := 0 to vList.Count-1 do
+    begin
+      AddItemToControl(pListModel.GetValueOfExpression, vList.Items[x]);
+    end;
+  end;
+end;
+
+function TBindableCustomListItems.FindObjectNoListBox(
+  const pObject: IInfraType): integer;
+begin
+  result := TCustomListBox(Control).Items.IndexOfObject(TObject(Pointer(pObject)));
+end;
 
 { TBindableItemindex }
 
@@ -531,9 +572,10 @@ begin
 end;
 
 // *** rever isso
+
 procedure TBindableItemIndex.SetValue(const Value: IInfraType);
 var
-//  vListType: IVCLListType;
+  //  vListType: IVCLListType;
   vInteger: IInfraInteger;
 begin
   if Supports(Value, IInfraInteger, vInteger) then
@@ -588,3 +630,4 @@ finalization
     FreeAndNil(_BindableClasses);
 
 end.
+

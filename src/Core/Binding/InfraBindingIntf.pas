@@ -18,7 +18,7 @@ type
     loRefresh, loExchange, loSelectionChange);
   TPropertyAccessMode = (paRTTI, paCustom);
 
-  IBindable = interface(IElement)
+          IBindable = interface(IElement)
     ['{E4FF9385-092B-422B-8BCB-0A28CB611C82}']
     function GetUpdating: boolean;
     procedure BeginUpdate;
