@@ -1,0 +1,38 @@
+Como Instalar?
+==============
+1) Baixe o ultimo release ou dê checkout dos fontes do repositorio
+2) descompacte o arquivo em C:\Infra e abra o Delphi
+2) No Delphi clique em Tools - Enviroment - Library. Adicione C:\infra\bin ao Search Path
+3) Descompacte o Arquivo Infra\Third\Zeos.Rar no próprio diretório
+4) Abra c:\Infra\Third\Zeos\Zeos\packages\delphi7\ZeosDbo.bpg e dê um Build All para compilar as bibliotecas do ZEOS;
+5) Abra c:\Infra\Infra.bpg
+6) Dê um Build All nos projetos e pode rodar os Testes (Tem de instalar o DUnit, veja Third\OthersThird.txt)
+
+Lista de diretórios e sua descrição:
+====================================
+Infra\Src\		Pasta que mantem o código fonte do Infra.
+Infra\Src\Build\	Pasta para os arquivos compilados.
+
+Infra\Src\UnitTests\	Pasta com testes unitários de cada framework.
+  Bin			Pasta para arquivos compilados e arquivos auxiliares aos testes unitários
+  InfraAnnotation	Teste unitário Annotation Framework
+  InfraAspect		Teste unitário Aspect Framework
+  InfraOPF		Teste unitário Persistence Framework
+  InfraReflect		Teste unitário Reflection Framework
+
+Infra\Demos\		Pasta com projetos demonstração.
+Infra\Demos\Binding	Demonstrações Binding Framework.
+  ControlToControl	Mostra como amarrar controles a outros controles
+  TypeToControl		Mostra como amarrar InfraTypes a controles
+	
+Infra\Demos\GuiBuilder	Demonstrações GUIBuilder Framework.
+
+Infra\Core\		
+	Aspect		classes do InfraAspect, programação orientada a aspectos.
+	Common		classes básicas e servicos principais dos frameworks.
+	Persistence	classes do InfraHibernate, persistencia de dados.
+	Reflect		classes do InfraReflect, reflexao do modelo.
+	Templates	arquivos template para listas.
+	Valuetype	classes do InfraType, para substituição dos tipos nativos.
+Infra\Documents\	Pasta que mantem toda a documentação e diagramas.
+Infra\Third\		Pasta com links e tutorial para instalação de bibliotecas de terceiros (alguns de uso opicional, e configurado no Infra.Inc).

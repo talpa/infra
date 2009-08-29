@@ -1,0 +1,219 @@
+- procedure TBinding.UpdateRight trata o getvalue que tem de suportar o typeinfo do rigth value;
+- problema no getvalue do TBindableCustomListItems que nao retorna o listmodel
+- como tratar o selection do TBindableItemIndex já que teremos outro listmodel
+
+- A reflexão deve procurar a propriedades nos pais se nao encontrar no objeto atual;
+- Mudar a propriedade TInfraType.Name para TypeName;
+
+
+Duvidas:
+a) Qual a necessidade o IsClosed e Close no SessionFactory?
+
+1) Colocar propriedade LegacyConnection no Configuration para que o programador possa passar um connection já existente na aplicação;
+   O configuration.clear precisa por para nil o legacyconnection
+
+2) clonar o configuration já no BuildSessionFactory e passar o clone para TSessionFactory.Create;
+
+[DONE - Marcos George]
+- Montar classe DBUnit
+  Esta classe é para acesso direto ao banco para facilitar os testes unitários de classes como o PersistenceEngine
+
+- Testar e corrigir se necessária a implementação do Save e Flush;
+
+[DONE - Marcos George]
+- Corrigir os testes unitários q foram quebrados;
+
+- Fazer documentação das classes de persistencia;
+
+- Criar um documento de padronização no wiki, contendo:
+  Padrão da legenda de descricao do commit no SVN: CHG = change, NEW = Novidades, BUG = Bugfixes;
+  Mostrar como sempre deve-se verificar as alterações em todas as units antes de dar o commit;
+  Definir o modelo de reunioes
+  Nos domingos ou nas segundas pra estabelecer metas
+  Às quintas para fazer um apanhado das mudancas e ver se será possível bater a meta (ou fechar, pra ter uma versão funcional no final da semana)
+
+[DONE - Marcos George]
+- Criar um ParseParams usando expressão regular
+  Converter o parse de parametros atual para usar expressao regulares
+  Possíveis Expressoes regulares para achar os parametros:
+  Remover: (\/\*(.*)\*\/|--(.*)|##\w+|#:\w+|:#\w+|::\w+)
+  Obter para FParams: \#\w+
+  Obter para FMacroParams: \:\w+
+
+- Padronizar ou refatorar os nomes das classes de Template e de Exception da Persistencia;
+  EInfraError, 
+      EPersistenceError
+          EPersistenceTemplateError 
+          EPersistenceConnectionProviderError 
+          EPersistenceTemplatePersistenceEngineError 
+  Somente classes base deveria ter Infra como prefixo ou o nome das units principais.
+
+- Refatorar o ConnectionProvider
+  O ConnectionProvider deve servir como um Pool de conexões;
+  E deve ser Thread-Safe, eu criei um pool deste tipo para o DynamicTier (outro framework de minha autoria).
+  Ele usa semáforos e foi baseado nos artigos de Cary Jensen:
+  http://dn.codegear.com/article/29908
+  http://dn.codegear.com/article/30027
+  Podemos usar até os artigos dele para extrair a documentação necessária para nosso ConnectionProvider.
+  Minha implementação está amarrada ao DBExpress mas pode ser facilmente convertida para o ZEOS.
+  Pela característica do Pool, talvez ele devesse estar em uma unit separada.
+
+- Separar o peenchimento do objeto do PersistenceEngine
+  O PersistenceEngine está com muita responsabilidade. Podemos criar uma classe chamado: TObjectLoader, TObjectFiller, TEntityLoader ou outro;
+  Este objeto seria responsável por preencher os atributos do objeto a partir de um resultset passado para o mesmo.
+  para ficar Dividir o persistence engine para que o preenchimento do objeto fique separada da carga
+  Isso vai melhorar a qualidade facilitar dos testes unitários tambem.
+
+- Dar suporte a macrosubstituição no template
+  Podemos montar instruções sql mais dinâmicas algo como por exemplo:
+  "Select campo1, campo2 from #Macro1 where ..."
+  Hoje a classe que faz parse de parametros já está pronta para isto, mas a carga não.
+  Uma macro é como um parâmetro qualquer, logo pode-se usar a propriedade SQLCommand.Params definir o valor a ser substituido.
+  Durante o PersistenceEngine.Load/Execute, antes de o passar o sql para o Statement podemos fazer a macro-substituição.
+
+- Carga automática de relacionamentos;
+  Existe no TypeService um método chamado AddRelation, que registra a relação entre duas classes, a cardinalidade e os typeinfo do destino, seja este destino uma classe ou uma lista.
+  Pela cardinalidade podemos determinar o tipo de relação 1-1, 1-n, n-1
+  Com isso a reflexão nos proporciona os requisitos necessário para que durante a carga dos atributos dos objetos verificarmos se suporta infraobject ou infralist e então efetuar a carga.
+  Por padrão a carga será OnDemand (lazy) e podemos usar AOP para isso, podemos criar um aspecto que intercepte o método getter do atributo (o objeto ou a lista), isso quer dizer que quando o método for executado o aspecto será disparado e então fazemos a carga lazy do mesmo.
+  Uma anotação pode ser criada para determinar se a carga será direta, então quando acontecer a carga do objeto a carga estiver tudo que estiver anotado com isso será carregado na hora;
+  Quando o atributo for carregado devemos remover a interceptação (jointpoint) do método para que a carga nao acontece na proxima vez que acessarmos o mesmo atributo.
+  Geração de SQL apenas com o q foi alterado
+
+- Copiar documentação relevante.
+  Já existem muitos frameworks de persistencia no mercado, muitos com uma boa documentação.
+  Poderiamos estar lendo estas documentações e definindo a documentação da persistência do Infra;
+
+- Criar um esquema de cache para os templates já lidos:
+  Assim os templates não será preciso ficar sendo carregados de arquivo a cada load. 
+  Ao carregar um objeto pela primeira vez, um objeto de cache seria criado e preenchido inicialmente com a SQL, Tipos de Lista e de classe;
+  Ver a necessidade e possibilidade de um garbage para este cache;
+
+- Definir o tipo de lista já no registro de uma classe:
+  Adicionar no AddType da reflexão o tipo de lista para a classe que está sendo registrada, por padrao nil ou nullguid;
+  Isso vai evitar na maioria dos cassos ter de passar o tipo de lista para o Session.Load.
+
+- Criar diagramas UML da Persistencia;
+
+- Criar um TemplateReader para gere gração dinâmica de sqls
+  Isso pode ser feito baseado em anotações;
+  Podemos verificar se a class tem uma determina anotacao presente sendo e gerar as sql baseada nas anotacao da classe
+  Caso encontre esta anotacao utiliza-se o TemplateReader específico de anotações que vai gerar a sql dinamicamente.
+  Caso contrário pode ir ao configuration ver se tem um outro TemplateReader a ser utilizado.
+
+- Portar o framework para freepascal;
+
+- Compatibilizar com as outras versões do delphi;
+  Hoje está testado com Delphi7;
+
+- Criar um framework de serialização que possibilita.
+  Uma sugestão para implementação deste framework seria fazer algo similar ao Serializer do Java (InputStream/OutPutStream).
+  Como o infra já tem um framework de reflexão bem completo, serializar infratypes será muito simples.
+
+- Criar uma camada de comunicação tcp e http 
+  Podemos usar os componentes synapse, ics, indy ou outras tecnologias como datasnap, rembojects, etc...;
+  O foco principal deve ser nos primeiros por serem opensource e já dar ter suporte para freepascal;
+  
+- Criar serializador para formato AMF 
+  Com este serializador poderemos ler e gravar objetos remotos flex;
+  Existe uma especificação clara deste formato no site da adobe;
+	
+- Criar um método IConfiguration.LoadFromFile(pConfigFile: string); 
+  O arquivo poderia ser um .ini, .xml, .conf ou outro qualquer q houvesse suporte para tal
+	
+- Controlde de Transaçoes;
+  A conexão não pode ser aberta no Load e no Execute porque se for preciso fazer toda a leitura no contexto de uma transação, 
+	isso impossibilitaria.
+	
+	A transação deveria ser iniciada pelo Session, como no Hibernate? 
+	session := PersistenceService.OpenSession;
+	session.StartTransaction;
+	... operacoes Save, Delete 
+	session.Commit;
+	
+	Se esse controle de abertura e fechamento da transação ficar apenas no Flush, eu não vou poder customizar minha transação e 
+	tbm não tenho como controlar o q fica dentro e fora da transação. Por exemplo: se vc tentar dar um rollback das alterações 
+	feitas em uma tabela tipo MyISAM no mysql ele vai retornar um erro: "Some non-transactional changes could not be rolled back"
+
+- Como tratar o Estado dos objetos quando uma transação não pode ser efetivada
+
+- Property Changed (InfraType) no Load
+  Se esta propriedade ficasse false quando efetuo a leitura da Entidade do Banco de Dados, eu poderia utilizá-la pra controlar o 
+	processo de atualização. Que propriedades foram alteradas? Assim, eu poderia gerar um SQL apenas do q foi alterado:
+		update produtos set
+		 descricao = :descricao
+		where
+		 id = :id
+		 and descricao = :old_descricao << necessário pra evitar conflitos com outros processos
+	
+- Analisar o seguinte caso:
+
+	Produto no Banco de dados: 
+	ID = 1
+	Estoque = 6
+
+	  Aplicação 1				Aplicação 2	
+		----------------	-----------------
+		Load(Prod_1)      Load(Prod_1)     <<< - Ambos Lêem Est = 6
+	  Est := Est - 1 (5)
+	  Save(Prod_1)
+		                  Est := Est - 2 (4)
+											Save(Prod_1)
+											
+	Produto no Banco de dados: 
+	ID = 1
+	Estoque = ?? (O resultado correto deveria ser 3, mas como a Aplicação 2 alterou por ultimo de forma otimista, o resultado é 4)
+
+- No caso de eu ter apenas uma instancia de um determinado objeto no cache, como fica o controle de acesso? Qualquer um pode alterar?
+  Não tem nenhum tipo de controle como um de travamento de registro?
+	
+- As classes do Infra são ThreadSafe?
+
+- Depois do Flush() deve-se dar um Refresh no objeto para que os dados modificados através de triggers sejam lidos e o objeto
+  reflita o seu estado atual no banco
+	
+- Merge de Objetos
+
+- Como fica o uso de multiplos bancos de dados, visto que eu só tenho uma instância de PersistenceService?
+
+- Como fica o mapeamento O/R no caso de bancos de dados que fazem diferenciação entre maiúsculas e minusculas?
+
+- É possível algum tipo de Log/Monitoramento?
+
+- Como ficam IDs atribuidos por triggers/campos autoincrement/sequences?
+
+- O Zeos dá suporte a varios parametros de conexao, mas o infra nao.
+
+- O flush não está apagando a lista de comandos (fazer testes unitários pra isso)
+
+- testar o limite de comandos que podem ser adicionados num processo em lote
+
+- Em q ordem os comandos serão executados no Flush?
+  
+  No Hibernate é assim:
+  The SQL statements are issued in the following order
+	all entity insertions, in the same order the corresponding objects were saved using EntityManager.persist()
+	all entity updates
+	all collection deletions
+	all collection element deletions, updates and insertions
+	all collection insertions
+	all entity deletions, in the same order the corresponding objects were deleted using EntityManager.remove()
+
+- Paginação: Primeiro registro, Qtd de Registros
+
+- Acho que seria bom modificarmos o CreateQuery para CreateNamedQuery e deixar o CreateQuery para o IQL (Infra Query Language):
+  qry := session.CreateQuery('Select * from TAccount');
+
+"As soon as you do something that requires access to the database, a JDBC connection will be obtained from the pool."
+
+- TCallBackSubscription.Publish
+(segunda forma), só está verificando o MetodoFilter no Final em vez de no
+começo
+
+- Criar um tipo de Subscription que injete uma lista e possa adicionar observers especificos àquele objeto;
+
+- Por o AsString no InfraType
+
+- Eliminar o Publishers, Publishers for SubscribeIterator do eventserviceitem
+
+- Montar testes unitários para o InfraNotify
