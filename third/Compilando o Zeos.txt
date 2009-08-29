@@ -1,0 +1,21 @@
+Observações Importantes:
+
+<InfraRoot> 	= Diretorio onde estão os fontes do Infra
+<IdeVersion> 	= Diretorio do Delphi, Lazarus ou Kylix com sua respectiva versão
+
+Passos:
+
+* Baixe o Zeos caso vc ainda nao tenha feito (Usamos a versão ZEOSDBO-6.6.4-stable): 
+  http://downloads.sourceforge.net/zeoslib/ZEOSDBO-6.6.4-stable.zip?modtime=1225542114&big_mirror=0
+
+* Descompacte o arquivo Zeos.rar em <InfraRoot>\third\Zeos
+
+* Abra o grupo de projeto <InfraRoot>\third\Zeos\packages\<IdeVersion>\ZeosDbo.bpg
+
+* Dê um build apenas nos seguintes pacotes:
+  ZDbc.dpk, ZCore.dpk, ZPlain.dpk, ZParseSql.dpk
+  As DCPs e BPLs serão compilados e armazendos no diretorio <InfraRoot>\third\Zeos\packages\<IdeVersion>
+  As Dcus serão compilados e armazendos no diretorio        <InfraRoot>\third\Zeos\packages\<IdeVersion>\Build
+
+* Mova dcus, dcps e bpls que foram compiladas acima para para o diretorio <InfraRoot>\src\build
+  Ou tenha a certeza de que os diretorios do passo anterior estejam no Enviroment Options - Library Path do Delphi

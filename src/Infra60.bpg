@@ -1,0 +1,43 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = InfraCore60.bpl InfraTypes60.bpl InfraAOP60.bpl InfraGUI60.bpl \
+  InfraOPF60.bpl InfraReflectTests.exe InfraAnnotationTests.exe \
+  InfraAspectTests.exe
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+InfraAspectTests.exe: UnitTests\InfraAspect\InfraAspectTests.dpr
+  $(DCC)
+
+InfraAnnotationTests.exe: UnitTests\InfraAnnotation\InfraAnnotationTests.dpr
+  $(DCC)
+
+InfraReflectTests.exe: UnitTests\InfraReflect\InfraReflectTests.dpr
+  $(DCC)
+
+InfraCore60.bpl: Packages\D6\InfraCore.dpk
+  $(DCC)
+
+InfraAOP60.bpl: Packages\D6\InfraAOP.dpk
+  $(DCC)
+
+InfraTypes60.bpl: Packages\D6\InfraTypes.dpk
+  $(DCC)
+
+InfraGUI60.bpl: Packages\D6\InfraGUI.dpk
+  $(DCC)
+
+InfraOPF60.bpl: Packages\D6\InfraOPF.dpk
+  $(DCC)
+
+

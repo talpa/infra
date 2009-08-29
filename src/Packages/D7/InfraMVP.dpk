@@ -1,0 +1,56 @@
+package InfraMVP;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'InfraMVP - Framework de Apresentação'}
+{$LIBSUFFIX '70'}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcl;
+
+contains
+  InfraCommand in '..\..\Core\MVP\InfraCommand.pas',
+  InfraInteractor in '..\..\Core\MVP\InfraInteractor.pas',
+  InfraModel in '..\..\Core\MVP\InfraModel.pas',
+  InfraMVPIntf in '..\..\Core\MVP\InfraMVPIntf.pas',
+  InfraMVPRegister in '..\..\Core\MVP\InfraMVPRegister.pas',
+  InfraPresenter in '..\..\Core\MVP\InfraPresenter.pas',
+  InfraRenderer in '..\..\Core\MVP\InfraRenderer.pas',
+  InfraSelection in '..\..\Core\MVP\InfraSelection.pas',
+  InfraView in '..\..\Core\MVP\InfraView.pas',
+  List_MVPView in '..\..\Core\MVP\List_MVPView.pas',
+  List_Presenter in '..\..\Core\MVP\List_Presenter.pas',
+  List_View in '..\..\Core\MVP\List_View.pas',
+  InfraFriendClasses in '..\..\Core\MVP\VCL\InfraFriendClasses.pas',
+  InfraMVPVCLIntf in '..\..\Core\MVP\VCL\InfraMVPVCLIntf.pas',
+  InfraVCLCommand in '..\..\Core\MVP\VCL\InfraVCLCommand.pas',
+  InfraVCLEvents in '..\..\Core\MVP\VCL\InfraVCLEvents.pas',
+  InfraVCLInteractor in '..\..\Core\MVP\VCL\InfraVCLInteractor.pas',
+  InfraVCLPresenter in '..\..\Core\MVP\VCL\InfraVCLPresenter.pas',
+  InfraVCLRenderer in '..\..\Core\MVP\VCL\InfraVCLRenderer.pas',
+  InfraVCLView in '..\..\Core\MVP\VCL\InfraVCLView.pas',
+  List_VCLMenuItem in '..\..\Core\MVP\VCL\List_VCLMenuItem.pas';
+
+end.

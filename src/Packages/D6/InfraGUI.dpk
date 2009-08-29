@@ -1,0 +1,60 @@
+package InfraGUI;
+
+{$R *.res}
+{$R '..\..\Core\LayoutManager\LayoutManager.dcr'}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'InfraGUI - Framework de geração de GUI'}
+{$LIBSUFFIX '60'}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcl,
+  designide,
+  vclx,
+  xmlrtl,
+  inet,
+  InfraCore,
+  InfraTypes;
+
+contains
+  LayoutManager in '..\..\Core\LayoutManager\LayoutManager.pas',
+  LayoutManagerReg in '..\..\Core\LayoutManager\LayoutManagerReg.pas',
+  TabOrderForm in '..\..\Core\LayoutManager\TabOrderForm.pas' {TabOrderForm},
+  CustomizeScreen in '..\..\Core\GUIBuilder\CustomizeScreen.pas' {CustomizeScreen},
+  CustomizeScreenControl in '..\..\Core\GUIBuilder\CustomizeScreenControl.pas' {CustomizeScreenControl},
+  GUIAnnotation in '..\..\Core\GUIBuilder\GUIAnnotation.pas',
+  GUIAnnotationIntf in '..\..\Core\GUIBuilder\GUIAnnotationIntf.pas',
+  GUIAnnotationLoaderIntf in '..\..\Core\GUIBuilder\GUIAnnotationLoaderIntf.pas',
+  GUIAnnotationLoaderXML in '..\..\Core\GUIBuilder\GUIAnnotationLoaderXML.pas',
+  InfraGUIBuilder in '..\..\Core\GUIBuilder\InfraGUIBuilder.pas',
+  InfraGUIBuilderForm in '..\..\Core\GUIBuilder\InfraGUIBuilderForm.pas',
+  InfraGUIBuilderIntf in '..\..\Core\GUIBuilder\InfraGUIBuilderIntf.pas',
+  InfraGUIBuilderRegister in '..\..\Core\GUIBuilder\InfraGUIBuilderRegister.pas',
+  List_GUIControl in '..\..\Core\GUIBuilder\List_GUIControl.pas',
+  List_GUIMapping in '..\..\Core\GUIBuilder\List_GUIMapping.pas',
+  List_Screen in '..\..\Core\GUIBuilder\List_Screen.pas',
+  List_ScreenItem in '..\..\Core\GUIBuilder\List_ScreenItem.pas',
+  List_CustomProperty in '..\..\Core\GUIBuilder\List_CustomProperty.pas';
+
+end.
