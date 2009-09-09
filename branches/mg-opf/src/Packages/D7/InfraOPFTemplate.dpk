@@ -38,20 +38,20 @@ requires
   dbrtl;
 
 contains
-  InfraOPFIntf in '..\..\Core\InfraOPFTemplate\InfraOPFIntf.pas',
-  InfraOPFService in '..\..\Core\InfraOPFTemplate\InfraOPFService.pas',
-  InfraOPFConsts in '..\..\Core\InfraOPFTemplate\InfraOPFConsts.pas',
-  List_SQLCommandParam in '..\..\Core\InfraOPFTemplate\List_SQLCommandParam.pas',
-  List_SQLCommandList in '..\..\Core\InfraOPFTemplate\List_SQLCommandList.pas',
-  InfraOPFAnnotation in '..\..\Core\InfraOPFTemplate\InfraOPFAnnotation.pas',
-  InfraOPFConnectionProvider in '..\..\Core\InfraOPFTemplate\InfraOPFConnectionProvider.pas',
-  InfraOPFConfiguration in '..\..\Core\InfraOPFTemplate\InfraOPFConfiguration.pas',
-  InfraOPFTemplates in '..\..\Core\InfraOPFTemplate\InfraOPFTemplates.pas',
-  InfraOPFParsers in '..\..\Core\InfraOPFTemplate\InfraOPFParsers.pas',
-  InfraOPFSqlCommands in '..\..\Core\InfraOPFTemplate\InfraOPFSqlCommands.pas',
-  InfraOPFSession in '..\..\Core\InfraOPFTemplate\InfraOPFSession.pas',
-  InfraOPFEngine in '..\..\Core\InfraOPFTemplate\InfraOPFEngine.pas',
-  InfraOPFSessionFactory in '..\..\Core\InfraOPFTemplate\InfraOPFSessionFactory.pas',
-  List_SQLCache in '..\..\Core\InfraOPFTemplate\List_SQLCache.pas';
+  InfraOPFIntf in '..\..\Core\OPFTemplate\InfraOPFIntf.pas',
+  InfraOPFService in '..\..\Core\OPFTemplate\InfraOPFService.pas',
+  InfraOPFConsts in '..\..\Core\OPFTemplate\InfraOPFConsts.pas',
+  List_SQLCommandParam in '..\..\Core\OPFTemplate\List_SQLCommandParam.pas',
+  List_SQLCommandList in '..\..\Core\OPFTemplate\List_SQLCommandList.pas',
+  InfraOPFAnnotation in '..\..\Core\OPFTemplate\InfraOPFAnnotation.pas',
+  InfraOPFConnectionProvider in '..\..\Core\OPFTemplate\InfraOPFConnectionProvider.pas',
+  InfraOPFConfiguration in '..\..\Core\OPFTemplate\InfraOPFConfiguration.pas',
+  InfraOPFTemplates in '..\..\Core\OPFTemplate\InfraOPFTemplates.pas',
+  InfraOPFParsers in '..\..\Core\OPFTemplate\InfraOPFParsers.pas',
+  InfraOPFSqlCommands in '..\..\Core\OPFTemplate\InfraOPFSqlCommands.pas',
+  InfraOPFSession in '..\..\Core\OPFTemplate\InfraOPFSession.pas',
+  InfraOPFEngine in '..\..\Core\OPFTemplate\InfraOPFEngine.pas',
+  InfraOPFSessionFactory in '..\..\Core\OPFTemplate\InfraOPFSessionFactory.pas',
+  List_SQLCache in '..\..\Core\OPFTemplate\List_SQLCache.pas';
 
 end.

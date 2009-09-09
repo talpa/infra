@@ -24,12 +24,14 @@ package InfraOPF;
 {$IMAGEBASE $400000}
 {$DESCRIPTION 'InfraPersistence - Framework de Persistencia'}
 {$LIBSUFFIX '70'}
+{$RUNONLY}
 {$IMPLICITBUILD OFF}
 
 requires
   InfraCore,
   ZDbc,
-  rtl;
+  rtl,
+  InfraTypes;
 
 contains
   InfraHibernate in '..\..\Core\OPF\InfraHibernate.pas',

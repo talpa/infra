@@ -10,8 +10,9 @@ DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = InfraCore70.bpl InfraTypes70.bpl InfraBind70.bpl TypeDemo.exe \
-  ControlDemo.exe InfraReflectTests.exe InfraOPF70.bpl InfraAOP70.bpl \
-  InfraGUI70.bpl InfraAnnotationTests.exe InfraAspectTests.exe BindingSystem.exe
+  ControlDemo.exe InfraReflectTests.exe InfraOPFTemplate70.bpl InfraAOP70.bpl \
+  InfraGUI70.bpl InfraAnnotationTests.exe InfraAspectTests.exe BindingSystem.exe \
+  InfraOPFTemplateTests.exe
 InfraOPFTemplate70.bpl BindingSystem.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
@@ -47,9 +48,6 @@ ControlDemo.exe: ..\demos\Binding\ControlToControl\ControlDemo.dpr
 TypeDemo.exe: ..\demos\Binding\TypeToControl\TypeDemo.dpr
   $(DCC)
 
-InfraOPF70.bpl: Packages\D7\InfraOPF.dpk
-  $(DCC)
-
 InfraOPFTemplate70.bpl: Packages\D7\InfraOPFTemplate.dpk
   $(DCC)
 
@@ -57,6 +55,12 @@ BindingSystem.exe: ..\demos\BindingSistem\BindingSystem.dpr
   $(DCC)
 
 BindingSystem.exe: ..\demos\BindingSystem\BindingSystem.dpr
+  $(DCC)
+
+InfraOPFTemplate70.bpl: Packages\D7\InfraOPFTemplate.dpk
+  $(DCC)
+
+InfraOPFTemplateTests.exe: UnitTests\InfraOPFTemplate\InfraOPFTemplateTests.dpr
   $(DCC)
 
 
