@@ -302,7 +302,7 @@ type
       write SetItem; default;
   end;
 
-  IMemberInfoIterator = interface(IInterface)
+  IMemberInfoIterator = interface(IBaseElement)
     ['{2365C35D-6226-4BF8-85C5-080F9C0DF377}']
     function CurrentItem: IMemberInfo;
     procedure First;
@@ -336,8 +336,8 @@ type
     function Last: IMemberInfo;
     procedure Clear;
     procedure Delete(Index: Integer);
-    function NewMemberInfoIterator(
-      MemberTypes: TMemberTypes): IMemberInfoIterator;
+    function NewMemberInfoIterator(MemberTypes: TMemberTypes;
+      const pClassInfo: IClassInfo): IMemberInfoIterator;
     function NewMethodInfoIterator(MethodType: TMethodType): IMethodInfoIterator;
     function NewPropertyInfoIterator: IPropertyInfoIterator;
     procedure Insert(Index: Integer; const Item: IMemberInfo);
@@ -457,6 +457,7 @@ type
       const pTargetInfo: IClassInfo;
       const pListInfo: IClassInfo = nil); overload;
     procedure SetSuperClass(const Value: IClassInfo);
+    function GetMembersCount: integer;
     property FamilyID: TGUID read GetClassFamily write SetClassFamily;
     property FullName: string read GetFullName;
     property TypeID: TGUID read GetTypeID write SetTypeID;

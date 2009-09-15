@@ -328,22 +328,21 @@ var
   vSession: ISession;
   vObj: IAccount;
 begin
+  {
   PrepararBancoParaCarga;
   // abre uma nova sessão e cria um objeto preenchendo apenas as propriedades
   // que irão servir de parâmetro para a busca
   vSession := FSessionFactory.OpenSession;
-
   vObj := TAccount.Create;
   vObj.Id.AsInteger := 1;
   vSession.Load(vObj);
- 
   CheckNotNull(vObj, cObjetoNaoFoiCarregado);
   CheckEqualsString('BB 1361', vObj.Name.AsString, cNomeContaIncompativel);
   CheckEqualsString('1361-2', vObj.AccountNumber.AsString, cNumeroDaContaIncompativel);
   CheckEquals(125.3, vObj.InitialBalance.AsDouble, cEpsilon, cSaldoInicialIncompativel);
   CheckEquals(1524.25, vObj.CurrentBalance.AsDouble, cEpsilon, cSaldoAtualIncompativel);
   // *** verificar estado do objeto
-
+  }
 end;
 
 initialization

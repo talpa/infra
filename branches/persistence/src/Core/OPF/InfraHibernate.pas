@@ -95,6 +95,7 @@ type
     function Load(const pInstanceToLoad: IInfraType;
       const pOID: IInfraType): IInfraType; overload;
     procedure Delete(const pObject: IInfraType);
+    function Save(const pObject: IInfraObject): IInfraType;
     procedure SetConnection(const Value: IZConnection);
     function CreateCriteria(const pTypeID: TGUID): ICriteria; overload;
     function CreateCriteria(const pTypeInfo: IClassInfo): ICriteria; overload;
@@ -486,6 +487,18 @@ begin
   // Se existe e status nao está deletado
   //   pega o persister e o id do entityentry
   //   chama DeleteEntity(pObject, persister)
+end;
+
+function TSession.Save(const pObject: IInfraObject): IInfraType;
+begin
+  {
+    - p := pega o Persister,
+    - testa o estado do pObject
+    - testar o estado do objeto
+    - retorno := chama o método do persister adequadamente: insert ou update
+    * apos salvo quem muda o estado do objeto? o persister ou aqui?
+    * o que acontece se pObject está como Deleted?
+  }
 end;
 
 { TEntityLoader }

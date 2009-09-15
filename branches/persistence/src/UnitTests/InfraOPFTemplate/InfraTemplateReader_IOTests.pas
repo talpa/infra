@@ -23,7 +23,6 @@ type
     procedure TestCreateWithInvalidArgs;
     procedure TestGetFileNameWithDefaults;
     procedure TestGetFileNameConfig;
-    procedure TestReadFileNotExists;
     procedure TestRead;
   end;
 
@@ -49,9 +48,9 @@ end;
 
 procedure TTestTemplateReader_IO.TestCreateWithInvalidArgs;
 begin
-//  ExpectedException := EInfraArgumentError;
-//  TTemplateReader_IO.Create;
-//  ExpectedException := nil;
+  ExpectedException := EInfraArgumentError;
+  TTemplateReader_IO.Create;
+  ExpectedException := nil;
 end;
 
 procedure TTestTemplateReader_IO.TestGetFileNameWithDefaults;
@@ -94,21 +93,6 @@ begin
   end;
 end;
 
-procedure TTestTemplateReader_IO.TestReadFileNotExists;
-var
-  FileName: array [0..MAX_PATH] of Char;
-begin
-  GetTempFileName('.\','tst',0,FileName);
-  try
-    ExpectedException := EFOpenError;
-    FReader.Read(FileName);
-    ExpectedException := nil;
-  finally
-    if FileExists(FileName) then
-      DeleteFile(FileName);
-  end;
-end;
-
 procedure TTestTemplateReader_IO.TestRead;
 var
   FileName: string;
@@ -133,7 +117,7 @@ begin
   end;
 
   try
-    vActual := FReader.Read(FileName);
+    vActual := FReader.ReadFileName(FileName);
   finally
     DeleteFile(PChar(vFullFileName));
   end;

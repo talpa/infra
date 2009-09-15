@@ -14,6 +14,7 @@ type
   /// Descrição da classe
   TPersistenceEngine = class(TBaseElement, IPersistenceEngine, ITransaction)
   private
+    FSQLGenerator: ITemplateReader_Build;
     FConnectionProvider: IConnectionProvider;
     /// Configuração definida no session factory (imutável)
     FConfiguration: IConfiguration;
@@ -22,10 +23,14 @@ type
     /// Item de Conexão atual
     FConnectionItem: IConnectionItem;
     function GetReader: ITemplateReader;overload;
-    function GetReader(const pSqlCommand : ISQLCommand): ITemplateReader_Build;overload;
-    procedure SetParameters(const pStatement: IZPreparedStatement; const pParams: ISqlCommandParams);
-    function GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery; const pResultSet: IZResultSet): IInfraObject;
-    procedure DoLoad(const pStatement: IZPreparedStatement; const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
+    function GetReader(
+      const pSqlCommand : ISQLCommand): ITemplateReader_Build; overload;
+    procedure SetParameters(const pStatement: IZPreparedStatement;
+      const pParams: ISqlCommandParams);
+    function GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery;
+      const pResultSet: IZResultSet): IInfraObject;
+    procedure DoLoad(const pStatement: IZPreparedStatement;
+      const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
     function ReadTemplate(const pSqlCommand: ISQLCommand): string;
     function InternallExecute(const pSqlCommand: ISqlCommand;
       const pConnection: IZConnection): Integer;
@@ -36,11 +41,13 @@ type
     function GetCurrentConnectionItem: IConnectionItem;
   protected
     { IPersistenceEngine }
-    procedure Load(const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
+    procedure Load(const pSqlCommand: ISQLCommandQuery;
+      const pList: IInfraList);
     function Execute(const pSqlCommand: ISqlCommand): Integer;
     function ExecuteAll(const pSqlCommands: ISQLCommandList): Integer;
     { ITransaction }
-    procedure BeginTransaction(pIsolationLevel: TIsolationLevel = tilReadCommitted);
+    procedure BeginTransaction(
+      pIsolationLevel: TIsolationLevel = tilReadCommitted);
     procedure Commit;
     procedure Rollback;
   public
@@ -56,7 +63,7 @@ uses
   InfraCommonIntf,
   InfraOPFParsers,
   InfraOPFConsts,
-  List_SQLCache;
+  List_SQLCache, InfraOPFTemplates;
 
 { TPersistenceEngine }
 
@@ -227,7 +234,8 @@ begin
   vConnection := GetCurrentConnectionItem;
   vStatement := nil;
   try
-    vStatement := vConnection.Connection.PrepareStatementWithParams(vSQL, FParser.GetParams);
+    vStatement := vConnection.Connection.PrepareStatementWithParams(
+      vSQL, FParser.GetParams);
     SetParameters(vStatement, pSqlCommand.Params);
     DoLoad(vStatement, pSqlCommand, pList);
   finally
@@ -243,7 +251,8 @@ end;
   @return ResultDescription
 }
 
-function TPersistenceEngine.GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery;
+function TPersistenceEngine.GetRowFromResultSet(
+  const pSqlCommand: ISQLCommandQuery;
   const pResultSet: IZResultSet): IInfraObject;
 var
   vIndex: integer;
@@ -257,7 +266,8 @@ begin
   //  if IsEqualGUID(pSqlCommand.GetClassID, InfraConsts.NullGUID) then
   //    Raise EPersistenceEngineError.Create(
   //      cErrorPersistEngineObjectIDUndefined);
-  Result := TypeService.CreateInstance(pSqlCommand.ClassTypeInfo) as IInfraObject;
+  Result := TypeService.CreateInstance(
+    pSqlCommand.ClassTypeInfo) as IInfraObject;
   if Assigned(Result) then
   begin
     vMetadata := pResultSet.GetMetadata;
@@ -268,18 +278,20 @@ begin
       vAliasName := vMetadata.GetColumnLabel(vIndex);
       vAttribute := vTypeInfo.GetProperty(Result, vAliasName) as IInfraType;
       if not Assigned(vAttribute) then
-        raise EPersistenceEngineError.CreateFmt(cErrorPersistEngineAttributeNotFound,
+        raise EPersistenceEngineError.CreateFmt(
+          cErrorPersistEngineAttributeNotFound,
           [vAliasName, vMetadata.GetColumnName(vIndex)]);
       if Supports(vAttribute.TypeInfo, IZTypeAnnotation, vZeosType) then
         vZeosType.NullSafeGet(pResultSet, vIndex, vAttribute)
       else
-        raise EPersistenceEngineError.CreateFmt(cErrorPersistEngineCannotMapAttribute,
-          [vAttribute.TypeInfo.Name]);
+        raise EPersistenceEngineError.CreateFmt(
+          cErrorPersistEngineCannotMapAttribute, [vAttribute.TypeInfo.Name]);
     end;
   end;
 end;
 
-function TPersistenceEngine.ReadTemplate(const pSqlCommand: ISQLCommand): string;
+function TPersistenceEngine.ReadTemplate(
+  const pSqlCommand: ISQLCommand): string;
 var
   vReader: ITemplateReader;
 begin
@@ -290,7 +302,7 @@ begin
       vReader := GetReader(pSQLCommand)
     else
       vReader := GetReader;
-    Result := vReader.Read(pSqlCommand.Name);
+    Result := vReader.Read(pSqlCommand);
     AddSQLToCache(pSqlCommand, Result);
   end;
 end;
@@ -381,7 +393,8 @@ begin
   GetCurrentConnectionItem.Connection.Rollback;
 end;
 
-procedure TPersistenceEngine.AddSQLToCache(const pSqlCommand: ISQLCommand; pValue: string);
+procedure TPersistenceEngine.AddSQLToCache(
+  const pSqlCommand: ISQLCommand; pValue: string);
 var
   vSqlCache: ISQLCacheList;
 begin
@@ -389,7 +402,8 @@ begin
     vSqlCache.Items[pSqlCommand.Name] := pValue;
 end;
 
-function TPersistenceEngine.GetSQLFromCache(const pSqlCommand: ISQLCommand): string;
+function TPersistenceEngine.GetSQLFromCache(
+  const pSqlCommand: ISQLCommand): string;
 var
   vSqlCache: ISQLCacheList;
 begin
@@ -403,16 +417,13 @@ begin
     Result := vSqlCache.Items[pSqlCommand.Name]
 end;
 
-function TPersistenceEngine.GetReader(const pSqlCommand : ISQLCommand): ITemplateReader_Build;
-var
-  vReaderClassName: string;
-  vReaderTypeInfo: IClassInfo;
+function TPersistenceEngine.GetReader(
+  const pSqlCommand : ISQLCommand): ITemplateReader_Build;
 begin
-  vReaderTypeInfo := TypeService.GetType('ITemplateReader_Build', True);
-  Result := TypeService.CreateInstance(vReaderTypeInfo) as ITemplateReader_Build;
+  if not Assigned(FSQLGenerator) then
+    FSQLGenerator := TTemplateReader_Build.Create;
+  Result := FSQLGenerator;
   Result.Configuration := FConfiguration;
-  Result.SQLCommand:=psqlcommand;
 end;
 
 end.
-

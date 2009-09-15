@@ -18,7 +18,7 @@ type
     loRefresh, loExchange, loSelectionChange);
   TPropertyAccessMode = (paRTTI, paCustom);
 
-          IBindable = interface(IElement)
+  IBindable = interface(IElement)
     ['{E4FF9385-092B-422B-8BCB-0A28CB611C82}']
     function GetUpdating: boolean;
     procedure BeginUpdate;
@@ -30,18 +30,8 @@ type
     property Updating: boolean read GetUpdating;
   end;
 
-  IBindableInfraType = interface(IBindable)
+  IBindableType = interface(IBindable)
     ['{91B97C6D-6F56-462E-941B-C7E236E71F26}']
-  end;
-
-  IBindableInfraList = interface(IBindable)
-    ['{A6DC67DE-E637-400A-A372-2BC57C47D9A4}']
-  end;
-
-  IBindableVCLProperty = interface(IBindable)
-    ['{36236C4B-607B-4287-8D0E-A617832F17CC}']
-    function GetControl: TControl;
-    property Control: TControl read GetControl;
   end;
 
   IBindableListModel = interface(IInfraType)
@@ -67,6 +57,19 @@ type
     property Expression: string read GetExpression write SetExpression;
   end;
 
+  IBindableList = interface(IBindable)
+    ['{A6DC67DE-E637-400A-A372-2BC57C47D9A4}']
+    function GetListModel: IBindableListModel;
+    procedure SetListModel(const Value: IBindableListModel);
+    property ListModel: IBindableListModel read GetListModel write SetListModel;
+  end;
+
+  IBindableVCLProperty = interface(IBindable)
+    ['{36236C4B-607B-4287-8D0E-A617832F17CC}']
+    function GetControl: TControl;
+    property Control: TControl read GetControl;
+  end;
+
   IBinding = interface(IBaseElement)
     ['{A5945A5F-F235-4BA5-857D-F1BF67660FE3}']
     function GetActive: Boolean;
@@ -81,20 +84,25 @@ type
     procedure SetMode(Value: TBindingMode);
     procedure SetConverter(const Value: ITypeConverter);
     procedure SetConverterParameter(const Value: IInfraType);
+    procedure SetLeft(const Value: IBindable);
+    procedure SetRight(const Value: IBindable);
     procedure UpdateLeft;
     function TwoWay: IBinding;
     property Mode: TBindingMode read GetMode write SetMode;
-    property Left: IBindable read GetLeft;
-    property Right: IBindable read GetRight;
     property Converter: ITypeConverter read GetConverter write SetConverter;
     property ConverterParameter: IInfraType read GetConverterParameter
       write SetConverterParameter;
     property Active: boolean read GetActive write SetActive;
     property Name: string read GetName write SetName;
+    property Left: IBindable read GetLeft write SetLeft;
+    property Right: IBindable read GetRight write SetRight;
   end;
 
   IBindingList = interface(IBinding)
-    procedure AddSelection(const pPropertyName: string);
+    ['{F469A1FD-DA5B-42C4-B81E-56A97F9FE723}']
+    function GetListModel: IBindableListModel;
+    procedure AddSelection(const pLeftProperty, pRightProperty: string);
+    property ListModel: IBindableListModel read GetListModel;
   end;
 
   IBindings = interface
@@ -128,7 +136,8 @@ type
       pRightControl: TControl; const pRightProperty: string = '';
       const pConverter: ITypeConverter = nil): IBinding; overload;
     function AddList(const pLeftExpression: string;
-      pRightControl: TControl; const pRightProperty: string): IBindingList;
+      pRightControl: TControl; const pRightProperty: string;
+      const pConverter: ITypeConverter = nil): IBindingList;
     procedure ClearBindings;
     property DataContext: IInfraType read GetDataContext write SetDataContext;
     property Active: boolean read GetActive write SetActive;
@@ -153,5 +162,6 @@ begin
 end;
 
 end.
+
 
 

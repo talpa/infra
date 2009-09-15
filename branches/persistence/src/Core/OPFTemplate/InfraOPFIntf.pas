@@ -198,8 +198,8 @@ type
 
   ITemplateReader = interface(IElement)
     ['{AFD2D321-E26B-4E48-93FB-48FD24BCE62B}']
-    function ReadFromStream(const pStream: TStream): string;
-    function Read(const pTemplateName: string): string;
+    function ReadFromStream(pStream: TStream): string;
+    function Read(const pSQLCommand: ISQLCommand): string;
     function GetConfiguration: IConfiguration;
     procedure SetConfiguration(const Value: IConfiguration);
     property Configuration: IConfiguration read GetConfiguration
@@ -211,10 +211,7 @@ type
   end;
 
   ITemplateReader_Build = interface(ITemplateReader)
-    ['{01861C33-9789-4A30-8FCC-A018EA45FF13}']
-    function GetSqlCommand: ISQLCommand;
-    procedure SetSqlCommand(const Value: ISQLCommand);
-    property SQLCommand: ISQLCommand read GetSqlCommand write SetSqlCommand;
+    ['{091B1C5F-50F3-4579-BDD7-9639A0F5F2DC}']
   end;
 
   ISQLParamsParser = interface(IBaseElement)

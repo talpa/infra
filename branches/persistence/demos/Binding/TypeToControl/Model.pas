@@ -89,19 +89,28 @@ type
     property City: ICity read GetCity write SetCity;
   end;
 
+  TEmployees = class(TInfraList, IEmployees)
+  private
+    FCurrent: IPerson;
+  protected
+    function GetCurrent: IPerson;
+    procedure SetCurrent(const Value: IPerson);
+    property Current: IPerson read GetCurrent write SetCurrent;
+  end;
+
   TCompany = class(TInfraObject, ICompany)
   private
     FCompanyName: IInfraString;
-    FEmployees: IInfraList;
+    FEmployees: IEmployees;
     function GetCompanyName: IInfraString;
     procedure SetCompanyName(const Value: IInfraString);
-    function GetEmployees: IInfraList;
+    function GetEmployees: IEmployees;
   public
     procedure InfraInitInstance; override;
     procedure LoadSampleData;
     property CompanyName: IInfraString read GetCompanyName write SetCompanyName;
-    property Employees: IInfraList read GetEmployees;
-  end;  
+    property Employees: IEmployees read GetEmployees;
+  end;
 
 procedure RegisterUser;
 procedure RegisterPerson;
@@ -195,16 +204,23 @@ begin
   with TypeService do
   begin
     lCompany := AddType(ICompany, 'Company', TCompany, IInfraObject, GetType(IInfraObject));
-
     with lCompany do
     begin
       AddConstructorInfo('Create', nil, @TCompany.Create);
       AddPropertyInfo('CompanyName', GetType(IInfraString),
         @TCompany.GetCompanyName, @TCompany.SetCompanyName);
-      AddPropertyInfo('Employees', GetType(IInfraList),
+      AddPropertyInfo('Employees', GetType(IEmployees),
         @TCompany.GetEmployees);
     end;
   end;
+end;
+
+procedure RegisterEmployees;
+begin
+  with TypeService, AddType(IEmployees, 'Employees', TEmployees,
+    IInfraList, GetType(IInfraList)) do
+    AddPropertyInfo('Current', GetType(IPerson),
+      @TEmployees.GetCurrent, @TEmployees.SetCurrent);
 end;
 
 { TUser }
@@ -429,7 +445,7 @@ procedure TCompany.InfraInitInstance;
 begin
   inherited;
   FCompanyName := AddProperty('CompanyName') as IInfraString;
-  FEmployees := AddProperty('Employees') as IInfraList;
+  FEmployees := AddProperty('Employees') as IEmployees;
 end;
 
 procedure TCompany.LoadSampleData;
@@ -452,15 +468,28 @@ begin
   FCompanyName := Value;
 end;
 
-function TCompany.GetEmployees: IInfraList;
+function TCompany.GetEmployees: IEmployees;
 begin
   Result := FEmployees;
+end;
+
+{ TEmployees }
+
+function TEmployees.GetCurrent: IPerson;
+begin
+  Result := FCurrent;
+end;
+
+procedure TEmployees.SetCurrent(const Value: IPerson);
+begin
+  FCurrent := Value;
 end;
 
 initialization
   RegisterUser;
   RegisterCity;
   RegisterPerson;
+  RegisterEmployees;
   RegisterCompany;
 
 end.

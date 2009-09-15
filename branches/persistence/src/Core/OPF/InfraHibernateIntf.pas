@@ -114,6 +114,7 @@ type
       const pOID: IInfraType): IInfraType; overload;
     function Load(const pInstanceToLoad: IInfraType;
       const pOID: IInfraType): IInfraType; overload;
+    function Save(const pObject: IInfraObject): IInfraType;
     procedure Delete(const pObject: IInfraType);
     procedure SetConnection(const Value: IZConnection);
     function CreateCriteria(const pTypeID: TGUID): ICriteria; overload;

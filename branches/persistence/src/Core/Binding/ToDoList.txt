@@ -1,23 +1,25 @@
 Português
 ---------
-[DONE]
-- Criar um demo para binding de infratypes
-[DONE]
-- O framework nao está verificando se o valor realmente mudou antes de chamar o changed nos bindables;
-
+[DONE]- Criar um demo para binding de infratypes
+[DONE]- O framework nao está verificando se o valor realmente mudou antes de chamar o changed nos bindables;
+- Tratar objetos Complexo ListBox e Selection;
+	- Criar o BindingList com atributo Listmodel, se receber um infralist cria o listmodel
+	- Criar Método BindingList.BindSelection(AtributoType, AtributoVCL)
+	- Passar para os Bindables o ListModel criado, se criado.
+	- Criar BindManager.AddList(Control1, AtributoControl1, Control2, AtributoControl2)
+	- Criar BindManager.AddList(AtributoType, AtributoVCL)
 - Criar esquema de BindCommands;
-- Tratar objetos Complexos como Grid, Combobox, ListBox, etc...;
-- Ver a questão do DataContext como um DataProvider para poder 
-  ler XML, JSON, InfraType, etc...
+- Tratar objetos Complexo Grid e Selection;
+- Tratar objetos Complexo Combobox e Selection;
+- Tratar objetos Complexo Treeview e Selection;
+- Ver a questão do DataContext como um DataProvider para poder ler XML, JSON, InfraType, etc...
 - testes unitários para o framework
 - documentaçãoIngles
+
 English
 -------
-[DONE]
-- Create a Demo to Infratype binding
-[DONE]
-- The framework is not verifying if the Bindable value changed before calling changed
-
+[DONE]- Create a Demo to Infratype binding
+[DONE]- The framework is not verifying if the Bindable value changed before calling changed
 - Create BindCommands scheme
 - Treat Complex objects as it would be Grid, ComboBox, ListBox, etc...
 - See the issue of the DataContext as a DataProvider to read XML, JSON, InfraType, etc...
