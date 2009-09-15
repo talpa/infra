@@ -25,6 +25,7 @@ type
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
+    procedure Load(const pObj: IInfraObject);
     procedure BeginTransaction(pIsolationLevel: TIsolationLevel = tilReadCommitted);
     procedure Commit;
     procedure Rollback;
@@ -211,5 +212,14 @@ begin
   // Limpa a lista de pendências, já que a transação foi desfeita
   FPendingCommands.Clear;
 end;
+
+procedure TSession.Load(const pObj: IInfraObject);
+var
+  vSQLCommand  :ISQLCommandQuery;
+begin
+  vSQLCommand := CreateNamedQuery('#SELECT',pObj);
+  vSQLCommand.GetResult;
+
+ end;
 
 end.

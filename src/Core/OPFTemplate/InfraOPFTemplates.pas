@@ -33,6 +33,16 @@ type
     constructor Create; override;
   end;
 
+  TTemplateReader_Build = class(TTemplateReader, ITemplateReader_Build)
+  protected
+    function Read(const pTemplateName: string): string; override;
+    function GetSqlCommand: ISQLCommand;
+    procedure SetSqlCommand(const Value: ISQLCommand);
+    property SQLCommand: ISQLCommand read GetSqlCommand write SetSqlCommand;
+  public
+    constructor Create(const pSQLCommand : ISQLCommand); reintroduce;
+  end;
+
   procedure RegisterOnReflection;
 
 implementation
@@ -119,6 +129,29 @@ begin
     AddType(ITemplateReader, 'TemplateReader', TTemplateReader, IElement);
     AddType(ITemplateReader_IO, 'TemplateReader_IO', TTemplateReader_IO, ITemplateReader);
   end;
+end;
+
+{ TTemplateReader_Build }
+
+constructor TTemplateReader_Build.Create(const pSQLCommand : ISQLCommand);
+begin
+
+
+end;
+
+function TTemplateReader_Build.GetSqlCommand: ISQLCommand;
+begin
+
+end;
+
+function TTemplateReader_Build.Read(const pTemplateName: string): string;
+begin
+
+end;
+
+procedure TTemplateReader_Build.SetSqlCommand(const Value: ISQLCommand);
+begin
+
 end;
 
 end.
