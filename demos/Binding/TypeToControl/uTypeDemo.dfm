@@ -20,7 +20,7 @@ object Form1: TForm1
     Top = 4
     Width = 713
     Height = 329
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     TabOrder = 0
     object TabSheet1: TTabSheet
       Caption = 'Person - Standard Controls'

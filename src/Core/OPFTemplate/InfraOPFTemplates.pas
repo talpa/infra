@@ -15,35 +15,29 @@ type
   private
     FConfiguration: IConfiguration;
   protected
-    function ReadFromStream(const pStream: TStream): string; 
-    function Read(const pTemplateName: string): string; virtual; abstract;
+    function ReadFromStream(pStream: TStream): string;
+    function Read(const pSQLCommand: ISQLCommand): string; virtual; abstract;
     function GetConfiguration: IConfiguration;
     procedure SetConfiguration(const Value: IConfiguration);
     property Configuration: IConfiguration read GetConfiguration
       write SetConfiguration;
   public
-    constructor Create; reintroduce; virtual;
+    constructor Create; reintroduce;
   end;
 
   TTemplateReader_IO = class(TTemplateReader, ITemplateReader)
   protected
     function GetFilename(const pTemplateName: string): string;
-    function Read(const pTemplateName: string): string; override;
-  public
-    constructor Create; override;
+    function Read(const pSQLCommand: ISQLCommand): string; override;
+    function ReadFileName(const pTemplateName: string): string;
   end;
 
   TTemplateReader_Build = class(TTemplateReader, ITemplateReader_Build)
   protected
-    function Read(const pTemplateName: string): string; override;
-    function GetSqlCommand: ISQLCommand;
-    procedure SetSqlCommand(const Value: ISQLCommand);
-    property SQLCommand: ISQLCommand read GetSqlCommand write SetSqlCommand;
-  public
-    constructor Create(const pSQLCommand : ISQLCommand); reintroduce;
+    function Read(const pSQLCommand: ISQLCommand): string; override;
   end;
 
-  procedure RegisterOnReflection;
+procedure RegisterOnReflection;
 
 implementation
 
@@ -83,7 +77,7 @@ end;
   @param pStream Stream do qual o Reader efetuará a leitura do Template
   @return Retorna o conteúdo do template no formato de string 
 }
-function TTemplateReader.ReadFromStream(const pStream: TStream): string;
+function TTemplateReader.ReadFromStream(pStream: TStream): string;
 begin
   pStream.Position := 0;
   SetLength(Result, pStream.Size);
@@ -91,11 +85,6 @@ begin
 end;
 
 { TTemplateReader }
-
-constructor TTemplateReader_IO.Create;
-begin
-
-end;
 
 function TTemplateReader_IO.GetFilename(const pTemplateName: string): string;
 begin
@@ -106,20 +95,27 @@ begin
       GetValue(cCONFIGKEY_TEMPLATEEXT, 'sql');
 end;
 
-function TTemplateReader_IO.Read(const pTemplateName: string): string;
+function TTemplateReader_IO.ReadFileName(
+  const pTemplateName: string): string;
 var
-  vFileName: string;
   vStream: TFileStream;
 begin
-  // *** tem de gerar uma exceção caso o arquivo nao exista, acho que tem de
-  // *** procurar o arquivo com findfirst ou tratar o Result = Emptystr.
-  vFileName := GetFilename(pTemplateName);
-  vStream := TFileStream.Create(vFileName, fmOpenRead or fmShareDenyWrite);
+  vStream := TFileStream.Create(pTemplateName, fmOpenRead or fmShareDenyWrite);
   try
     Result := ReadFromStream(vStream);
   finally
     vStream.Free;
   end;
+end;
+
+function TTemplateReader_IO.Read(const pSQLCommand: ISQLCommand): string;
+var
+  vFileName: string;
+begin
+  // *** tem de gerar uma exceção caso o arquivo nao exista, acho que tem de
+  // *** procurar o arquivo com findfirst ou tratar o Result = Emptystr.
+  vFileName := GetFilename(pSQLCommand.Name);
+  Result := ReadFileName(vFileName);
 end;
 
 procedure RegisterOnReflection;
@@ -133,23 +129,7 @@ end;
 
 { TTemplateReader_Build }
 
-constructor TTemplateReader_Build.Create(const pSQLCommand : ISQLCommand);
-begin
-
-
-end;
-
-function TTemplateReader_Build.GetSqlCommand: ISQLCommand;
-begin
-
-end;
-
-function TTemplateReader_Build.Read(const pTemplateName: string): string;
-begin
-
-end;
-
-procedure TTemplateReader_Build.SetSqlCommand(const Value: ISQLCommand);
+function TTemplateReader_Build.Read(const pSQLCommand: ISQLCommand): string;
 begin
 
 end;

@@ -6,6 +6,7 @@ uses
   InfraValueTypeIntf;
 
 type
+  IEmployees = interface;
 
   IUser = interface(IInfraObject)
     ['{541D07F9-B7EA-4E9C-9241-AED9C0F97639}']
@@ -32,10 +33,10 @@ type
     ['{03A807ED-586A-4E67-99B5-FD098B4C0D90}']
     function GetCompanyName: IInfraString;
     procedure SetCompanyName(const Value: IInfraString);
-    function GetEmployees: IInfraList;
+    function GetEmployees: IEmployees;
     procedure LoadSampleData;
     property CompanyName: IInfraString read GetCompanyName write SetCompanyName;
-    property Employees: IInfraList read GetEmployees;
+    property Employees: IEmployees read GetEmployees;
   end;
 
   IPerson = interface(IInfraObject)
@@ -74,6 +75,13 @@ type
     property Amount: IInfraDouble read GetAmount write SetAmount;
     property Details: IInfraString read GetDetails write SetDetails;
     property City: ICity read GetCity write SetCity;
+  end;
+
+  IEmployees = interface(IInfraList)
+    ['{51506FAF-0956-4702-B67B-427CD0495390}']
+    function GetCurrent: IPerson;
+    procedure SetCurrent(const Value: IPerson);
+    property Current: IPerson read GetCurrent write SetCurrent;
   end;
 
 implementation

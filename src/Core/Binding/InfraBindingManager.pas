@@ -8,6 +8,7 @@ uses
   InfraNotify,
   InfraCommonIntf,
   InfraBindingIntf,
+  InfraValueType,
   InfraValueTypeIntf;
 
 type
@@ -49,18 +50,65 @@ type
     procedure SetMode(Value: TBindingMode);
     procedure SetConverter(const Value: ITypeConverter);
     procedure SetConverterParameter(const Value: IInfraType);
+    procedure SetLeft(const Value: IBindable);
+    procedure SetRight(const Value: IBindable);
     procedure UpdateLeft;
     function TwoWay: IBinding;
     function GetActive: Boolean;
     procedure SetActive(Value: Boolean);
     property Name: string read GetName write SetName;
+    property Left: IBindable read GetLeft write SetLeft;
+    property Right: IBindable read GetRight write SetRight;
   public
-    constructor Create(const Left, Right: IBindable); reintroduce;
+    constructor Create; override;
+  end;
+
+  // Model para objetos bindables que possui listas
+  TBindableListModel = class(TInfraType, IBindableListModel)
+  private
+    FCurrent: IInfraType;
+    FItemIndex: Integer;
+    FItemOperated: IInfraType;
+    FList: IInfraType;
+    FOperation: TListModelOperation;
+    FExpression: string;
+  protected
+    function GetCurrent: IInfraType;
+    function GetExpression: string;
+    function GetItemIndex: integer;
+    function GetItemOperated: IInfraType;
+    function GetList: IInfraType;
+    function GetOperation: TListModelOperation;
+    function GetValueOfExpression(const pObject: IInfraType): string;
+    procedure Assign(const Source: IInfraType); override;
+    procedure Clear; override;
+    procedure SetCurrent(const Value: IInfraType);
+    procedure SetExpression(const Value: string);
+    procedure SetItemIndex(Value: integer);
+    procedure SetItemOperated(const Value: IInfraType);
+    procedure SetList(const Value: IInfraType);
+    procedure SetOperation(Value: TListModelOperation);
+    property Current: IInfraType read GetCurrent write SetCurrent;
+    property ItemIndex: integer read GetItemIndex write SetItemIndex;
+    property ItemOperated: IInfraType read GetItemOperated write SetItemOperated;
+    property List: IInfraType read GetList write SetList;
+    property Operation: TListModelOperation read GetOperation write SetOperation;
+    property Expression: string read GetExpression write SetExpression;
+  public
+    procedure InfraInitInstance; override;
   end;
 
   TBindingList = class(TBinding, IBindingList)
+  private
+    FDataContext: IInfraType;
+    FListModel: IBindableListModel;
+    function GetFirstPropertyName(var pExpression: string): string;
+    function GetListModel: IBindableListModel;
   protected
-    procedure AddSelection(const pPropertyName: string);
+    procedure AddSelection(const pLeftProperty, pRightProperty: string);
+    constructor Create(const pDataContext: IInfraType;
+      const pExpression: string); reintroduce;
+    property ListModel: IBindableListModel read GetListModel;
   end;
 
   {
@@ -94,7 +142,8 @@ type
       pRightControl: TControl; const pRightProperty: string = '';
       const pConverter: ITypeConverter = nil): IBinding; overload;
     function AddList(const pLeftExpression: string;
-      pRightControl: TControl; const pRightProperty: string): IBindingList;
+      pRightControl: TControl; const pRightProperty: string;
+      const pConverter: ITypeConverter = nil): IBindingList;
     procedure ClearBindings;
     property DataContext: IInfraType read GetDataContext write SetDataContext;
     property Active: boolean read GetActive write SetActive;
@@ -116,15 +165,10 @@ uses
 
 { TBinding }
 
-constructor TBinding.Create(const Left, Right: IBindable);
+constructor TBinding.Create;
 begin
-  if not Assigned(Left) then
-    raise EInfraBindingError.Create(cErrorLeftBindableNotDefined);
-  if not Assigned(Right) then
-    raise EInfraBindingError.Create(cErrorRightBindableNotDefined);
+  inherited Create;
   FUpdatingRight := False;
-  FLeft := Left;
-  FRight := Right;
   SetMode(bmLeftToRight);
   EventService.Subscribe(INotifyValueChanged, Self as ISubscriber,
     PropertyChanged, EmptyStr, PropertyChangedFilter);
@@ -241,7 +285,14 @@ end;
 
 procedure TBinding.SetActive(Value: Boolean);
 begin
-  UpdateRight;
+  if Value then
+  begin
+    if not Assigned(Left) then
+      raise EInfraBindingError.CreateFmt(cErrorLeftBindableNotDefined, [Name]);
+    if not Assigned(Right) then
+      raise EInfraBindingError.CreateFmt(cErrorRightBindableNotDefined, [Name]);
+    UpdateRight;
+  end;
 end;
 
 function TBinding.GetConverterParameter: IInfraType;
@@ -264,12 +315,35 @@ begin
   FName := Value;
 end;
 
+procedure TBinding.SetLeft(const Value: IBindable);
+begin
+  FLeft := Value;
+end;
+
+procedure TBinding.SetRight(const Value: IBindable);
+begin
+  FRight := Value;
+end;
+
 { TBindManager }
 
 constructor TBindManager.Create;
 begin
   inherited Create;
   FBindingList := TListBinding.Create;
+end;
+
+function TBindManager.Add(const pLeft, pRight: IBindable;
+  const pConverter: ITypeConverter = nil): IBinding;
+begin
+  Result := TBinding.Create;
+  with Result do
+  begin
+    Left := pLeft;
+    Right := pRight;
+    Converter := pConverter;
+  end;
+  FBindingList.Add(Result);
 end;
 
 function TBindManager.Add(
@@ -291,44 +365,32 @@ function TBindManager.Add(const pLeftProperty: string;
   const pConverter: ITypeConverter = nil): IBinding;
 var
   vLeft, vRight: IBindable;
+  vLeftProperty: IProperty;
 begin
-  vLeft := GetBindableType(FDataContext, pLeftProperty);
+  vLeftProperty := FDataContext as IProperty;
+  vLeft := GetBindableType(vLeftProperty, pLeftProperty);
   vRight := GetBindableVCL(pRightControl, pRightProperty);
   Result := Add(vLeft, vRight, pConverter);
   Result.Name := Format('Datacontext.%s - %s.%s', [
     pLeftProperty, pRightControl.Name, pRightProperty])
 end;
 
-function TBindManager.Add(const pLeft, pRight: IBindable;
-  const pConverter: ITypeConverter = nil): IBinding;
-begin
-  Result := TBinding.Create(pLeft, pRight);
-  Result.Converter := pConverter;
-  FBindingList.Add(Result);
-end;
-
 function TBindManager.AddList(const pLeftExpression: string;
-  pRightControl: TControl; const pRightProperty: string): IBindingList;
-//var
-//  vLeft, vRight: IBindable;
+  pRightControl: TControl; const pRightProperty: string;
+  const pConverter: ITypeConverter = nil): IBindingList;
 begin
-//  GetPropertyByExpression(pLeftProperty)
-//  vLeft := TBindableInfraType.GetBindable(FDataContext, );
-//  vRight := GetBindableVCL(pRightControl, pRightProperty);
-//
-//  vlist: IBindable;
-//begin
-//
-//  vlist := GetBindableVCL(pLeftControl, pLeftProperty);
-//  Result := FBindingList.Add(Result);
-//  pRightExpression
-//
-//  vLeft := GetBindableVCL(pLeftControl, pLeftProperty);
-//  vRight := GetBindableVCL(pRightControl, pRightProperty);
-//  Result := Add(vLeft, vRight, pConverter);
-//  Result.Name := Format('%s.%s -> %s.%s', [
-//    pLeftControl.Name, pLeftProperty, pRightControl.Name, pRightProperty])
-//
+  Result := TBindingList.Create(FDataContext, pLeftExpression);
+  with Result do
+  begin
+    Left := GetBindableType(Result.ListModel);
+    Right := GetBindableVCL(pRightControl, pRightProperty);
+    Converter := pConverter;
+    Name := Format('Datacontext.%s - %s.%s', [
+      pLeftExpression, pRightControl.Name, pRightProperty]);
+    (Left as IBindableList).ListModel := Result.ListModel;
+    (Right as IBindableList).ListModel := Result.ListModel;
+  end;
+  FBindingList.Add(Result);
 end;
 
 procedure TBindManager.ClearBindings;
@@ -369,11 +431,164 @@ begin
   end;
 end;
 
+{ TBindableListModel }
+
+procedure TBindableListModel.InfraInitInstance;
+begin
+  inherited;
+  Clear;
+end;
+
+procedure TBindableListModel.Assign(const Source: IInfraType);
+var
+  vModel: IBindableListModel;
+begin
+  if Assigned(Source)
+    and Supports(Source, IBindableListModel, vModel) then
+  begin
+    SetCurrent(vModel.Current);
+    SetList(vModel.List);
+    SetItemIndex(vModel.ItemIndex);
+    SetOperation(vModel.Operation);
+  end else
+    inherited Assign(Source);
+end;
+
+procedure TBindableListModel.Clear;
+begin
+  inherited Clear;
+  FCurrent := nil;
+  FList := nil;
+  FItemIndex := -1;
+  FOperation := loNone;
+  FExpression := EmptyStr;
+end;
+
+function TBindableListModel.GetCurrent: IInfraType;
+begin
+  Result := FCurrent;
+end;
+
+function TBindableListModel.GetItemIndex: integer;
+begin
+  Result := FItemIndex;
+end;
+
+function TBindableListModel.GetItemOperated: IInfraType;
+begin
+  Result := FItemOperated;
+end;
+
+function TBindableListModel.GetList: IInfraType;
+begin
+  Result := FList;
+end;
+
+function TBindableListModel.GetOperation: TListModelOperation;
+begin
+  Result := FOperation;
+end;
+
+procedure TBindableListModel.SetCurrent(const Value: IInfraType);
+begin
+  FCurrent := Value;
+end;
+
+procedure TBindableListModel.SetItemIndex(Value: integer);
+begin
+  FItemIndex := Value;
+end;
+
+procedure TBindableListModel.SetItemOperated(const Value: IInfraType);
+begin
+  FItemOperated := Value;
+end;
+
+procedure TBindableListModel.SetList(const Value: IInfraType);
+begin
+  FList := Value;
+end;
+
+procedure TBindableListModel.SetOperation(Value: TListModelOperation);
+begin
+  FOperation := Value;
+end;
+
+function TBindableListModel.GetExpression: string;
+begin
+  Result := FExpression;
+end;
+
+procedure TBindableListModel.SetExpression(const Value: string);
+begin
+  FExpression := Value;
+end;
+
+function TBindableListModel.GetValueOfExpression(const pObject: IInfraType): string;
+var
+  vObject: IInfraObject;
+  vValue: IInfraString;
+  vProperty: IProperty;
+begin
+  // *** Precisamos usar um converter dependendo do tipo de pObject
+  if Supports(pObject, IInfraObject, vObject) then
+  begin
+    vProperty := vObject.GetProperty(FExpression);
+    if Supports(vProperty, IInfraString, vValue) then
+      Result := vValue.AsString;
+  end else if Supports(pObject, IInfraString, vValue) then
+    Result := vValue.AsString;
+end;
+
 { TBindingList }
 
-procedure TBindingList.AddSelection(const pPropertyName: string);
+constructor TBindingList.Create(const pDataContext: IInfraType;
+  const pExpression: string);
+var
+  vRestOfExpression: string;
+  vObject: IInfraObject;
+  vProperty: IProperty;
 begin
+  inherited Create;
+  FDataContext := pDataContext;
+  if not Supports(FDataContext, IInfraObject, vObject) then
+    raise EInfraBindingError.Create(cErrorDataContextNotIsInfraObject);
+  vRestOfExpression := pExpression;
+  vProperty := vObject.GetProperty(GetFirstPropertyName(vRestOfExpression));
+  if not Assigned(vProperty) then
+    raise EInfraBindingError.Create(cErrorBindingExpressionNotsupported);
+  FListModel := TBindableListModel.Create;
+  with FListModel do
+  begin
+    Operation := loRefresh;
+    List := vProperty as IInfraType;
+    Expression := vRestOfExpression;
+  end;
+end;
 
+procedure TBindingList.AddSelection(const pLeftProperty, pRightProperty: string);
+begin
+  // *** Acho que teria de ter um binding aqui.
+end;
+
+function TBindingList.GetFirstPropertyName(var pExpression: string): string;
+var
+  vCommaPosition: Integer;
+begin
+  Result := pExpression;
+  vCommaPosition := Pos('.', pExpression);
+  if vCommaPosition = 0 then
+  begin
+    pExpression := '';
+    Exit;
+  end;
+  Result := Copy(pExpression, 0, vCommaPosition-1);
+  pExpression := Copy(pExpression, vCommaPosition+1, Length(pExpression));
+end;
+
+function TBindingList.GetListModel: IBindableListModel;
+begin
+  Result := FListModel;
 end;
 
 end.

@@ -106,16 +106,20 @@ type
       const pPropertyPath: string): IBindableVCLProperty; override;
   end;
 
-  TBindableCustomListItems = class(TBindableRTTIBasedTwoWay)
+  TBindableCustomListItems = class(TBindableRTTIBasedTwoWay, IBindableList)
   private
     FListModel: IBindableListModel;
-    function FindObjectNoListBox(const pObject: IInfraType): integer;
-  protected
-    procedure WndProc(var Message: TMessage); override;
     procedure AddItemToControl(const pValue: string; const pObject: IInfraType);
     procedure RemoveItemOfControl(const pObject: IInfraType);
-    procedure FillControl(const pListModel: IBindableListModel);
+    procedure FillControl;
+    function ConvertToObject(const pValue: IInfraType): TObject;
+  protected
+    procedure WndProc(var Message: TMessage); override;
+    function GetValue: IInfraType; override;
     procedure SetValue(const Value: IInfraType); override;
+    function GetListModel: IBindableListModel;
+    procedure SetListModel(const Value: IBindableListModel);
+    property ListModel: IBindableListModel read GetListModel write SetListModel;
   public
     class function CreateIfSupports(pControl: TControl;
       const pPropertyPath: string): IBindableVCLProperty; override;
@@ -426,58 +430,71 @@ begin
     end;
 end;
 
-//function TBindableCustomListItems.GetValue: IInfraType;
-//begin
-//  if not Assigned(FListModel) then
-//  Result := TInfraInteger.NewFrom(TCustomListControl(Control).ItemIndex);
-//end;
+function TBindableCustomListItems.GetValue: IInfraType;
+begin
+  if Assigned(FListModel) then
+    Result := FListModel as IInfraType
+  else
+    inherited GetValue;
+end;
 
 procedure TBindableCustomListItems.SetValue(const Value: IInfraType);
-var
-  vListModel: IBindableListModel;
 begin
-  if Supports(Value, IBindableListModel, vListModel) then
+  if Assigned(FListModel) then
   begin
-    case vListModel.Operation of
+    case FListModel.Operation of
       loAdd: AddItemToControl(
-        vListModel.GetValueOfExpression(vListModel.ItemOperated),
-        vListModel.ItemOperated);
-      loRemove: RemoveItemOfControl(vListModel.ItemOperated);
-      loRefresh: FillControl(vListModel);
+        FListModel.GetValueOfExpression(FListModel.ItemOperated),
+        FListModel.ItemOperated);
+      loRemove: RemoveItemOfControl(FListModel.ItemOperated);
+      loRefresh: FillControl;
       loClear: TCustomListControl(Control).Clear;
     end;
   end else
     inherited SetValue(Value);
 end;
 
+function TBindableCustomListItems.ConvertToObject(
+  const pValue: IInfraType): TObject;
+begin
+  Result := TObject(Pointer(pValue as IInfraType));
+end;
+
 procedure TBindableCustomListItems.AddItemToControl(const pValue: string;
   const pObject: IInfraType);
 begin
-  TCustomListControl(Control).AddItem(pValue, TObject(Pointer(pObject)));
+  TCustomListControl(Control).AddItem(pValue, ConvertToObject(pObject));
 end;
 
 procedure TBindableCustomListItems.RemoveItemOfControl(
   const pObject: IInfraType);
+var
+  vIndex: Integer; 
 begin
-  TCustomListBox(Control).Items.Delete(FindObjectNoListBox(pObject));
+  vIndex := TCustomListBox(Control).Items.IndexOfObject(ConvertToObject(pObject));
+  TCustomListBox(Control).Items.Delete(vIndex);
 end;
 
-procedure TBindableCustomListItems.FillControl(
-  const pListModel: IBindableListModel);
+procedure TBindableCustomListItems.FillControl;
 var
   vI: Integer;
   vList: IInfraList;
 begin
-  if Supports(pListModel.List, IInfraList, vList) then
+  if Supports(FListModel.List, IInfraList, vList) then
     for vI := 0 to vList.Count-1 do
-      AddItemToControl(pListModel.GetValueOfExpression(vList.Items[vI]),
+      AddItemToControl(FListModel.GetValueOfExpression(vList.Items[vI]),
         vList.Items[vI]);
 end;
 
-function TBindableCustomListItems.FindObjectNoListBox(
-  const pObject: IInfraType): integer;
+function TBindableCustomListItems.GetListModel: IBindableListModel;
 begin
-  Result := TCustomListBox(Control).Items.IndexOfObject(TObject(Pointer(pObject)));
+  Result := FListModel;
+end;
+
+procedure TBindableCustomListItems.SetListModel(
+  const Value: IBindableListModel);
+begin
+  FListModel := Value;
 end;
 
 { TBindableItemindex }

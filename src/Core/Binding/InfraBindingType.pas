@@ -4,11 +4,13 @@ interface
 
 uses
   InfraValueTypeIntf,
-  InfraBindingIntf,
-  InfraBinding;
+  InfraBindingIntf;
 
-function GetBindableType(const pValue: IInfraType;
-  const pExpression: string): IBindable;
+function GetBindableType(
+  const pListModel: IBindableListModel): IBindable; overload;
+
+function GetBindableType(const pValue: IProperty;
+  const pExpression: string): IBindable; overload;
 
 implementation
 
@@ -16,10 +18,12 @@ uses
   SysUtils,
   InfraCommonIntf,
   InfraBindingConsts,
-  InfraBindingConverter;
+  InfraBinding,
+  InfraBindingConverter,
+  InfraBindingManager;
 
 type
-  TBindableInfraType = class(TBindable, IBindableInfraType)
+  TBindableType = class(TBindable)
   private
     FModel: IInfraType;
     procedure ValueChanged(const Event: IInfraEvent);
@@ -32,7 +36,7 @@ type
     constructor Create(const pProperty: IProperty); reintroduce;
   end;
 
-  TBindableInfraList = class(TBindable, IBindableInfraList)
+  TBindableTypeList = class(TBindable, IBindableList)
   private
     FListModel: IBindableListModel;
     function CurrentItemChangedFilter(const Event: IInfraEvent): Boolean;
@@ -42,55 +46,18 @@ type
     procedure ItemRemoved(const Event: IInfraEvent);
     procedure ItemsClear(const Event: IInfraEvent);
   protected
+    function GetListModel: IBindableListModel;
     function GetValue: IInfraType; override;
+    procedure SetListModel(const Value: IBindableListModel);
     procedure SetValue(const Value: IInfraType); override;
+    property ListModel: IBindableListModel read GetListModel write SetListModel;
   public
-    constructor Create(const pProperty: IProperty;
-      const pExpression: string); reintroduce;
+    constructor Create; override;
   end;
 
-function GetFirstPropertyName(var pExpression: string): string;
-var
-  vCommaPosition: Integer;
-begin
-  Result := pExpression;
-  vCommaPosition := Pos('.', pExpression);
-  if vCommaPosition = 0 then
-  begin
-    pExpression := '';
-    Exit;
-  end;
-  Result := Copy(pExpression, 0, vCommaPosition-1);
-  pExpression := Copy(pExpression, vCommaPosition+1, Length(pExpression));
-end;
+{ TBindableType }
 
-function GetBindableType(const pValue: IInfraType;
-  const pExpression: string): IBindable;
-var
-  vObject: IInfraObject;
-  vProperty: IProperty;
-  vNewExpression: string;
-begin
-  vNewExpression := pExpression;
-  if Supports(pValue, IInfraObject, vObject) then
-  begin
-    vProperty := vObject.GetProperty(GetFirstPropertyName(vNewExpression));
-    if Supports(vProperty, IInfraList) then
-      Result := TBindableInfraList.Create(vProperty, vNewExpression)
-    else if Supports(vProperty, IInfraType) then
-    begin
-      if vNewExpression <> EmptyStr then
-        vProperty := (vProperty as IInfraObject).GetProperty(vNewExpression);
-      Result := TBindableInfraType.Create(vProperty);
-    end else
-      raise EInfraBindingError.Create(cErrorBindingExpressionNotsupported);
-  end else
-    raise EInfraBindingError.Create(cErrorDataContextNotIsInfraObject);
-end;
-
-{ TBindableInfraType }
-
-constructor TBindableInfraType.Create(const pProperty: IProperty);
+constructor TBindableType.Create(const pProperty: IProperty);
 begin
   inherited Create;
   FModel := pProperty as IInfraType;
@@ -98,27 +65,27 @@ begin
     ValueChanged, EmptyStr, ValueChangedFilter);
 end;
 
-function TBindableInfraType.GetValue: IInfraType;
+function TBindableType.GetValue: IInfraType;
 begin
   Result := FModel;
 end;
 
-procedure TBindableInfraType.SetValue(const Value: IInfraType);
+procedure TBindableType.SetValue(const Value: IInfraType);
 begin
   FModel.Assign(Value);
 end;
 
-function TBindableInfraType.Support2Way: Boolean;
+function TBindableType.Support2Way: Boolean;
 begin
   Result := True;
 end;
 
-procedure TBindableInfraType.ValueChanged(const Event: IInfraEvent);
+procedure TBindableType.ValueChanged(const Event: IInfraEvent);
 begin
   Changed;
 end;
 
-function TBindableInfraType.ValueChangedFilter(const Event: IInfraEvent): Boolean;
+function TBindableType.ValueChangedFilter(const Event: IInfraEvent): Boolean;
 var
   vSource: IInfraType;
 begin
@@ -126,19 +93,11 @@ begin
   Result := vSource = FModel;
 end;
 
-{ TBindableInfraList }
+{ TBindableTypeList }
 
-constructor TBindableInfraList.Create(const pProperty: IProperty;
-  const pExpression: string);
+constructor TBindableTypeList.Create;
 begin
   inherited Create;
-  FListModel := TBindableListModel.Create;
-  with FListModel do
-  begin
-    Operation := loRefresh;
-    List := pProperty as IInfraType;
-    Expression := pExpression;
-  end;
   EventService.Subscribe(IInfraAddItemEvent, Self as ISubscriber,
     ItemAdded, EmptyStr, ListChangedFilter);
   EventService.Subscribe(IInfraClearListEvent, Self as ISubscriber,
@@ -149,18 +108,28 @@ begin
     CurrentItemChanged, EmptyStr, CurrentItemChangedFilter);
 end;
 
-function TBindableInfraList.GetValue: IInfraType;
+function TBindableTypeList.GetListModel: IBindableListModel;
+begin
+  Result := FListModel;
+end;
+
+function TBindableTypeList.GetValue: IInfraType;
 begin
   Result := FListModel as IInfraType;
 end;
 
-procedure TBindableInfraList.SetValue(const Value: IInfraType);
+procedure TBindableTypeList.SetListModel(const Value: IBindableListModel);
 begin
-  Raise EInfraBindingError.CreateFmt(cErrorBindableisReadOnly,
-    ['TBindableInfraList']);
+  FListModel := Value;
 end;
 
-procedure TBindableInfraList.ItemAdded(const Event: IInfraEvent);
+procedure TBindableTypeList.SetValue(const Value: IInfraType);
+begin
+  Raise EInfraBindingError.CreateFmt(cErrorBindableisReadOnly,
+    ['TBindableTypeList']);
+end;
+
+procedure TBindableTypeList.ItemAdded(const Event: IInfraEvent);
 var
   vAddEvent: IInfraAddItemEvent;
 begin
@@ -173,7 +142,7 @@ begin
   Changed;
 end;
 
-procedure TBindableInfraList.ItemRemoved(const Event: IInfraEvent);
+procedure TBindableTypeList.ItemRemoved(const Event: IInfraEvent);
 var
   vRemoveEvent: IInfraRemoveItemEvent;
 begin
@@ -186,14 +155,14 @@ begin
   Changed;
 end;
 
-procedure TBindableInfraList.ItemsClear(const Event: IInfraEvent);
+procedure TBindableTypeList.ItemsClear(const Event: IInfraEvent);
 begin
   with FListModel do
     Operation := loClear;
   Changed;
 end;
 
-procedure TBindableInfraList.CurrentItemChanged(const Event: IInfraEvent);
+procedure TBindableTypeList.CurrentItemChanged(const Event: IInfraEvent);
 begin
   with FListModel do
   begin
@@ -203,7 +172,7 @@ begin
   Changed;
 end;
 
-function TBindableInfraList.ListChangedFilter(
+function TBindableTypeList.ListChangedFilter(
   const Event: IInfraEvent): Boolean;
 var
   vSource: IInfraType;
@@ -212,7 +181,7 @@ begin
   Result := vSource = FListModel.List;
 end;
 
-function TBindableInfraList.CurrentItemChangedFilter(
+function TBindableTypeList.CurrentItemChangedFilter(
   const Event: IInfraEvent): Boolean;
 var
   vSource: IInfraType;
@@ -221,4 +190,30 @@ begin
   Result := vSource = FListModel.Current;
 end;
 
+// Funções genéricas para criação de bindables para types
+
+function GetBindableType(const pValue: IProperty;
+  const pExpression: string): IBindable; overload;
+var
+  vObject: IInfraObject;
+  vProperty: IProperty;
+begin
+  if Supports(pValue, IInfraObject, vObject) then
+  begin
+    vProperty := vObject.GetProperty(pExpression);
+    Result := TBindableType.Create(vProperty);
+  end else
+    raise EInfraBindingError.Create(cErrorTypeNotSupportedToBinding);
+end;
+
+function GetBindableType(
+  const pListModel: IBindableListModel): IBindable; overload;
+begin
+  Result := TBindableTypeList.Create;
+end;
+
 end.
+
+
+
+

@@ -86,8 +86,6 @@ begin
 end;
 
 procedure TForm1.FormActivate(Sender: TObject);
-var
-  Binding: IBinding;
 begin
   // initialize and load sample Person data
   Person := TPerson.Create;
@@ -108,7 +106,8 @@ begin
   // set DataContext to Company e bind employers to list
   CompanyBindManager.DataContext := Company;
   CompanyBindManager.Add('CompanyName', Label10, 'Caption');
-  CompanyBindManager.Add('Employees.PersonName', ListBox1, 'Items');
+  CompanyBindManager.AddList('Employees.PersonName', ListBox1, 'Items').
+    AddSelection('Current', 'ItemIndex');
   CompanyBindManager.Active := True;
 end;
 
