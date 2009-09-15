@@ -27,6 +27,7 @@ type
   TIsolationLevel = (tilNone, tilReadUncommitted, tilReadCommitted,
     tilRepeatableRead, tilSerializable);
 
+
   IConfiguration = interface(IBaseElement)
     ['{16AF1EFF-FB48-4BAD-BDC7-E0518E83E09E}']
     function GetAsInteger(const pName: string): Integer; overload;
@@ -168,6 +169,7 @@ type
     function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
+    procedure Load(const pObj: IInfraObject); 
     function Flush: Integer;
     procedure BeginTransaction(pTransactIsolationLevel: TIsolationLevel = tilReadCommitted);
     procedure Commit;
@@ -206,6 +208,13 @@ type
 
   ITemplateReader_IO = interface(ITemplateReader)
     ['{01861C33-9789-4A30-8FCC-A018EA45FF13}']
+  end;
+
+  ITemplateReader_Build = interface(ITemplateReader)
+    ['{01861C33-9789-4A30-8FCC-A018EA45FF13}']
+    function GetSqlCommand: ISQLCommand;
+    procedure SetSqlCommand(const Value: ISQLCommand);
+    property SQLCommand: ISQLCommand read GetSqlCommand write SetSqlCommand;
   end;
 
   ISQLParamsParser = interface(IBaseElement)

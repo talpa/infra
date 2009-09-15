@@ -21,15 +21,16 @@ type
     FParser: ISQLParamsParser;
     /// Item de Conexão atual
     FConnectionItem: IConnectionItem;
-    function GetReader: ITemplateReader;
+    function GetReader: ITemplateReader;overload;
+    function GetReader(const pSqlCommand : ISQLCommand): ITemplateReader_Build;overload;
     procedure SetParameters(const pStatement: IZPreparedStatement; const pParams: ISqlCommandParams);
     function GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery; const pResultSet: IZResultSet): IInfraObject;
     procedure DoLoad(const pStatement: IZPreparedStatement; const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
     function ReadTemplate(const pSqlCommand: ISQLCommand): string;
     function InternallExecute(const pSqlCommand: ISqlCommand;
       const pConnection: IZConnection): Integer;
-    function GetSQLFromCache(const pSqlCommand : ISQLCommand) : String;
-    procedure AddSQLToCache(const pSqlCommand : ISQLCommand; pValue : String);
+    function GetSQLFromCache(const pSqlCommand: ISQLCommand): string;
+    procedure AddSQLToCache(const pSqlCommand: ISQLCommand; pValue: string);
     procedure CheckInTransaction;
     function InTransaction: Boolean;
     function GetCurrentConnectionItem: IConnectionItem;
@@ -63,6 +64,7 @@ uses
   Cria uma nova instância de TPersistenceEngine
   @param pConfiguration   ParameterDescription
 }
+
 constructor TPersistenceEngine.Create(const pConfiguration: IConfiguration;
   const pConnectionProvider: IConnectionProvider);
 begin
@@ -76,6 +78,7 @@ end;
   Obtem o leitor de template definido no configuration
   @return Retorna um leitor de templates
 }
+
 function TPersistenceEngine.GetReader: ITemplateReader;
 var
   vReaderClassName: string;
@@ -102,6 +105,7 @@ end;
   @param pConnection Conexão na qual os comandos serão executados
   @return Retorna a quantidade de registros afetados pela atualização.
 }
+
 function TPersistenceEngine.InternallExecute(const pSqlCommand: ISqlCommand;
   const pConnection: IZConnection): Integer;
 var
@@ -127,6 +131,7 @@ end;
   @param pSqlCommand Objeto com as informações sobre o que e como executar a instrução.
   @return Retorna a quantidade de registros afetados pela atualização.
 }
+
 function TPersistenceEngine.Execute(const pSqlCommand: ISqlCommand): Integer;
 begin
   if not Assigned(pSqlCommand) then
@@ -142,6 +147,7 @@ end;
   @param pSqlCommands Lista com as informações sobre as instruçòes e como executá-las
   @return Retorna a quantidade de registros afetados pela atualização.
 }
+
 function TPersistenceEngine.ExecuteAll(
   const pSqlCommands: ISQLCommandList): Integer;
 var
@@ -162,6 +168,7 @@ end;
   @param pSqlCommand   ParameterDescription
   @param pList   ParameterDescription
 }
+
 procedure TPersistenceEngine.DoLoad(const pStatement: IZPreparedStatement;
   const pSqlCommand: ISQLCommandQuery; const pList: IInfraList);
 var
@@ -197,6 +204,7 @@ end;
   @param pSqlCommand SqlCommandQuery que será usado para efetuar a consulta no banco de dados
   @param pList Lista que será preenchida com os objetos lidos
 }
+
 procedure TPersistenceEngine.Load(const pSqlCommand: ISQLCommandQuery;
   const pList: IInfraList);
 var
@@ -234,6 +242,7 @@ end;
   @param pResultSet   ParameterDescription
   @return ResultDescription
 }
+
 function TPersistenceEngine.GetRowFromResultSet(const pSqlCommand: ISQLCommandQuery;
   const pResultSet: IZResultSet): IInfraObject;
 var
@@ -277,7 +286,10 @@ begin
   Result := GetSQLFromCache(pSqlCommand);
   if Result = EmptyStr then
   begin
-    vReader := GetReader;
+    if Pos('#',pSQLCommand.Name) > 0 then
+      vReader := GetReader(pSQLCommand)
+    else
+      vReader := GetReader;
     Result := vReader.Read(pSqlCommand.Name);
     AddSQLToCache(pSqlCommand, Result);
   end;
@@ -289,6 +301,7 @@ end;
                     a substuição de parâmetros
   @param pParams Lista de parametros do tipo ISqlCommandParams
 }
+
 procedure TPersistenceEngine.SetParameters(
   const pStatement: IZPreparedStatement; const pParams: ISqlCommandParams);
 var
@@ -315,6 +328,7 @@ end;
   Chame GetInTransaction para verificar se há uma transação em andamento
   @return Retorna True se houver uma transação sendo executada
 }
+
 function TPersistenceEngine.InTransaction: Boolean;
 begin
   Result := not GetCurrentConnectionItem.Connection.GetAutoCommit;
@@ -323,6 +337,7 @@ end;
 {**
   Caso nenhuma transação esteja em aberto, levanta ma exceção
 }
+
 procedure TPersistenceEngine.CheckInTransaction;
 begin
   if not InTransaction then
@@ -334,6 +349,7 @@ end;
   Se uma transação já estiver em andamento, resultará numa mensagem de erro
   @param pIsolationLevel Nível de isolamento da transaçao
 }
+
 procedure TPersistenceEngine.BeginTransaction(
   pIsolationLevel: TIsolationLevel);
 begin
@@ -346,6 +362,7 @@ end;
   Efetiva a transação sendo executada
   Caso nenhuma transação esteja em aberto, resultará numa mensagem de erro
 }
+
 procedure TPersistenceEngine.Commit;
 begin
   CheckInTransaction;
@@ -357,31 +374,45 @@ end;
   fazendo com que todas as modificações realizadas pela transação sejam rejeitadas.
   Caso nenhuma transação esteja em aberto, resultará numa mensagem de erro
 }
+
 procedure TPersistenceEngine.Rollback;
 begin
   CheckInTransaction;
   GetCurrentConnectionItem.Connection.Rollback;
 end;
 
-procedure TPersistenceEngine.AddSQLToCache(const pSqlCommand: ISQLCommand; pValue: String);
+procedure TPersistenceEngine.AddSQLToCache(const pSqlCommand: ISQLCommand; pValue: string);
 var
-  vSqlCache : ISQLCacheList;
+  vSqlCache: ISQLCacheList;
 begin
   if Supports(pSqlCommand.ClassTypeInfo, ISQLCacheList, vSqlCache) then
     vSqlCache.Items[pSqlCommand.Name] := pValue;
 end;
 
-function TPersistenceEngine.GetSQLFromCache(const pSqlCommand: ISQLCommand): String;
+function TPersistenceEngine.GetSQLFromCache(const pSqlCommand: ISQLCommand): string;
 var
-  vSqlCache : ISQLCacheList;
+  vSqlCache: ISQLCacheList;
 begin
   Result := EmptyStr;
   if not Supports(pSqlCommand.ClassTypeInfo, ISqlCacheList, vSqlCache) then
   begin
     vSqlCache := TInfraSQLCache.Create;
     pSqlCommand.ClassTypeInfo.Inject(ISqlCacheList, vSqlCache);
-  end else
+  end
+  else
     Result := vSqlCache.Items[pSqlCommand.Name]
 end;
 
+function TPersistenceEngine.GetReader(const pSqlCommand : ISQLCommand): ITemplateReader_Build;
+var
+  vReaderClassName: string;
+  vReaderTypeInfo: IClassInfo;
+begin
+  vReaderTypeInfo := TypeService.GetType('ITemplateReader_Build', True);
+  Result := TypeService.CreateInstance(vReaderTypeInfo) as ITemplateReader_Build;
+  Result.Configuration := FConfiguration;
+  Result.SQLCommand:=psqlcommand;
+end;
+
 end.
+
