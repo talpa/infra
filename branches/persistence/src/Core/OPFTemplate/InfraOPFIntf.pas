@@ -23,6 +23,7 @@ type
   ISession = interface;
   ISQLCommandParams = interface;
   ISessionFactory = interface;
+  IDialect = interface;
 
   TIsolationLevel = (tilNone, tilReadUncommitted, tilReadCommitted,
     tilRepeatableRead, tilSerializable);
@@ -169,7 +170,7 @@ type
     function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
     function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
     function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
-    procedure Load(const pObj: IInfraObject); 
+    procedure Load(const pObj: IInfraObject);
     function Flush: Integer;
     procedure BeginTransaction(pTransactIsolationLevel: TIsolationLevel = tilReadCommitted);
     procedure Commit;
@@ -236,6 +237,86 @@ type
     procedure Init(pGetter: TZTypeGetter; pSetter: TZTypeSetter);
   end;
 
+  IEntity = interface(IElement)
+    ['{28B94C80-55F6-47BB-9E86-8C38514E1980}']
+    procedure SetName( const Value: String);
+    function GetName: String;
+    property Name: String read GetName write SetName;
+  end;
+
+  IColumn = interface(IElement)
+    ['{C935A579-F071-44A2-9FE8-E97688943268}']
+    procedure SetColumnDefinition( const Value: String);
+    function  GetColumnDefinition: String;
+    procedure SetInsertable( const Value: Boolean);
+    function  GetInsertable: Boolean;
+    procedure SetLength( const Value: Integer);
+    function  GetLength: Integer;
+    procedure SetName(const Value: String);
+    function  GetName: String;
+    procedure SetNullable( const Value: Boolean);
+    function  GetNullable: Boolean;
+    procedure SetPrecision(const Value: Integer);
+    function  GetPrecision: Integer;
+    procedure SetScale(const Value: Integer);
+    function  GetScale: Integer;
+    procedure SetTable(const Value: String);
+    function  GetTable: String;
+    procedure SetUnique(const Value: Boolean);
+    function  GetUnique: Boolean;
+    procedure SetUpdatable(const Value: Boolean);
+    function  GetUpdatable: Boolean;
+    property ColumnDefinition: String read GetColumnDefinition write SetColumnDefinition;
+    property Insertable: Boolean read GetInsertable write SetInsertable;
+    property Length: Integer read GetLength write SetLength;
+    property Name: String read GetName write SetName;
+    property Nullable: Boolean read GetNullable write SetNullable;
+    property Precision: Integer read GetPrecision write SetPrecision;
+    property Scale: Integer read GetScale write SetScale;
+    property Table: String read GetTable write SetTable;
+    property Unique: Boolean read GetUnique write SetUnique;
+    property Updatable: Boolean read GetUpdatable write SetUpdatable;
+  end;
+
+  ICollumns = interface(IBaseElement)
+    ['{3B6F6AE0-EB84-47F2-A009-172D235C26A4}']
+  end;
+
+  IId = interface(IElement)
+    ['{FCA085B9-06FB-445B-9D95-786F9B5BD07D}']
+  end;
+
+  ISelectBuilder = interface
+    ['{5F484BB5-C2B5-4BAD-A9C6-7BFD5B6FD241}']
+    function ToStatementString: String;
+    procedure SetFromClause(const pTableName, pAlias: String); overload;
+    procedure SetFromClause(const Value: String); overload;
+    procedure SetGroupByClause(const Value: String);
+    procedure SetOrderByClause(const Value: String);
+    procedure SetOuterJoins(const pOuterJoinsAfterFrom,
+      pOuterJoinsAfterWhere: String);
+    procedure SetSelectClause(const Value: String);
+    procedure SetWhereClause(const Value: String); overload;
+  end;
+
+  IDeleteBuilder   = interface
+    ['{FD1DEBA9-BB94-43CC-B976-B61B74E5F527}']
+    procedure SetTableName(const pTableName: String);
+    procedure SetWhere(const Value: String);
+    procedure setPrimaryKeyColumnNames(const Value: String);
+    function toStatementString: String;
+  end;
+
+  IDialect = interface(IBaseElement)
+    ['{0325E2B1-72CA-46A9-87F5-385E6FBC7AD7}']
+  end;
+  
+  TStringHelper = class
+    class function StartsWith(const Value, pFragment: string): boolean;
+    class function Substring(const Value: string; pCount: integer): string;
+    class function Join(const pSeparator: string; pList: TStrings): string;
+  end;
+
 function PersistenceService: IInfraPersistenceService;
 
 implementation
@@ -244,7 +325,7 @@ uses
   InfraOPFTemplates,
   InfraOPFAnnotation,
   // Essas units foram adicionadas para que os drivers
-  // possam se registrar no DriverManager 
+  // possam se registrar no DriverManager
   ZDbcInterbase6,
   ZDbcPostgreSql,
   ZDbcMySql,
@@ -257,6 +338,35 @@ uses
 function PersistenceService: IInfraPersistenceService;
 begin
   Result := ApplicationContext as IInfraPersistenceService;
+end;
+
+{ TStringHelper }
+
+class function TStringHelper.Join(const pSeparator: string;
+  pList: TStrings): string;
+var
+  i : Integer;
+begin
+  if pList.Count <> 0 then
+  begin
+    Result := pList[0];
+    for i:= 1 to pList.Count - 1 do
+      Result := Result + pSeparator + pList[i];
+  end
+  else
+    Result := '';
+end;
+
+class function TStringHelper.StartsWith(const Value,
+  pFragment: string): boolean;
+begin
+  Result := Copy(Value, 0, Length(pFragment)) = pFragment;
+end;
+
+class function TStringHelper.Substring(const Value: string;
+  pCount: integer): string;
+begin
+  Result := Copy(Value, pCount-1, Length(Value));
 end;
 
 initialization

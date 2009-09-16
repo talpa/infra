@@ -214,11 +214,11 @@ begin
 end;
 
 procedure TSession.Load(const pObj: IInfraObject);
-var
-  vSQLCommand  :ISQLCommandQuery;
+//var
+//  vSQLCommand  :ISQLCommandQuery;
 begin
-  vSQLCommand := CreateNamedQuery('#SELECT', pObj);
-  pObj := vSQLCommand.GetResult;
+//  vSQLCommand := CreateNamedQuery('#SELECT', pObj);
+//  pObj := vSQLCommand.GetResult;
 end;
 
 end.
