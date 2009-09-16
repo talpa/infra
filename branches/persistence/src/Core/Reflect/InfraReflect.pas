@@ -182,6 +182,7 @@ type
     function GetRetentionPolice: TRetentionPolice;
     procedure SetRetentionPolice(const Value: TRetentionPolice);
     function GetIsAnnotation: Boolean;
+    function GetMembersCount: integer;
   public
     constructor Create; override;
     property ClassFamily: TGUID read GetClassFamily write SetClassFamily;
@@ -683,7 +684,14 @@ end;
 function TClassInfo.FindMembers(
   MemberTypes: TMemberTypes): IMemberInfoIterator;
 begin
-  Result := FMembers.NewMemberInfoIterator(MemberTypes);
+  Result := FMembers.NewMemberInfoIterator(MemberTypes, Self);
+end;
+
+function TClassInfo.GetMembersCount: integer;
+begin
+  Result := FMembers.Count;
+  if Assigned(SuperClass) then
+    Result := Result + SuperClass.GetMembersCount;
 end;
 
 function TClassInfo.GetClassFamily: TGUID;
@@ -714,7 +722,7 @@ var
   Iterator: IMemberInfoIterator;
 begin
   Result := nil;
-  Iterator := FMembers.NewMemberInfoIterator(mtAll);
+  Iterator := FMembers.NewMemberInfoIterator(mtAll, Self);
   while not Iterator.IsDone do
     if SameText(Iterator.CurrentItem.Name, pName) then
     begin
@@ -726,7 +734,7 @@ end;
 
 function TClassInfo.GetMembers: IMemberInfoIterator;
 begin
-  Result := FMembers.NewMemberInfoIterator(mtAll);
+  Result := FMembers.NewMemberInfoIterator(mtAll, Self);
 end;
 
 function TClassInfo.GetMethodInfo(const pName: String): IMethodInfo;
@@ -789,21 +797,21 @@ end;
 function TClassInfo.GetPropertyInfo(const pName: String;
   ThrowException: Boolean = False): IPropertyInfo;
 var
-  CommaPosition: Integer;
-  PropertyToSearch: string;
+  vCommaPosition: Integer;
+  vPropertyToSearch: string;
 begin
   Result := nil;
-  CommaPosition := Pos('.', pName);
-  if CommaPosition = 0 then
-    PropertyToSearch := pName
+  vCommaPosition := Pos('.', pName);
+  if vCommaPosition = 0 then
+    vPropertyToSearch := pName
   else
-    PropertyToSearch := Copy(pName, 0, CommaPosition-1);
-  Result := FindPropertyInfo(PropertyToSearch);
+    vPropertyToSearch := Copy(pName, 0, vCommaPosition-1);
+  Result := FindPropertyInfo(vPropertyToSearch);
   if not Assigned(Result) and Assigned(SuperClass) then
-    Result := SuperClass.GetPropertyInfo(PropertyToSearch, ThrowException);
+    Result := SuperClass.GetPropertyInfo(vPropertyToSearch, ThrowException);
   if Assigned(Result) and not SameText(Result.Name, pName) then
     Result := Result.TypeInfo.GetPropertyInfo(
-      Copy(pName, CommaPosition+1, Length(pName)), ThrowException);
+      Copy(pName, vCommaPosition+1, Length(pName)), ThrowException);
   if ThrowException and not Assigned(Result) then
     raise Exception.Create(Format(
       'PropertyInfo to "%s.%s" not found', [Self.FullName, pName]));

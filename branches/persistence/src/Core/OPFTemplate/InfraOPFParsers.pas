@@ -84,14 +84,14 @@ begin
     // Depois de remover do texto as partes a serem ignoradas,
     // procuramos por parametros e macros válidos
     vRegEx.Expression := '[\s\(=]:(\w+)[^w]|[\s\(=]#(\w+)[^w]|^#(\w+)[^w]';
-    if vRegEx.Exec (vSql) then
+    if vRegEx.Exec(vSql) then
     repeat
       if vRegEx.MatchPos[1] > 0 then
-        FParams.Add (System.Copy(vSql, vRegEx.MatchPos[1], vRegEx.MatchLen[1]));
+        FParams.Add(System.Copy(vSql, vRegEx.MatchPos[1], vRegEx.MatchLen[1]));
       if vRegEx.MatchPos[2] > 0 then
-        FMacroParams.Add (System.Copy(vSql, vRegEx.MatchPos[2], vRegEx.MatchLen[2]));
+        FMacroParams.Add(System.Copy(vSql, vRegEx.MatchPos[2], vRegEx.MatchLen[2]));
       if vRegEx.MatchPos[3] > 0 then
-        FMacroParams.Add (System.Copy(vSql, vRegEx.MatchPos[3], vRegEx.MatchLen[3]));
+        FMacroParams.Add(System.Copy(vSql, vRegEx.MatchPos[3], vRegEx.MatchLen[3]));
     until not vRegEx.ExecNext;
 
     vRegEx.Expression := ':(\w+)';

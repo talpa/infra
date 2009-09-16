@@ -25,6 +25,8 @@ type
     procedure TestConstructors;
     procedure TestMemberInfo;
     procedure TestMembers;
+    procedure TestMembersInherited;
+    procedure TestMembersCount;
     procedure TestMethodInfo;
     procedure TestMethods;
     procedure TestProperties;
@@ -187,6 +189,37 @@ begin
     PERSON_METHODS_COUNT+
     PERSON_PROPERTIES_COUNT+
     PERSON_CONSTRUCTOR_COUNT, i, 'Wrong members count');
+end;
+
+procedure TClassInfoTests.TestMembersInherited;
+var
+  i : integer;
+  it : IMemberInfoIterator;
+begin
+  i := 0;
+  it := FStudentInfo.GetMembers;
+  CheckNotNull(It, 'Members''s Iterator not created');
+  while not it.IsDone do
+  begin
+    Inc(i);
+    it.Next;
+  end;
+  CheckEquals(
+    PERSON_METHODS_COUNT+STUDENT_METHODS_COUNT+
+    PERSON_PROPERTIES_COUNT+STUDENT_PROPERTIES_COUNT+
+    PERSON_CONSTRUCTOR_COUNT,
+    i,
+    'Wrong members count');
+end;
+
+procedure TClassInfoTests.TestMembersCount;
+begin
+  CheckEquals(
+    PERSON_METHODS_COUNT+STUDENT_METHODS_COUNT+
+    PERSON_PROPERTIES_COUNT+STUDENT_PROPERTIES_COUNT+
+    PERSON_CONSTRUCTOR_COUNT,
+    FStudentInfo.GetMembersCount,
+    'Wrong members count');
 end;
 
 procedure TClassInfoTests.TestMethodInfo;

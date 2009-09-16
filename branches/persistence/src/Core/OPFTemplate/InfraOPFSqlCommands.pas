@@ -149,6 +149,7 @@ function TSQLCommand.GetClassTypeInfo: IClassInfo;
 begin
   Result := FClassTypeInfo
 end;
+
 {*
 
   @param Value   ParameterDescription

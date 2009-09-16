@@ -217,9 +217,8 @@ procedure TSession.Load(const pObj: IInfraObject);
 var
   vSQLCommand  :ISQLCommandQuery;
 begin
-  vSQLCommand := CreateNamedQuery('#SELECT',pObj);
-  vSQLCommand.GetResult;
-
- end;
+  vSQLCommand := CreateNamedQuery('#SELECT', pObj);
+  pObj := vSQLCommand.GetResult;
+end;
 
 end.
