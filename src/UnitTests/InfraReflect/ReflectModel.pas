@@ -115,6 +115,9 @@ const
   PERSON_METHODS_COUNT = 9;
   PERSON_PROPERTIES_COUNT = 4;
   PERSON_CONSTRUCTOR_COUNT = 1;
+  STUDENT_METHODS_COUNT = 2;
+  STUDENT_PROPERTIES_COUNT = 1;
+
   cMessageProc0 = 'MethodProc0 called';
   cMessageProc1 = 'MethodProc1(%s) called';
   cMessageProc2 = 'MethodProc2(%s, %d) called';
