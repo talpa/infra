@@ -102,13 +102,16 @@ type
     ['{8F2E7318-09C1-4EA2-BA6E-6724275E9043}']
     function GetName: string;
     procedure SetName(const Value: string);
+    function GetObjectToFill: IInfraObject;
+    procedure SetObjectToFill(const Value: IInfraObject);
     function GetParams :ISQLCommandParams;
     function GetClassTypeInfo: IClassInfo;
     procedure SetClassTypeInfo(const Value: IClassInfo);
     property ClassTypeInfo: IClassInfo read GetClassTypeInfo write SetClassTypeInfo;
+    property ObjectToFill: IInfraObject read GetObjectToFill write SetObjectToFill;
     property Name: string read GetName write SetName;
-    property Params: ISQLCommandParams read GetParams;   
-  end; 
+    property Params: ISQLCommandParams read GetParams;
+  end;
 
   ISQLCommandQuery = interface(ISQLCommand)
     ['{437E64D0-7DD8-4D87-9B9F-DBEFAB200863}']
