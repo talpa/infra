@@ -10,7 +10,7 @@ uses
   InfraValueTypeIntf;
 
 type
-  /// Descrição da classe                                                                  
+  /// Descrição da classe
   TSession = class(TBaseElement, ISession)
   private
     /// Persistence engine associado, usado para acessar o Storage
@@ -18,15 +18,26 @@ type
     /// Lista de comandos pendentes. Durante o Flush os comandos são executados e a lista é limpa
     FPendingCommands: ISQLCommandList;
   protected
-    function CreateNamedQuery(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
-    function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
-    function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
+    function CreateNamedQuery(const pCommandName: string;
+      const pClassID: TGUID): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string;
+      const pObj: IInfraObject): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string;
+      const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string;
+      const pObj: IInfraObject;
+      const pListID: TGUID): ISQLCommandQuery; overload;
+    function Delete(const pCommandName: string;
+      const pObj: IInfraObject): ISQLCommand;
+    function Save(const pCommandName: string;
+      const pObj: IInfraObject): ISQLCommand;
     function Flush: Integer;
-    procedure Load(const pObj: IInfraObject);
-    procedure BeginTransaction(pIsolationLevel: TIsolationLevel = tilReadCommitted);
+    procedure Load(const pObj: IInfraObject;
+      const pOid: IInfraType); overload;
+    function Load(const pClassID: TGUID;
+      const pOid: IInfraType): IInfraType; overload;
+    procedure BeginTransaction(
+      pIsolationLevel: TIsolationLevel = tilReadCommitted);
     procedure Commit;
     procedure Rollback;
   public
@@ -213,12 +224,22 @@ begin
   FPendingCommands.Clear;
 end;
 
-procedure TSession.Load(const pObj: IInfraObject);
-//var
-//  vSQLCommand  :ISQLCommandQuery;
+function TSession.Load(const pClassID: TGUID;
+  const pOid: IInfraType): IInfraType;
+var
+  vSQLCommand: ISQLCommandQuery;
 begin
-//  vSQLCommand := CreateNamedQuery('#SELECT', pObj);
-//  pObj := vSQLCommand.GetResult;
+  vSQLCommand := CreateNamedQuery('#SELECT', pClassID);
+  Result := vSQLCommand.GetResult;
+end;
+
+procedure TSession.Load(const pObj: IInfraObject;
+  const pOid: IInfraType);
+var
+  vSQLCommand: ISQLCommandQuery;
+begin
+  vSQLCommand := CreateNamedQuery('#SELECT', pObj);
+  vSQLCommand.GetResult;
 end;
 
 end.
