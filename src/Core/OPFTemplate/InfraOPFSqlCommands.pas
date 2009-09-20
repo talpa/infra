@@ -22,10 +22,13 @@ type
     procedure SetName(const Value: string);
     function GetClassTypeInfo: IClassInfo;
     procedure SetClassTypeInfo(const Value: IClassInfo);
+    function GetObjectToFill: IInfraObject;
+    procedure SetObjectToFill(const Value: IInfraObject);
     /// PersistenceEngine ao qual o SQLCommand está vinculado
     property PersistenceEngine: IPersistenceEngine read FPersistenceEngine;
     property Params: ISQLCommandParams read GetParams;
     property ClassTypeInfo: IClassInfo read GetClassTypeInfo write SetClassTypeInfo;
+    property ObjectToFill: IInfraObject read GetObjectToFill write SetObjectToFill;
   public
     constructor Create(const pPersistenceEngine: IPersistenceEngine); reintroduce;
   end;
@@ -157,6 +160,16 @@ end;
 procedure TSQLCommand.SetClassTypeInfo(const Value: IClassInfo);
 begin
   FClassTypeInfo := Value;
+end;
+
+function TSQLCommand.GetObjectToFill: IInfraObject;
+begin
+
+end;
+
+procedure TSQLCommand.SetObjectToFill(const Value: IInfraObject);
+begin
+
 end;
 
 end.
