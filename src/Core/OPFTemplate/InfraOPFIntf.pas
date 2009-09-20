@@ -167,13 +167,22 @@ type
 
   ISession = interface(IBaseElement)
     ['{693A7815-9A5E-46C7-97DD-04D3E9C245AF}']
-    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string; const pClassID: TGUID): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string; const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
-    function CreateNamedQuery(const pCommandName: string; const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
-    function Delete(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
-    function Save(const pCommandName: string; const pObj: IInfraObject): ISQLCommand;
-    procedure Load(const pObj: IInfraObject);
+    function CreateNamedQuery(const pCommandName: string;
+      const pObj: IInfraObject): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string;
+      const pClassID: TGUID): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string;
+      const pClassID: TGUID; const pListID: TGUID): ISQLCommandQuery; overload;
+    function CreateNamedQuery(const pCommandName: string;
+      const pObj: IInfraObject; const pListID: TGUID): ISQLCommandQuery; overload;
+    function Delete(const pCommandName: string;
+      const pObj: IInfraObject): ISQLCommand;
+    function Save(const pCommandName: string;
+      const pObj: IInfraObject): ISQLCommand;
+    procedure Load(const pObj: IInfraObject;
+      const pOid: IInfraType); overload;
+    function Load(const pClassID: TGUID;
+      const pOid: IInfraType): IInfraType; overload;
     function Flush: Integer;
     procedure BeginTransaction(pTransactIsolationLevel: TIsolationLevel = tilReadCommitted);
     procedure Commit;
