@@ -266,8 +266,7 @@ begin
   //  if IsEqualGUID(pSqlCommand.GetClassID, InfraConsts.NullGUID) then
   //    Raise EPersistenceEngineError.Create(
   //      cErrorPersistEngineObjectIDUndefined);
-  Result := TypeService.CreateInstance(
-    pSqlCommand.ClassTypeInfo) as IInfraObject;
+  Result := TypeService.CreateInstance(pSqlCommand.ClassTypeInfo) as IInfraObject;
   if Assigned(Result) then
   begin
     vMetadata := pResultSet.GetMetadata;

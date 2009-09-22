@@ -16,6 +16,7 @@ type
     FName: string;
     FParams: ISQLCommandParams;
     FPersistenceEngine: IPersistenceEngine;
+    FObject :IInfraObject;
   protected
     function GetName: string;
     function GetParams: ISQLCommandParams;
@@ -164,12 +165,12 @@ end;
 
 function TSQLCommand.GetObjectToFill: IInfraObject;
 begin
-
+  Result :=FObject;
 end;
 
 procedure TSQLCommand.SetObjectToFill(const Value: IInfraObject);
 begin
-
+   FObject := value;
 end;
 
 end.
