@@ -10,12 +10,13 @@ uses
   InfraValueTypeIntf;
 
 type
-  /// Descrição da classe
+  // Descrição da classe
   TSession = class(TBaseElement, ISession)
   private
-    /// Persistence engine associado, usado para acessar o Storage
+    // Persistence engine associado, usado para acessar o Storage
     FPersistenceEngine: IPersistenceEngine;
-    /// Lista de comandos pendentes. Durante o Flush os comandos são executados e a lista é limpa
+    // Lista de comandos pendentes. Durante o Flush os comandos são executados
+    // e a lista é limpa
     FPendingCommands: ISQLCommandList;
   protected
     function CreateNamedQuery(const pCommandName: string;
